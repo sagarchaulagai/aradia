@@ -30,8 +30,12 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/*
-!build/app/outputs/flutter-apk
-
+!/build/app
+/build/generated/
+/build/intermediates/
+/build/kotlin/*
+/build/kotlinToolingMetadata/
+/build/tmp/
 # Symbolication related
 app.*.symbols
 
