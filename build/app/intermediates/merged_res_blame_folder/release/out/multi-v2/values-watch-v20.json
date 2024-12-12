@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-49:/values-watch-v20/values-watch-v20.xml",
+            "map": [
+                {
+                    "source": "/Users/srijana/.gradle/caches/transforms-3/775e2e7e80062b43f35991cfad06422d/transformed/appcompat-1.1.0/res/values-watch-v20/values-watch-v20.xml",
+                    "from": {
+                        "startLines": "2,5,8",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,214,385",
+                        "endLines": "4,7,10",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "209,380,553"
+                    }
+                }
+            ]
+        }
+    ]
+}

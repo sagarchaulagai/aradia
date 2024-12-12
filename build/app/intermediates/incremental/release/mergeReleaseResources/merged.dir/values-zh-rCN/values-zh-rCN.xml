@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string msgid="7903180715631665059" name="abc_action_bar_home_description">"转到首页"</string>
+    <string msgid="6794660482873516081" name="abc_action_bar_up_description">"转到上一层级"</string>
+    <string msgid="1155814932213556626" name="abc_action_menu_overflow_description">"更多选项"</string>
+    <string msgid="2571498368472823490" name="abc_action_mode_done">"完成"</string>
+    <string msgid="3732416590524162402" name="abc_activity_chooser_view_see_all">"查看全部"</string>
+    <string msgid="1798588241954930982" name="abc_activitychooserview_choose_application">"选择应用"</string>
+    <string msgid="3403923230105792483" name="abc_capital_off">"关闭"</string>
+    <string msgid="7831734969929204599" name="abc_capital_on">"开启"</string>
+    <string msgid="5725160506500770567" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="944415252197684443" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="129742188101734366" name="abc_menu_delete_shortcut_label">"Delete 键"</string>
+    <string msgid="6840127756824236027" name="abc_menu_enter_shortcut_label">"Enter 键"</string>
+    <string msgid="4974283687810130415" name="abc_menu_function_shortcut_label">"Fn+"</string>
+    <string msgid="8046416353848716905" name="abc_menu_meta_shortcut_label">"Meta+"</string>
+    <string msgid="3271697756921353410" name="abc_menu_shift_shortcut_label">"Shift+"</string>
+    <string msgid="2304645930658438191" name="abc_menu_space_shortcut_label">"空格键"</string>
+    <string msgid="8327365089695024394" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="3570106412128999382" name="abc_prepend_shortcut_label">"Menu+"</string>
+    <string msgid="940844115270746197" name="abc_search_hint">"搜索…"</string>
+    <string msgid="1769270744562318534" name="abc_searchview_description_clear">"清除查询"</string>
+    <string msgid="908784302972860853" name="abc_searchview_description_query">"搜索查询"</string>
+    <string msgid="5466662225065974044" name="abc_searchview_description_search">"搜索"</string>
+    <string msgid="8203855622131699655" name="abc_searchview_description_submit">"提交查询"</string>
+    <string msgid="3478748990613108725" name="abc_searchview_description_voice">"语音搜索"</string>
+    <string msgid="2650565705514630347" name="abc_shareactionprovider_share_with">"分享对象"</string>
+    <string msgid="9009661856846212431" name="abc_shareactionprovider_share_with_application">"与<ns1:g id="APPLICATION_NAME">%s</ns1:g>分享"</string>
+    <string msgid="6389460216547290468" name="abc_toolbar_collapse_description">"收起"</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"接听"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"视频通话"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"拒接"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"挂断"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"来电"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"正在通话"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"正在过滤来电"</string>
+    <string msgid="6083905920877235314" name="copy">"复制"</string>
+    <string msgid="3260749812566568062" name="copy_toast_msg">"链接已复制到剪贴板"</string>
+    <string msgid="7213672915724563695" name="default_notification_channel_name">"正在播放"</string>
+    <string name="exo_download_completed">下载完毕</string>
+    <string name="exo_download_description">下载</string>
+    <string name="exo_download_downloading">正在下载</string>
+    <string name="exo_download_failed">下载失败</string>
+    <string name="exo_download_notification_channel_name">下载内容</string>
+    <string name="exo_download_paused">下载已暂停</string>
+    <string name="exo_download_paused_for_network">正在等待连接到网络以进行下载</string>
+    <string name="exo_download_paused_for_wifi">正在等待连接到 WLAN 网络以进行下载</string>
+    <string name="exo_download_removing">正在移除下载内容</string>
+    <string msgid="2427401033573778270" name="expand_button_title">"高级"</string>
+    <string msgid="4566929209979330987" name="fallback_menu_item_copy_link">"复制链接"</string>
+    <string msgid="3413186855122069269" name="fallback_menu_item_open_in_browser">"在浏览器中打开"</string>
+    <string msgid="7145444925855055364" name="fallback_menu_item_share_link">"分享链接"</string>
+    <string msgid="6573031135582639649" name="not_set">"未设置"</string>
+    <string msgid="3510124037191104584" name="pause_button_content_description">"暂停"</string>
+    <string msgid="963503759453979404" name="play_button_content_description">"播放"</string>
+    <string msgid="6685851473431805375" name="preference_copied">"已将“<ns1:g id="SUMMARY">%1$s</ns1:g>”复制到剪贴板。"</string>
+    <string msgid="730395136688082741" name="search_menu_title">"搜索"</string>
+    <string msgid="6034072145387511457" name="skip_to_next_item_button_content_description">"跳至下一项"</string>
+    <string msgid="4352480799561670760" name="skip_to_previous_item_button_content_description">"跳至上一项"</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+    <string msgid="9167775378838880170" name="summary_collapsed_preference_list">"<ns1:g id="CURRENT_ITEMS">%1$s</ns1:g>、<ns1:g id="ADDED_ITEMS">%2$s</ns1:g>"</string>
+    <string msgid="3140233346420563315" name="v7_preference_off">"已关闭"</string>
+    <string msgid="89551595707643515" name="v7_preference_on">"已开启"</string>
+</resources>

@@ -1,0 +1,18 @@
+<lint-module
+    format="1"
+    dir="/Users/srijana/MyProjects/FlutterProjects/aradia/android/app"
+    name=":app"
+    type="APP"
+    maven="android:app:"
+    agpVersion="8.1.0"
+    buildFolder="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app"
+    bootClassPath="/Users/srijana/Library/Android/sdk/platforms/android-34/android.jar:/Users/srijana/Library/Android/sdk/build-tools/33.0.1/core-lambda-stubs.jar"
+    javaSourceLevel="1.8"
+    compileTarget="android-34">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>
