@@ -1,5 +1,10 @@
 name: aradia
-description: "A new Flutter project."
+description:
+  "A Flutter app that provides access to a wide range of audiobooks from Librivox.
+  Users can browse and listen to audiobooks in various genres, with the ability to
+  customize their listening experience through a built-in audio player. The app
+  features a modern interface with a focus on ease of use, allowing users to
+  seamlessly explore and enjoy classic literature in audio format."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
