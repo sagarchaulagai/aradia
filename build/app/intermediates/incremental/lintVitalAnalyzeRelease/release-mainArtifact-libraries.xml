@@ -43,6 +43,19 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="/Users/srijana/MyProjects/FlutterProjects/aradia/android@@:connectivity_plus::release"
+      jars="/Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/.transforms/7c5c84121bdbe1578d67aabec5de72e7/transformed/out/jars/classes.jar:/Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/.transforms/7c5c84121bdbe1578d67aabec5de72e7/transformed/out/jars/libs/R.jar"
+      resolved="dev.fluttercommunity.plus.connectivity:connectivity_plus:unspecified"
+      folder="/Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/.transforms/7c5c84121bdbe1578d67aabec5de72e7/transformed/out"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="/Users/srijana/MyProjects/FlutterProjects/aradia/android@@:device_info_plus::release"
       jars="/Users/srijana/MyProjects/FlutterProjects/aradia/build/device_info_plus/.transforms/8f097d1c0cdb38578f01a940e5add47b/transformed/out/jars/classes.jar:/Users/srijana/MyProjects/FlutterProjects/aradia/build/device_info_plus/.transforms/8f097d1c0cdb38578f01a940e5add47b/transformed/out/jars/libs/R.jar"
       resolved="dev.fluttercommunity.plus.device_info:device_info_plus:unspecified"

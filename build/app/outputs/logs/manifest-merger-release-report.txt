@@ -31,7 +31,9 @@ MERGED from [androidx.room:room-runtime:2.5.0] /Users/srijana/.gradle/caches/tra
 	android:label
 		ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:19:9-31
 	android:icon
-		ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:23:9-43
+		ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:24:9-43
+	android:enableOnBackInvokedCallback
+		ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:23:9-52
 	android:usesCleartextTraffic
 		ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:21:9-44
 	android:name
@@ -46,6 +48,7 @@ MERGED from [:audio_service] /Users/srijana/MyProjects/FlutterProjects/aradia/bu
 MERGED from [:just_audio] /Users/srijana/MyProjects/FlutterProjects/aradia/build/just_audio/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
 MERGED from [:audio_session] /Users/srijana/MyProjects/FlutterProjects/aradia/build/audio_session/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
 MERGED from [:background_downloader] /Users/srijana/MyProjects/FlutterProjects/aradia/build/background_downloader/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-35:12
+MERGED from [:connectivity_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-9:12
 MERGED from [:device_info_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/device_info_plus/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
 MERGED from [:flutter_background] /Users/srijana/MyProjects/FlutterProjects/aradia/build/flutter_background/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-11:12
 MERGED from [:media_store_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/media_store_plus/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
@@ -164,6 +167,8 @@ ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main
 		ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:9:22-64
 uses-permission#android.permission.ACCESS_NETWORK_STATE
 ADDED from /Users/srijana/MyProjects/FlutterProjects/aradia/android/app/src/main/AndroidManifest.xml:10:5-78
+MERGED from [:connectivity_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/intermediates/merged_manifest/release/AndroidManifest.xml:7:5-79
+MERGED from [:connectivity_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/intermediates/merged_manifest/release/AndroidManifest.xml:7:5-79
 MERGED from [com.google.android.exoplayer:exoplayer-core:2.18.7] /Users/srijana/.gradle/caches/transforms-3/7391949650c9c8ddedc6b82205e67888/transformed/jetified-exoplayer-core-2.18.7/AndroidManifest.xml:24:5-79
 MERGED from [com.google.android.exoplayer:exoplayer-core:2.18.7] /Users/srijana/.gradle/caches/transforms-3/7391949650c9c8ddedc6b82205e67888/transformed/jetified-exoplayer-core-2.18.7/AndroidManifest.xml:24:5-79
 MERGED from [androidx.work:work-runtime:2.9.0] /Users/srijana/.gradle/caches/transforms-3/c2589b0b1830b52e4888a8e51f856127/transformed/work-runtime-2.9.0/AndroidManifest.xml:24:5-79
@@ -294,6 +299,8 @@ MERGED from [:audio_session] /Users/srijana/MyProjects/FlutterProjects/aradia/bu
 MERGED from [:audio_session] /Users/srijana/MyProjects/FlutterProjects/aradia/build/audio_session/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
 MERGED from [:background_downloader] /Users/srijana/MyProjects/FlutterProjects/aradia/build/background_downloader/intermediates/merged_manifest/release/AndroidManifest.xml:6:5-44
 MERGED from [:background_downloader] /Users/srijana/MyProjects/FlutterProjects/aradia/build/background_downloader/intermediates/merged_manifest/release/AndroidManifest.xml:6:5-44
+MERGED from [:connectivity_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:connectivity_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/connectivity_plus/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
 MERGED from [:device_info_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/device_info_plus/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
 MERGED from [:device_info_plus] /Users/srijana/MyProjects/FlutterProjects/aradia/build/device_info_plus/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
 MERGED from [:flutter_background] /Users/srijana/MyProjects/FlutterProjects/aradia/build/flutter_background/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44

@@ -106,7 +106,7 @@ class DownloadsPage extends StatelessWidget {
               if (activeDownloads.isNotEmpty)
                 SliverToBoxAdapter(
                   child: _buildSectionHeader(
-                      'Active Downloads', activeDownloads.length),
+                      'Active Downloads', activeDownloads.length, context),
                 ),
               SliverList(
                 delegate: SliverChildListDelegate(
@@ -128,8 +128,8 @@ class DownloadsPage extends StatelessWidget {
               ),
               if (completedDownloads.isNotEmpty)
                 SliverToBoxAdapter(
-                  child: _buildSectionHeader(
-                      'Completed Downloads', completedDownloads.length),
+                  child: _buildSectionHeader('Completed Downloads',
+                      completedDownloads.length, context),
                 ),
               SliverList(
                 delegate: SliverChildListDelegate(
@@ -153,10 +153,12 @@ class DownloadsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, int count) {
+  Widget _buildSectionHeader(String title, int count, BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Colors.grey[100],
+      color: Theme.of(context).brightness == Brightness.light
+          ? Colors.grey[100]
+          : Colors.grey[900],
       child: Row(
         children: [
           Text(
@@ -164,7 +166,9 @@ class DownloadsPage extends StatelessWidget {
             style: GoogleFonts.ubuntu(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey[800]
+                  : Colors.grey[300],
             ),
           ),
           const SizedBox(width: 8),
@@ -243,7 +247,10 @@ class DownloadsPage extends StatelessWidget {
               children: [
                 if (isDownloading)
                   IconButton(
-                    icon: const Icon(Icons.cancel, color: Colors.red),
+                    icon: const Icon(
+                      Icons.cancel,
+                      color: Colors.red,
+                    ),
                     onPressed: onCancel,
                     tooltip: 'Cancel Download',
                   )

@@ -241,7 +241,7 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                         ),
                         const SizedBox(height: 10),
                         Container(
-                          color: Colors.grey[200],
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,

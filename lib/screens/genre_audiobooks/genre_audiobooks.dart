@@ -1,3 +1,4 @@
+import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:aradia/resources/archive_api.dart';
@@ -21,8 +22,11 @@ class GenreAudiobooksScreen extends StatelessWidget {
         child: Scaffold(
           appBar: AppBar(
             title: Text('${_capitalizeFirstLetter(genre)} Audiobooks'),
-            bottom: const TabBar(
-              //labelColor: Color.fromRGBO(204, 119, 34, 1),
+            bottom: TabBar(
+              indicatorColor: AppColors.primaryColor,
+              labelColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
               tabs: [
                 Tab(text: 'Popular'),
                 Tab(text: 'Weekly'),
@@ -144,7 +148,9 @@ class _AudiobookListViewState extends State<_AudiobookListView>
       // Initial loading
       if (audiobooks.isEmpty && isLoading) {
         return const Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: AppColors.primaryColor,
+          ),
         );
       }
 

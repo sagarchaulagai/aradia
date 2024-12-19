@@ -1,11 +1,12 @@
+import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:aradia/resources/designs/themes.dart';
 import 'package:aradia/screens/setting/settings.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/audiobook_details/audiobook_details.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
@@ -34,11 +35,13 @@ void main() async {
   await audioHandlerProvider.initialize();
 
   WeSlideController weSlideController = WeSlideController();
+  ThemeNotifier themeNotifier = ThemeNotifier();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => audioHandlerProvider),
         ChangeNotifierProvider(create: (_) => weSlideController),
+        ChangeNotifierProvider(create: (_) => themeNotifier),
       ],
       child: const MyApp(),
     ),
@@ -56,6 +59,7 @@ Future<void> initHive() async {
   await Hive.openBox('download_status_box');
   await Hive.openBox('playing_audiobook_details_box');
   await Hive.openBox('history_audiobooks_index_box');
+  await Hive.openBox('theme_mode_box');
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -167,15 +171,36 @@ final GoRouter router = GoRouter(
             }),
           ),
         ]),
-
-        // for the settings tab
       ],
     ),
   ],
 );
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _backButtonInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
+    print('initialized back button interceptor');
+    WeSlideController weSlideController =
+        Provider.of<WeSlideController>(context, listen: false);
+    if (weSlideController.isOpened) {
+      print('closing');
+      weSlideController.hide();
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    BackButtonInterceptor.add(_backButtonInterceptor);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,15 +214,9 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
-        theme: ThemeData(
-          textTheme: GoogleFonts.ubuntuTextTheme(),
-          scaffoldBackgroundColor: AppColors.scaffoldBackgroundColor,
-          primaryColor: AppColors.primaryColor,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: AppColors.scaffoldBackgroundColor,
-            elevation: 0,
-          ),
-        ),
+        theme: Themes().lightTheme,
+        darkTheme: ThemeData.dark(),
+        themeMode: Provider.of<ThemeNotifier>(context).themeMode,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
       ),

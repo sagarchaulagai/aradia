@@ -20602,6 +20602,17 @@ de.julianassmann.flutter_background.IsolateHolderService:
 de.julianassmann.flutter_background.PermissionHandler:
     public static final int PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS
 de.julianassmann.flutter_background.R
+dev.fluttercommunity.plus.connectivity.Connectivity:
+    static final java.lang.String CONNECTIVITY_BLUETOOTH
+    static final java.lang.String CONNECTIVITY_ETHERNET
+    static final java.lang.String CONNECTIVITY_MOBILE
+    static final java.lang.String CONNECTIVITY_NONE
+    static final java.lang.String CONNECTIVITY_OTHER
+    static final java.lang.String CONNECTIVITY_VPN
+    static final java.lang.String CONNECTIVITY_WIFI
+dev.fluttercommunity.plus.connectivity.ConnectivityBroadcastReceiver:
+    public static final java.lang.String CONNECTIVITY_ACTION
+dev.fluttercommunity.plus.connectivity.R
 dev.fluttercommunity.plus.device_info.R
 io.flutter.Build$API_LEVELS
 io.flutter.Build
@@ -30361,6 +30372,8 @@ com.ryanheise.audioservice.AudioServiceFragmentActivity
 com.ryanheise.audioservice.AudioServicePlugin$$InternalSyntheticThrowCCEIfNotNull$11$e25eb8cbde63b70d38d293b534950d1abef190ead29a9843966b52e558f3b76a$0
 com.tekartik.sqflite.Utils:
     static java.util.Locale localeForLanguageTagPre21(java.lang.String)
+dev.fluttercommunity.plus.connectivity.ConnectivityMethodChannelHandler:
+    static final synthetic boolean $assertionsDisabled
 io.flutter.FlutterInjector$Builder:
     private io.flutter.embedding.engine.deferredcomponents.DeferredComponentManager deferredComponentManager
 io.flutter.FlutterInjector:

@@ -53,6 +53,7 @@
     <application
         android:name="android.app.Application"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+        android:enableOnBackInvokedCallback="false"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Aradia"

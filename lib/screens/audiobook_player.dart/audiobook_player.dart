@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:hive/hive.dart';
@@ -174,166 +175,161 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          Provider.of<WeSlideController>(context, listen: false).hide();
+    return StreamBuilder<MediaItem?>(
+      stream: audioHandlerProvider.audioHandler.mediaItem,
+      builder: (context, snapshot) {
+        if (snapshot.data == null) {
+          return Container();
         }
-      },
-      child: StreamBuilder<MediaItem?>(
-        stream: audioHandlerProvider.audioHandler.mediaItem,
-        builder: (context, snapshot) {
-          if (snapshot.data == null) {
-            return Container();
-          }
-          MediaItem mediaItem = snapshot.data!;
-          return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
-              backgroundColor: Colors.grey[850],
-              foregroundColor: Colors.white,
-              title: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  LowAndHighImage(
-                    lowQImage: audiobook.lowQCoverImage,
-                    highQImage: mediaItem.artUri.toString(),
-                    width: 50,
-                    height: 50,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 150,
-                        child: Text(
-                          mediaItem.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+        MediaItem mediaItem = snapshot.data!;
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.grey[850],
+            foregroundColor: Colors.white,
+            title: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                LowAndHighImage(
+                  lowQImage: audiobook.lowQCoverImage,
+                  highQImage: mediaItem.artUri.toString(),
+                  width: 50,
+                  height: 50,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 150,
+                      child: Text(
+                        mediaItem.title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 150,
-                        child: Text(
-                          mediaItem.artist ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white70,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 150,
+                      child: Text(
+                        mediaItem.artist ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ],
-                  )
-                ],
+                    ),
+                  ],
+                )
+              ],
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  Provider.of<WeSlideController>(context, listen: false).hide();
+                },
+                icon: const Icon(Icons.expand_more, color: Colors.white),
               ),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    Provider.of<WeSlideController>(context, listen: false)
-                        .hide();
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Hero(
+                  tag: 'audiobook_cover',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.black.withOpacity(0.5)
+                              : Colors.grey.withOpacity(0.5),
+                          spreadRadius: 3,
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: LowAndHighImage(
+                        lowQImage: audiobook.lowQCoverImage,
+                        highQImage: mediaItem.artUri.toString(),
+                        width: 250,
+                        height: 250,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  mediaItem.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  mediaItem.album ?? 'Unknown',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[800]
+                        : Colors.grey[300],
+                  ),
+                ),
+                Text(
+                  mediaItem.artist ?? 'Unknown',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[600]
+                        : Colors.grey[200],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ProgressBarWidget(
+                  audioHandler: audioHandlerProvider.audioHandler,
+                ),
+                const SizedBox(height: 20),
+                Controls(
+                  audioHandler: audioHandlerProvider.audioHandler,
+                  onTimerPressed: showTimerOptions,
+                  isTimerActive: _isTimerActive,
+                  activeTimerDuration: _activeTimerDuration,
+                  onCancelTimer: cancelTimer,
+                  onToggleSkipSilence: () {
+                    setState(() {
+                      _skipSilence = !_skipSilence;
+                      audioHandlerProvider.audioHandler
+                          .setSkipSilence(_skipSilence);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          duration: const Duration(seconds: 1),
+                          content: Text(
+                            _skipSilence
+                                ? 'Skip Silence Enabled'
+                                : 'Skip Silence Disabled',
+                          ),
+                        ),
+                      );
+                    });
                   },
-                  icon: const Icon(Icons.expand_more, color: Colors.white),
+                  skipSilence: _skipSilence,
                 ),
               ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Hero(
-                    tag: 'audiobook_cover',
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            spreadRadius: 3,
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: LowAndHighImage(
-                          lowQImage: audiobook.lowQCoverImage,
-                          highQImage: mediaItem.artUri.toString(),
-                          width: 250,
-                          height: 250,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    mediaItem.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    mediaItem.album ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  Text(
-                    mediaItem.artist ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ProgressBarWidget(
-                    audioHandler: audioHandlerProvider.audioHandler,
-                  ),
-                  const SizedBox(height: 20),
-                  Controls(
-                    audioHandler: audioHandlerProvider.audioHandler,
-                    onTimerPressed: showTimerOptions,
-                    isTimerActive: _isTimerActive,
-                    activeTimerDuration: _activeTimerDuration,
-                    onCancelTimer: cancelTimer,
-                    onToggleSkipSilence: () {
-                      setState(() {
-                        _skipSilence = !_skipSilence;
-                        audioHandlerProvider.audioHandler
-                            .setSkipSilence(_skipSilence);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(
-                              _skipSilence
-                                  ? 'Skip Silence Enabled'
-                                  : 'Skip Silence Disabled',
-                            ),
-                          ),
-                        );
-                      });
-                    },
-                    skipSilence: _skipSilence,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -464,18 +460,27 @@ class _ControlsState extends State<Controls> {
               onPressed: _changePlaybackSpeed,
               icon: const Icon(Ionicons.speedometer),
               tooltip: 'Adjust Playback Speed',
-              color: _playbackSpeed != 1.0 ? Colors.deepOrange : Colors.black,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? (_playbackSpeed != 1.0 ? Colors.deepOrange : Colors.white)
+                  : (_playbackSpeed != 1.0 ? Colors.deepOrange : Colors.black),
             ),
             IconButton(
               onPressed: _changeVolume,
               icon: const Icon(Ionicons.volume_high),
               tooltip: 'Adjust Volume',
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
             IconButton(
               onPressed: widget.onToggleSkipSilence,
               icon: Icon(
                 widget.skipSilence ? Ionicons.flash : Ionicons.flash_outline,
-                color: widget.skipSilence ? Colors.deepOrange : Colors.black,
+                color: widget.skipSilence
+                    ? Colors.deepOrange
+                    : (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black),
               ),
               tooltip:
                   widget.skipSilence ? 'Skip Silence On' : 'Skip Silence Off',
@@ -486,7 +491,11 @@ class _ControlsState extends State<Controls> {
                   : () => widget.onTimerPressed(context),
               icon: Icon(
                 widget.isTimerActive ? Ionicons.timer_outline : Ionicons.timer,
-                color: widget.isTimerActive ? Colors.deepOrange : Colors.black,
+                color: widget.isTimerActive
+                    ? Colors.deepOrange
+                    : (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black),
               ),
               tooltip: widget.isTimerActive
                   ? 'Cancel Timer (${widget.activeTimerDuration?.inMinutes} min)'
@@ -504,7 +513,9 @@ class _ControlsState extends State<Controls> {
               },
               icon: const Icon(Icons.replay_10),
               iconSize: 32.0,
-              color: Colors.black,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
             IconButton(
               onPressed: () {
@@ -512,7 +523,9 @@ class _ControlsState extends State<Controls> {
               },
               icon: const Icon(Icons.skip_previous),
               iconSize: 32.0,
-              color: Colors.black,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
             StreamBuilder<PlaybackState>(
               stream: widget.audioHandler.playbackState,
@@ -530,8 +543,10 @@ class _ControlsState extends State<Controls> {
                 return IconButton(
                   icon: Icon(
                     isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.black,
                     size: 40,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   onPressed: () {
                     if (isPlaying) {
@@ -549,7 +564,9 @@ class _ControlsState extends State<Controls> {
               },
               icon: const Icon(Icons.skip_next),
               iconSize: 32.0,
-              color: Colors.black,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
             IconButton(
               onPressed: () {
@@ -558,7 +575,9 @@ class _ControlsState extends State<Controls> {
               },
               icon: const Icon(Icons.forward_10),
               iconSize: 32.0,
-              color: Colors.black,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
           ],
         ),
@@ -596,7 +615,7 @@ class ProgressBarWidget extends StatelessWidget {
             ),
             Text(
               "Time Remaining: ${remainingTime.inMinutes}:${(remainingTime.inSeconds % 60).toString().padLeft(2, '0')}",
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
+              style: const TextStyle(fontSize: 12),
             ),
           ],
         );

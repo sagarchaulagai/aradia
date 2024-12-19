@@ -1,4 +1,4 @@
-#Thu Dec 12 16:37:00 NPT 2024
+#Thu Dec 19 10:23:34 NPT 2024
 base.0=/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/intermediates/dex/release/minifyReleaseWithR8/classes.dex
 path.0=classes.dex
 renamed.0=classes.dex
