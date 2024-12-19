@@ -65,201 +65,208 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 150,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Search Audiobooks',
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: _getHintText(),
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                        border: InputBorder.none,
-                      ),
-                      onSubmitted: (value) {
-                        FocusScope.of(context).unfocus();
-                        final query = _buildSearchQuery(value);
-                        searchBloc.add(EventSearchIconClicked(query));
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      FocusScope.of(context).unfocus();
-                      final query = _buildSearchQuery(_searchController.text);
-                      searchBloc.add(EventSearchIconClicked(query));
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primaryColor.withOpacity(0.4),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+        title: const Text('Search Audiobooks'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildFilterChip(
-                  icon: Icons.book,
-                  label: 'Title',
-                  selected: searchFilter == 'title',
-                  onSelected: (selected) =>
-                      setState(() => searchFilter = 'title'),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: _getHintText(),
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                            ),
+                            border: InputBorder.none,
+                          ),
+                          onSubmitted: (value) {
+                            FocusScope.of(context).unfocus();
+                            final query = _buildSearchQuery(value);
+                            searchBloc.add(EventSearchIconClicked(query));
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                          final query =
+                              _buildSearchQuery(_searchController.text);
+                          searchBloc.add(EventSearchIconClicked(query));
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryColor.withOpacity(0.4),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.search,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  icon: Icons.person,
-                  label: 'Author',
-                  selected: searchFilter == 'author',
-                  onSelected: (selected) =>
-                      setState(() => searchFilter = 'author'),
-                ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  icon: Icons.category,
-                  label: 'Subjects',
-                  selected: searchFilter == 'subject',
-                  onSelected: (selected) =>
-                      setState(() => searchFilter = 'subject'),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildFilterChip(
+                      icon: Icons.book,
+                      label: 'Title',
+                      selected: searchFilter == 'title',
+                      onSelected: (selected) =>
+                          setState(() => searchFilter = 'title'),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(
+                      icon: Icons.person,
+                      label: 'Author',
+                      selected: searchFilter == 'author',
+                      onSelected: (selected) =>
+                          setState(() => searchFilter = 'author'),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(
+                      icon: Icons.category,
+                      label: 'Subjects',
+                      selected: searchFilter == 'subject',
+                      onSelected: (selected) =>
+                          setState(() => searchFilter = 'subject'),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-      body: BlocConsumer<SearchBloc, SearchState>(
-        listener: (context, state) {
-          if (state is SearchFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage),
-                backgroundColor: Colors.red.shade300,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          } else if (state is SearchSuccess) {
-            setState(() {
-              isLoadingMore = false;
-            });
-          }
-        },
-        builder: (context, state) {
-          if (state is SearchLoading && !isLoadingMore) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            );
-          } else if (state is SearchSuccess) {
-            return ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(8),
-              itemCount: state.audiobooks.length + 1,
-              itemBuilder: (context, index) {
-                if (index == state.audiobooks.length) {
-                  return isLoadingMore
-                      ? const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primaryColor,
+          ),
+          Expanded(
+            child: BlocConsumer<SearchBloc, SearchState>(
+              listener: (context, state) {
+                if (state is SearchFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage),
+                      backgroundColor: Colors.red.shade300,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                } else if (state is SearchSuccess) {
+                  setState(() {
+                    isLoadingMore = false;
+                  });
+                }
+              },
+              builder: (context, state) {
+                if (state is SearchLoading && !isLoadingMore) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  );
+                } else if (state is SearchSuccess) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: state.audiobooks.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == state.audiobooks.length) {
+                        return isLoadingMore
+                            ? const Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox();
+                      }
+                      final audiobook = state.audiobooks[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(8),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LowAndHighImage(
+                              lowQImage: audiobook.lowQCoverImage,
+                              highQImage: audiobook.lowQCoverImage,
+                              width: 60,
+                              height: 60,
                             ),
                           ),
-                        )
-                      : const SizedBox();
-                }
-                final audiobook = state.audiobooks[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 4,
-                    horizontal: 8,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(8),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LowAndHighImage(
-                        lowQImage: audiobook.lowQCoverImage,
-                        highQImage: audiobook.lowQCoverImage,
-                        width: 60,
-                        height: 60,
-                      ),
-                    ),
-                    title: Text(
-                      audiobook.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      audiobook.author ?? 'Unknown Author',
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
-                    onTap: () {
-                      context.push(
-                        '/audiobook/false',
-                        extra: audiobook,
+                          title: Text(
+                            audiobook.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            audiobook.author ?? 'Unknown Author',
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                          onTap: () {
+                            context.push(
+                              '/audiobook/false',
+                              extra: audiobook,
+                            );
+                          },
+                        ),
                       );
                     },
-                  ),
-                );
+                  );
+                }
+                return const SizedBox();
               },
-            );
-          }
-          return const SizedBox();
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

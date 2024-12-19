@@ -84,24 +84,14 @@ flutter run
 
 ---
 
-## 🚀 Quality Assurance
-
-Our app has been meticulously tested to ensure:
-
-- 🔧 Functional perfection
-- 🌈 Smooth, intuitive user experience
-- 📱 Broad device compatibility
-- 🌐 Seamless Android and iOS support
-
----
-
 ## 🌟 Upcoming Innovations
 
 - 🤝 Social Sharing Features
 - 🎨 Personalization Options
   - Intelligent Recommendation Engine
-  - Dark/Light Mode Themes
-- 📊 Enhanced User Analytics
+  - ~~Dark/Light Mode Themes~~
+  - Options to pause and resume download
+- 📊 History of audiobooks
 
 ---
 

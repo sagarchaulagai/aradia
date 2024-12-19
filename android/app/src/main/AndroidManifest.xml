@@ -20,8 +20,8 @@
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
         android:name="${applicationName}"
+        android:enableOnBackInvokedCallback="false"
         android:icon="@mipmap/ic_launcher">
-        
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:exported="true"

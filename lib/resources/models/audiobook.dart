@@ -58,7 +58,8 @@ class Audiobook {
         String creator = book["creator"].toString();
 
         if (!title.toLowerCase().contains("thumbs") &&
-            !creator.toLowerCase().contains("librivox")) {
+            !creator.toLowerCase().contains("librivox") &&
+            title != 'null') {
           audiobooks.add(Audiobook.fromJson(book));
         }
       }

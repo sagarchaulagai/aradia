@@ -49,7 +49,7 @@ class MyAudiobooks extends StatefulWidget {
     required this.fetchType,
     required this.scrollController,
     this.initialPage = 1,
-    this.rowsPerPage = 10,
+    this.rowsPerPage = 15,
   });
 
   @override
@@ -143,7 +143,8 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
                       if (index == audiobooks.length) {
                         return const Center(
                           child: CircularProgressIndicator(
-                              color: AppColors.primaryColor),
+                            color: AppColors.primaryColor,
+                          ),
                         );
                       }
                       return AudiobookItem(
