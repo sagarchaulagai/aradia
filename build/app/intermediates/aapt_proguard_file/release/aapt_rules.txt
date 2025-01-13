@@ -1,5 +1,6 @@
 -keep class android.app.Application { <init>(); }
 -keep class androidx.core.app.CoreComponentFactory { <init>(); }
+-keep class androidx.core.content.FileProvider { <init>(); }
 -keep class androidx.profileinstaller.ProfileInstallReceiver { <init>(); }
 -keep class androidx.room.MultiInstanceInvalidationService { <init>(); }
 -keep class androidx.startup.InitializationProvider { <init>(); }
@@ -16,6 +17,7 @@
 -keep class androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver { <init>(); }
 -keep class com.bbflight.background_downloader.NotificationReceiver { <init>(); }
 -keep class com.bbflight.background_downloader.OpenFileProvider { <init>(); }
+-keep class com.crazecoder.openfile.FileProvider { <init>(); }
 -keep class com.ryanheise.audioservice.AudioService { <init>(); }
 -keep class com.ryanheise.audioservice.AudioServiceActivity { <init>(); }
 -keep class com.ryanheise.audioservice.MediaButtonReceiver { <init>(); }

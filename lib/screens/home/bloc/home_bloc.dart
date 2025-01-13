@@ -21,6 +21,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchPopularThisWeekAudiobooks>((event, emit) async {
       await fetchPopularThisWeekAudiobooks(event, emit, event.page, event.rows);
     });
+
+    on<FetchAudiobooksByGenre>((event, emit) async {
+      await fetchAudiobooksByGenre(
+          event, emit, event.page, event.rows, event.genre, event.sortBy);
+    });
   }
 
   FutureOr<void> fetchLatestAudiobooks(
@@ -77,7 +82,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  FutureOr fetchPopularThisWeekAudiobooks(
+  FutureOr<void> fetchPopularThisWeekAudiobooks(
     FetchPopularThisWeekAudiobooks event,
     Emitter<HomeState> emit,
     int page,
@@ -104,6 +109,35 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       );
     } catch (e) {
       emit(PopularAudiobooksOfWeekFetchingFailedState());
+    }
+  }
+
+  FutureOr<void> fetchAudiobooksByGenre(
+    FetchAudiobooksByGenre event,
+    Emitter<HomeState> emit,
+    int page,
+    int rows,
+    String genre,
+    String sortBy,
+  ) async {
+    if (page == 1) {
+      emit(GenreAudiobooksFetchingLoadingState());
+    }
+    try {
+      var audiobooks =
+          await ArchiveApi().getAudiobooksByGenre(genre, page, rows, sortBy);
+      audiobooks.fold(
+        (left) {
+          if (page == 1) {
+            emit(GenreAudiobooksFetchingFailedState());
+          }
+        },
+        (right) {
+          emit(GenreAudiobooksFetchingSuccessState(right));
+        },
+      );
+    } catch (e) {
+      emit(GenreAudiobooksFetchingFailedState());
     }
   }
 }

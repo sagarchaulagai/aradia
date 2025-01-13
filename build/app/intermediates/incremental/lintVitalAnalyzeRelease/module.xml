@@ -1,14 +1,14 @@
 <lint-module
     format="1"
-    dir="/Users/srijana/MyProjects/FlutterProjects/aradia/android/app"
+    dir="C:\Projects\idkidk\aradia\android\app"
     name=":app"
     type="APP"
     maven="android:app:"
-    agpVersion="8.1.0"
-    buildFolder="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app"
-    bootClassPath="/Users/srijana/Library/Android/sdk/platforms/android-34/android.jar:/Users/srijana/Library/Android/sdk/build-tools/33.0.1/core-lambda-stubs.jar"
+    agpVersion="8.2.1"
+    buildFolder="C:\Projects\idkidk\aradia\build\app"
+    bootClassPath="C:\Users\Lenovo\AppData\Local\Android\sdk\platforms\android-35\android.jar;C:\Users\Lenovo\AppData\Local\Android\sdk\build-tools\34.0.0\core-lambda-stubs.jar"
     javaSourceLevel="1.8"
-    compileTarget="android-34">
+    compileTarget="android-35">
   <lintOptions
       abortOnError="true"
       absolutePaths="true"

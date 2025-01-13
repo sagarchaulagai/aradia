@@ -1,19 +1,11 @@
 {
     "logs": [
         {
-            "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-49:/values-v28/values-v28.xml",
+            "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-4:/values-v28/values-v28.xml",
             "map": [
                 {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/775e2e7e80062b43f35991cfad06422d/transformed/appcompat-1.1.0/res/values-v28/values-v28.xml",
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\72210dd3270328ca0bc227cbfe5f69d7\\transformed\\appcompat-1.6.1\\res\\values-v28\\values-v28.xml",
                     "from": {
-                        "startLines": "2,3,4,8",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,130,217,447",
-                        "endLines": "2,3,7,11",
-                        "endColumns": "74,86,12,12",
-                        "endOffsets": "125,212,442,684"
-                    },
-                    "to": {
                         "startLines": "2,3,4,8",
                         "startColumns": "4,4,4,4",
                         "startOffsets": "55,130,217,397",

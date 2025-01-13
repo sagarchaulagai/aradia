@@ -1,61 +1,44 @@
 {
     "logs": [
         {
-            "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-49:/values-hu/values-hu.xml",
+            "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-4:/values-hu/values-hu.xml",
             "map": [
                 {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/53b6024e74bcd0c7b6e88e07a9729178/transformed/browser-1.8.0/res/values-hu/values-hu.xml",
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\819347493c8be38b1136f1d56f0cddc7\\transformed\\jetified-media2-session-1.2.1\\res\\values-hu\\values-hu.xml",
                     "from": {
-                        "startLines": "2,3,4,5",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,151,252,367",
-                        "endColumns": "95,100,114,103",
-                        "endOffsets": "146,247,362,466"
+                        "startLines": "2,3,4,5,6",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "55,170,268,367,495",
+                        "endColumns": "114,97,98,127,128",
+                        "endOffsets": "165,263,362,490,619"
                     },
                     "to": {
-                        "startLines": "37,49,50,51",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "3652,4650,4751,4866",
-                        "endColumns": "95,100,114,103",
-                        "endOffsets": "3743,4746,4861,4965"
+                        "startLines": "38,53,54,57,58",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "3748,5052,5150,5470,5598",
+                        "endColumns": "114,97,98,127,128",
+                        "endOffsets": "3858,5145,5244,5593,5722"
                     }
                 },
                 {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/63470a72fc68b06bd4a4ce4f85807831/transformed/core-1.13.1/res/values-hu/values-hu.xml",
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\df9553f6058fb4c92c69483cb6c0a919\\transformed\\preference-1.2.1\\res\\values-hu\\values-hu.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,152,254,356,457,560,667,777",
-                        "endColumns": "96,101,101,100,102,106,109,100",
-                        "endOffsets": "147,249,351,452,555,662,772,873"
+                        "startLines": "2,3,4,5,6,7,8",
+                        "startColumns": "4,4,4,4,4,4,4",
+                        "startOffsets": "105,176,264,346,483,652,731",
+                        "endColumns": "70,87,81,136,168,78,75",
+                        "endOffsets": "171,259,341,478,647,726,802"
                     },
                     "to": {
-                        "startLines": "29,30,31,32,33,34,35,59",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "2859,2956,3058,3160,3261,3364,3471,5726",
-                        "endColumns": "96,101,101,100,102,106,109,100",
-                        "endOffsets": "2951,3053,3155,3256,3359,3466,3576,5822"
+                        "startLines": "36,48,52,55,60,61,62",
+                        "startColumns": "4,4,4,4,4,4,4",
+                        "startOffsets": "3581,4562,4970,5249,5828,5997,6076",
+                        "endColumns": "70,87,81,136,168,78,75",
+                        "endOffsets": "3647,4645,5047,5381,5992,6071,6147"
                     }
                 },
                 {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/775e2e7e80062b43f35991cfad06422d/transformed/appcompat-1.1.0/res/values-hu/values-hu.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,213,305,420,504,619,742,819,895,986,1078,1173,1267,1368,1461,1556,1651,1742,1833,1915,2025,2135,2235,2346,2455,2574,2756,2859",
-                        "endColumns": "107,91,114,83,114,122,76,75,90,91,94,93,100,92,94,94,90,90,81,109,109,99,110,108,118,181,102,82",
-                        "endOffsets": "208,300,415,499,614,737,814,890,981,1073,1168,1262,1363,1456,1551,1646,1737,1828,1910,2020,2130,2230,2341,2450,2569,2751,2854,2937"
-                    },
-                    "to": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,56",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,213,305,420,504,619,742,819,895,986,1078,1173,1267,1368,1461,1556,1651,1742,1833,1915,2025,2135,2235,2346,2455,2574,2756,5386",
-                        "endColumns": "107,91,114,83,114,122,76,75,90,91,94,93,100,92,94,94,90,90,81,109,109,99,110,108,118,181,102,82",
-                        "endOffsets": "208,300,415,499,614,737,814,890,981,1073,1168,1262,1363,1456,1551,1646,1737,1828,1910,2020,2130,2230,2341,2450,2569,2751,2854,5464"
-                    }
-                },
-                {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/7391949650c9c8ddedc6b82205e67888/transformed/jetified-exoplayer-core-2.18.7/res/values-hu/values-hu.xml",
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\6ab0e35c6939176f4d815a52ad391932\\transformed\\jetified-exoplayer-core-2.18.7\\res\\values-hu\\values-hu.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
                         "startColumns": "4,4,4,4,4,4,4,4,4",
@@ -72,37 +55,54 @@
                     }
                 },
                 {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/2ec9a4ce07826ad1dbc2a67076d53061/transformed/preference-1.2.1/res/values-hu/values-hu.xml",
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\d7033f61af7e34f09f78d29472de41a7\\transformed\\browser-1.8.0\\res\\values-hu\\values-hu.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8",
-                        "startColumns": "4,4,4,4,4,4,4",
-                        "startOffsets": "105,176,264,346,483,652,731",
-                        "endColumns": "70,87,81,136,168,78,75",
-                        "endOffsets": "171,259,341,478,647,726,802"
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,151,252,367",
+                        "endColumns": "95,100,114,103",
+                        "endOffsets": "146,247,362,466"
                     },
                     "to": {
-                        "startLines": "36,48,52,55,60,61,62",
-                        "startColumns": "4,4,4,4,4,4,4",
-                        "startOffsets": "3581,4562,4970,5249,5827,5996,6075",
-                        "endColumns": "70,87,81,136,168,78,75",
-                        "endOffsets": "3647,4645,5047,5381,5991,6070,6146"
+                        "startLines": "37,49,50,51",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "3652,4650,4751,4866",
+                        "endColumns": "95,100,114,103",
+                        "endOffsets": "3743,4746,4861,4965"
                     }
                 },
                 {
-                    "source": "/Users/srijana/.gradle/caches/transforms-3/3457e910486ef625d9806f03a2618f28/transformed/jetified-media2-session-1.2.1/res/values-hu/values-hu.xml",
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\72210dd3270328ca0bc227cbfe5f69d7\\transformed\\appcompat-1.6.1\\res\\values-hu\\values-hu.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6",
-                        "startColumns": "4,4,4,4,4",
-                        "startOffsets": "55,170,268,367,495",
-                        "endColumns": "114,97,98,127,128",
-                        "endOffsets": "165,263,362,490,619"
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,213,305,420,504,619,742,819,894,985,1078,1173,1267,1367,1460,1555,1650,1741,1832,1915,2025,2135,2235,2346,2455,2574,2756,2859",
+                        "endColumns": "107,91,114,83,114,122,76,74,90,92,94,93,99,92,94,94,90,90,82,109,109,99,110,108,118,181,102,83",
+                        "endOffsets": "208,300,415,499,614,737,814,889,980,1073,1168,1262,1362,1455,1550,1645,1736,1827,1910,2020,2130,2230,2341,2450,2569,2751,2854,2938"
                     },
                     "to": {
-                        "startLines": "38,53,54,57,58",
-                        "startColumns": "4,4,4,4,4",
-                        "startOffsets": "3748,5052,5150,5469,5597",
-                        "endColumns": "114,97,98,127,128",
-                        "endOffsets": "3858,5145,5244,5592,5721"
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,56",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,213,305,420,504,619,742,819,894,985,1078,1173,1267,1367,1460,1555,1650,1741,1832,1915,2025,2135,2235,2346,2455,2574,2756,5386",
+                        "endColumns": "107,91,114,83,114,122,76,74,90,92,94,93,99,92,94,94,90,90,82,109,109,99,110,108,118,181,102,83",
+                        "endOffsets": "208,300,415,499,614,737,814,889,980,1073,1168,1262,1362,1455,1550,1645,1736,1827,1910,2020,2130,2230,2341,2450,2569,2751,2854,5465"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Lenovo\\.gradle\\caches\\transforms-3\\1a5f73bbe0ebfd0d5692fd170760febe\\transformed\\core-1.13.1\\res\\values-hu\\values-hu.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,152,254,356,457,560,667,777",
+                        "endColumns": "96,101,101,100,102,106,109,100",
+                        "endOffsets": "147,249,351,452,555,662,772,873"
+                    },
+                    "to": {
+                        "startLines": "29,30,31,32,33,34,35,59",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "2859,2956,3058,3160,3261,3364,3471,5727",
+                        "endColumns": "96,101,101,100,102,106,109,100",
+                        "endOffsets": "2951,3053,3155,3256,3359,3466,3576,5823"
                     }
                 }
             ]

@@ -15,8 +15,8 @@ class Themes {
     tabBarTheme: TabBarTheme(
       labelColor: AppColors.primaryColor, // Color of the selected tab
       indicatorColor: AppColors.primaryColor,
-      unselectedLabelColor:
-          AppColors.iconColorLight.withOpacity(0.6), // Unselected tab color
+      unselectedLabelColor: AppColors.iconColorLight
+          .withValues(alpha: 0.6), // Unselected tab color
       indicator: UnderlineTabIndicator(
         borderSide: BorderSide(
           color: AppColors.primaryColor,
@@ -69,7 +69,7 @@ class Themes {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.cardColorLight,
-      hintStyle: TextStyle(color: AppColors.textColor.withOpacity(0.6)),
+      hintStyle: TextStyle(color: AppColors.textColor.withValues(alpha: 0.6)),
       labelStyle: const TextStyle(color: AppColors.textColor),
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: AppColors.dividerColorLight),
@@ -87,7 +87,7 @@ class Themes {
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.scaffoldBackgroundColor,
       selectedItemColor: AppColors.primaryColor,
-      unselectedItemColor: AppColors.iconColorLight.withOpacity(0.6),
+      unselectedItemColor: AppColors.iconColorLight.withValues(alpha: 0.6),
       showUnselectedLabels: true,
     ),
     listTileTheme: const ListTileThemeData(
@@ -130,7 +130,7 @@ class Themes {
       labelColor: AppColors.primaryColor, // Color of the selected tab
       indicatorColor: AppColors.primaryColor,
       unselectedLabelColor:
-          AppColors.iconColor.withOpacity(0.6), // Unselected tab color
+          AppColors.iconColor.withValues(alpha: 0.6), // Unselected tab color
       indicator: UnderlineTabIndicator(
         borderSide: BorderSide(
           color: AppColors.primaryColor,
@@ -179,7 +179,8 @@ class Themes {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.cardColor,
-      hintStyle: TextStyle(color: AppColors.darkTextColor.withOpacity(0.6)),
+      hintStyle:
+          TextStyle(color: AppColors.darkTextColor.withValues(alpha: 0.6)),
       labelStyle: const TextStyle(color: AppColors.darkTextColor),
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: AppColors.dividerColor),

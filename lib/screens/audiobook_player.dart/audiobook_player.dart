@@ -1,21 +1,16 @@
 import 'dart:async';
-
 import 'package:audio_service/audio_service.dart';
-import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:hive/hive.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
-import 'package:aradia/services/my_audio_handler.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
-
-import '../../resources/designs/app_colors.dart';
 import '../../services/audio_handler_provider.dart';
+import 'widgets/controls.dart';
+import 'widgets/progress_bar_widget.dart';
 
 class AudiobookPlayer extends StatefulWidget {
   const AudiobookPlayer({super.key});
@@ -54,9 +49,9 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     }
     audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
     int index = playingAudiobookDetailsBox.get('index');
-
+    int position = playingAudiobookDetailsBox.get('position');
     audioHandlerProvider.audioHandler
-        .initSongs(audiobookFiles, audiobook, index);
+        .initSongs(audiobookFiles, audiobook, index, position);
   }
 
   Future<void> startTimer(Duration duration) async {
@@ -249,8 +244,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                       boxShadow: [
                         BoxShadow(
                           color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.black.withOpacity(0.5)
-                              : Colors.grey.withOpacity(0.5),
+                              ? Colors.black.withValues(alpha: 0.5)
+                              : Colors.grey.withValues(alpha: 0.5),
                           spreadRadius: 3,
                           blurRadius: 10,
                           offset: const Offset(0, 5),
@@ -328,296 +323,6 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-}
-
-class Controls extends StatefulWidget {
-  final MyAudioHandler audioHandler;
-  final void Function(BuildContext) onTimerPressed;
-  final VoidCallback onCancelTimer;
-  final VoidCallback onToggleSkipSilence;
-  final bool isTimerActive;
-  final Duration? activeTimerDuration;
-  final bool skipSilence;
-
-  const Controls({
-    super.key,
-    required this.audioHandler,
-    required this.onTimerPressed,
-    required this.isTimerActive,
-    required this.activeTimerDuration,
-    required this.onCancelTimer,
-    required this.onToggleSkipSilence,
-    required this.skipSilence,
-  });
-
-  @override
-  State<Controls> createState() => _ControlsState();
-}
-
-class _ControlsState extends State<Controls> {
-  double _playbackSpeed = 1.0;
-  double _volume = 0.5;
-
-  void _changePlaybackSpeed() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Adjust Playback Speed',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Slider(
-                activeColor: const Color.fromRGBO(255, 165, 0, 1),
-                inactiveColor: Colors.grey[300],
-                thumbColor: const Color.fromRGBO(204, 119, 34, 1),
-                value: _playbackSpeed,
-                min: 0.5,
-                max: 2.0,
-                divisions: 6,
-                label: "${_playbackSpeed.toStringAsFixed(1)}x",
-                onChanged: (value) {
-                  setModalState(() {
-                    _playbackSpeed = value;
-                  });
-                  setState(() {
-                    widget.audioHandler.setSpeed(_playbackSpeed);
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _changeVolume() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Adjust Volume',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Slider(
-                activeColor: const Color.fromRGBO(255, 165, 0, 1),
-                inactiveColor: Colors.grey[300],
-                thumbColor: const Color.fromRGBO(204, 119, 34, 1),
-                value: _volume,
-                min: 0.0,
-                max: 1.0,
-                divisions: 10,
-                label: "${(_volume * 100).toInt()}%",
-                onChanged: (value) {
-                  setModalState(() {
-                    _volume = value;
-                  });
-                  setState(() {
-                    widget.audioHandler.setVolume(_volume);
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (widget.isTimerActive && widget.activeTimerDuration != null)
-          Text(
-            "Timer: ${widget.activeTimerDuration!.inMinutes}:${(widget.activeTimerDuration!.inSeconds % 60).toString().padLeft(2, '0')} remaining",
-            style: const TextStyle(fontSize: 12, color: Colors.deepOrange),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              onPressed: _changePlaybackSpeed,
-              icon: const Icon(Ionicons.speedometer),
-              tooltip: 'Adjust Playback Speed',
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? (_playbackSpeed != 1.0 ? Colors.deepOrange : Colors.white)
-                  : (_playbackSpeed != 1.0 ? Colors.deepOrange : Colors.black),
-            ),
-            IconButton(
-              onPressed: _changeVolume,
-              icon: const Icon(Ionicons.volume_high),
-              tooltip: 'Adjust Volume',
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-            IconButton(
-              onPressed: widget.onToggleSkipSilence,
-              icon: Icon(
-                widget.skipSilence ? Ionicons.flash : Ionicons.flash_outline,
-                color: widget.skipSilence
-                    ? Colors.deepOrange
-                    : (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black),
-              ),
-              tooltip:
-                  widget.skipSilence ? 'Skip Silence On' : 'Skip Silence Off',
-            ),
-            IconButton(
-              onPressed: widget.isTimerActive
-                  ? widget.onCancelTimer
-                  : () => widget.onTimerPressed(context),
-              icon: Icon(
-                widget.isTimerActive ? Ionicons.timer_outline : Ionicons.timer,
-                color: widget.isTimerActive
-                    ? Colors.deepOrange
-                    : (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black),
-              ),
-              tooltip: widget.isTimerActive
-                  ? 'Cancel Timer (${widget.activeTimerDuration?.inMinutes} min)'
-                  : 'Set Sleep Timer',
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
-              onPressed: () {
-                widget.audioHandler.seek(
-                    widget.audioHandler.position - const Duration(seconds: 10));
-              },
-              icon: const Icon(Icons.replay_10),
-              iconSize: 32.0,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-            IconButton(
-              onPressed: () {
-                widget.audioHandler.playPrevious();
-              },
-              icon: const Icon(Icons.skip_previous),
-              iconSize: 32.0,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-            StreamBuilder<PlaybackState>(
-              stream: widget.audioHandler.playbackState,
-              builder: (context, snapshot) {
-                final isPlaying = snapshot.data?.playing ?? false;
-                PlaybackState playbackState = snapshot.data!;
-                final processingState = playbackState.processingState;
-                if (processingState == AudioProcessingState.loading ||
-                    processingState == AudioProcessingState.buffering) {
-                  return const CircularProgressIndicator(
-                    color: AppColors.primaryColor,
-                    strokeWidth: 2,
-                  );
-                }
-                return IconButton(
-                  icon: Icon(
-                    isPlaying ? Icons.pause : Icons.play_arrow,
-                    size: 40,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                  onPressed: () {
-                    if (isPlaying) {
-                      widget.audioHandler.pause();
-                    } else {
-                      widget.audioHandler.play();
-                    }
-                  },
-                );
-              },
-            ),
-            IconButton(
-              onPressed: () {
-                widget.audioHandler.playNext();
-              },
-              icon: const Icon(Icons.skip_next),
-              iconSize: 32.0,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-            IconButton(
-              onPressed: () {
-                widget.audioHandler.seek(
-                    widget.audioHandler.position + const Duration(seconds: 10));
-              },
-              icon: const Icon(Icons.forward_10),
-              iconSize: 32.0,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class ProgressBarWidget extends StatelessWidget {
-  final MyAudioHandler audioHandler;
-  const ProgressBarWidget({super.key, required this.audioHandler});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<PositionData>(
-      stream: audioHandler.getPositionStream(),
-      builder: (context, snapshot) {
-        final positionData = snapshot.data;
-        final totalDuration = positionData?.duration ?? Duration.zero;
-        final remainingTime =
-            totalDuration - (positionData?.position ?? Duration.zero);
-        return Column(
-          children: [
-            ProgressBar(
-              progressBarColor: Colors.deepOrange[600],
-              thumbColor: Colors.deepOrange[800],
-              baseBarColor: Colors.deepOrange[100],
-              bufferedBarColor: Colors.deepOrange[200]!,
-              progress: positionData?.position ?? Duration.zero,
-              buffered: positionData?.bufferedPosition ?? Duration.zero,
-              total: totalDuration,
-              onSeek: (duration) {
-                audioHandler.seek(duration);
-              },
-            ),
-            Text(
-              "Time Remaining: ${remainingTime.inMinutes}:${(remainingTime.inSeconds % 60).toString().padLeft(2, '0')}",
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
         );
       },
     );

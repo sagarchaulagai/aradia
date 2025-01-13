@@ -1,5 +1,6 @@
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/designs/themes.dart';
+import 'package:aradia/screens/recommendation/recommendation_screen.dart';
 import 'package:aradia/screens/setting/settings.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +24,6 @@ import 'package:aradia/widgets/scaffold_with_nav_bar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
-
-import 'screens/genre/genre.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,14 +51,19 @@ void main() async {
   ]);
 }
 
+int isRecommendScreen = 0;
+
 Future<void> initHive() async {
   final documentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(documentDir.path);
   await Hive.openBox('favourite_audiobooks_box');
   await Hive.openBox('download_status_box');
   await Hive.openBox('playing_audiobook_details_box');
-  await Hive.openBox('history_audiobooks_index_box');
   await Hive.openBox('theme_mode_box');
+  await Hive.openBox('history_of_audiobook_box');
+  await Hive.openBox('recommened_audiobooks_box');
+  Box recommendedAudiobooksBox = Hive.box('recommened_audiobooks_box');
+  isRecommendScreen = recommendedAudiobooksBox.isEmpty ? 1 : 0;
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -67,14 +71,20 @@ final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/home',
+  initialLocation: isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
   routes: [
+    GoRoute(
+      path: '/recommendation_screen',
+      name: 'recommendation_screen',
+      builder: ((context, state) {
+        return const RecommendationScreen();
+      }),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell);
       },
       branches: [
-        // for the home tab
         StatefulShellBranch(
           navigatorKey: _sectionNavigatorKey,
           routes: [
@@ -92,6 +102,16 @@ final GoRouter router = GoRouter(
               builder: (context, state) {
                 return const Settings();
               },
+            ),
+
+            GoRoute(
+              path: '/genre_audiobooks',
+              name: 'genre_audiobooks',
+              builder: ((context, state) {
+                return GenreAudiobooksScreen(
+                  genre: state.extra as String,
+                );
+              }),
             ),
 
             // for the audiobook details
@@ -139,28 +159,6 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-
-        // for the genre tab
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/genre',
-            name: 'genre',
-            builder: ((context, state) {
-              return const Genre();
-            }),
-          ),
-          // for the genre audiobooks
-          GoRoute(
-            path: '/genre_audiobooks',
-            name: 'genre_audiobooks',
-            builder: ((context, state) {
-              return GenreAudiobooksScreen(
-                genre: state.extra as String,
-              );
-            }),
-          ),
-        ]),
-
         // for the download tab
         StatefulShellBranch(routes: [
           GoRoute(

@@ -29,3 +29,17 @@ class FetchPopularThisWeekAudiobooks extends HomeEvent {
     this.rows,
   );
 }
+
+// New event for fetching audiobooks by genre
+class FetchAudiobooksByGenre extends HomeEvent {
+  final int page;
+  final int rows;
+  final String genre;
+  final String sortBy;
+  FetchAudiobooksByGenre(
+    this.page,
+    this.rows,
+    this.genre,
+    this.sortBy,
+  );
+}

@@ -2,20 +2,20 @@
     name="release"
     package="com.aradia.audiobook"
     minSdkVersion="21"
-    targetSdkVersion="34"
+    targetSdkVersion="35"
     shrinking="true"
-    mergedManifest="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/intermediates/merged_manifest/release/AndroidManifest.xml"
-    proguardFiles="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/intermediates/default_proguard_files/global/proguard-android.txt-8.1.0:/Users/srijana/Development/flutter/packages/flutter_tools/gradle/flutter_proguard_rules.pro:proguard-rules.pro"
-    partialResultsDir="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/intermediates/lint_vital_partial_results/release/out"
-    desugaredMethodsFiles="/Users/srijana/.gradle/caches/transforms-3/722389f41f1b6374c1be7a6b40b8c3f9/transformed/D8BackportedDesugaredMethods.txt">
+    mergedManifest="C:\Projects\idkidk\aradia\build\app\intermediates\merged_manifest\release\AndroidManifest.xml"
+    proguardFiles="C:\Projects\idkidk\aradia\build\app\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.2.1;C:\Development\flutter\packages\flutter_tools\gradle\flutter_proguard_rules.pro;proguard-rules.pro"
+    partialResultsDir="C:\Projects\idkidk\aradia\build\app\intermediates\lint_vital_partial_results\release\out"
+    desugaredMethodsFiles="C:\Users\Lenovo\.gradle\caches\transforms-3\57d2179a8a332ef5a12881b535a33d76\transformed\D8BackportedDesugaredMethods.txt">
   <buildFeatures
       namespacing="REQUIRED"/>
   <sourceProviders>
     <sourceProvider
-        manifests="src/main/AndroidManifest.xml"
-        javaDirectories="src/main/java:src/release/java:src/main/kotlin:src/release/kotlin"
-        resDirectories="src/main/res:src/release/res"
-        assetsDirectories="src/main/assets:src/release/assets"/>
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\release\java;src\main\kotlin;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"/>
   </sourceProviders>
   <testSourceProviders>
   </testSourceProviders>
@@ -26,11 +26,12 @@
         name="applicationName"
         value="android.app.Application" />
   </manifestPlaceholders>
-  <mainArtifact
-      classOutputs="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/intermediates/javac/release/classes:/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/tmp/kotlin-classes/release:/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/kotlinToolingMetadata:/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/R.jar"
+  <artifact
+      classOutputs="C:\Projects\idkidk\aradia\build\app\intermediates\javac\release\classes;C:\Projects\idkidk\aradia\build\app\tmp\kotlin-classes\release;C:\Projects\idkidk\aradia\build\app\kotlinToolingMetadata;C:\Projects\idkidk\aradia\build\app\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\R.jar"
+      type="MAIN"
       applicationId="com.aradia.audiobook"
-      generatedSourceFolders="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/generated/ap_generated_sources/release/out"
-      generatedResourceFolders="/Users/srijana/MyProjects/FlutterProjects/aradia/build/app/generated/res/resValues/release"
-      desugaredMethodsFiles="/Users/srijana/.gradle/caches/transforms-3/722389f41f1b6374c1be7a6b40b8c3f9/transformed/D8BackportedDesugaredMethods.txt">
-  </mainArtifact>
+      generatedSourceFolders="C:\Projects\idkidk\aradia\build\app\generated\ap_generated_sources\release\out"
+      generatedResourceFolders="C:\Projects\idkidk\aradia\build\app\generated\res\resValues\release"
+      desugaredMethodsFiles="C:\Users\Lenovo\.gradle\caches\transforms-3\57d2179a8a332ef5a12881b535a33d76\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
 </variant>

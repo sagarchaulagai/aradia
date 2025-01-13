@@ -42,4 +42,5 @@ class AppColors {
       Color.fromRGBO(200, 200, 200, 1); // #C8C8C8
   static const Color listTileBackgroundLight = Color(0xFFF0F2F5); // Tile color
   static const Color subtitleTextColorLight = Color(0xFF757575); // Subtle gray
+  static const Color lightOrange = Color.fromRGBO(204, 119, 34, 0.1);
 }

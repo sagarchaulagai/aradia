@@ -51,10 +51,6 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                   label: '',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.library_books),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
                   icon: Icon(Ionicons.download),
                   label: '',
                 ),
@@ -85,10 +81,6 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.search),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.library_books),
                   label: '',
                 ),
                 BottomNavigationBarItem(

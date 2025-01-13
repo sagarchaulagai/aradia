@@ -11,7 +11,7 @@ class AudiobookFile {
   final String? title;
   final String? name;
   final String? url;
-  final double? length;
+  final double? length; // second unit
   final int? track;
   final int? size;
   final String? highQCoverImage;
