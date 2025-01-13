@@ -1,8 +1,14 @@
-import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 
+// THIS CLASS IS NOT USED ANYMORE, BUT IT IS KEPT FOR REFERENCE.
+// THE FUNCTIONALITY OF THIS CLASS IS NOW IN THE HOME SCREEN
+// AND THE GENRE AUDIOBOOKS SCREEN
+// MIGHT BE USED IN THE FUTURE FOR A DIFFERENT FUNCTIONALITY OR ETC IDK
+// IF YOU ARE CONTRIBUTING TO THIS PROJECT, YOU CAN DELETE THIS FILE
+
+@deprecated
 class Genre extends StatefulWidget {
   const Genre({super.key});
 

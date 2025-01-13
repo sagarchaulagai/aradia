@@ -1,27 +1,28 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:rxdart_ext/utils.dart';
+import 'package:aradia/resources/models/history_of_audiobook.dart';
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
   final _playlist = ConcatenatingAudioSource(children: []);
   Box<dynamic> playingAudiobookDetailsBox =
       Hive.box('playing_audiobook_details_box');
-
   ConcatenatingAudioSource get playlist => _playlist;
+  final HistoryOfAudiobook historyOfAudiobook = HistoryOfAudiobook();
+  Timer? _positionUpdateTimer;
 
   void initSongs(List<AudiobookFile> playlist, Audiobook audiobook,
-      int initialIndex) async {
-    // we need to clear the playlist before adding new items
+      int initialIndex, int positionInMilliseconds) async {
     _playlist.clear();
-    // also change the queue
     queue.add([]);
-    // also change the mediaItem
     mediaItem.add(null);
-    // also change the playbackState
+    // clear timer for the previous audiobook so next audiobook can start fresh
+    _positionUpdateTimer?.cancel();
     playbackState.add(playbackState.value.copyWith(
       controls: [],
       systemActions: const {},
@@ -31,36 +32,38 @@ class MyAudioHandler extends BaseAudioHandler {
       speed: 1.0,
       queueIndex: null,
     ));
-    // then we can add the new items
     final mediaItems = parseMediaItems(playlist, audiobook);
     addQueueItems(mediaItems);
     _listenForCurrentSongIndexChanges();
+    await _player.setAudioSource(
+      _playlist,
+      initialIndex: initialIndex,
+      initialPosition: Duration(
+        milliseconds: positionInMilliseconds,
+      ),
+    );
     _player.playbackEventStream.listen(_broadcastState);
-    await _player.setAudioSource(_playlist, initialIndex: initialIndex);
     _player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
         _player.seekToNext();
       }
     });
+    historyOfAudiobook.addToHistory(
+        audiobook, playlist, initialIndex, positionInMilliseconds);
+    _startPositionUpdateTimer(audiobook.id);
   }
 
   List<MediaItem> parseMediaItems(
-    List<AudiobookFile> playlist,
-    Audiobook audiobook,
-  ) {
+      List<AudiobookFile> playlist, Audiobook audiobook) {
     return playlist
-        .map(
-          (song) => MediaItem(
-            id: song.track.toString(),
-            album: audiobook.title,
-            title: song.title ?? '',
-            artist: audiobook.author ?? 'Librivox',
-            artUri: Uri.parse(song.highQCoverImage ?? ''),
-            extras: {
-              'url': song.url,
-            },
-          ),
-        )
+        .map((song) => MediaItem(
+              id: song.track.toString(),
+              album: audiobook.title,
+              title: song.title ?? '',
+              artist: audiobook.author ?? 'Librivox',
+              artUri: Uri.parse(song.highQCoverImage ?? ''),
+              extras: {'url': song.url, 'audiobook_id': audiobook.id},
+            ))
         .toList();
   }
 
@@ -70,9 +73,7 @@ class MyAudioHandler extends BaseAudioHandler {
         .map((item) => AudioSource.uri(Uri.parse(item.extras!['url'])))
         .toList();
     _playlist.addAll(audioSource);
-
-    final newQueue = queue.value..addAll(mediaItems);
-    queue.add(newQueue);
+    queue.add(queue.value..addAll(mediaItems));
   }
 
   void _listenForCurrentSongIndexChanges() {
@@ -81,42 +82,58 @@ class MyAudioHandler extends BaseAudioHandler {
       if (index != null && index < playList.length) {
         mediaItem.add(playList[index]);
         playingAudiobookDetailsBox.put('index', index);
+        final currentMediaItem = playList[index];
+        final audiobookId = currentMediaItem.extras!['audiobook_id'];
+        historyOfAudiobook.updateAudiobookPosition(
+            audiobookId, index, _player.position.inMilliseconds);
       }
     });
   }
 
   void _broadcastState(PlaybackEvent event) {
-    playbackState.add(
-      playbackState.value.copyWith(
-        controls: [
-          MediaControl.skipToPrevious,
-          if (_player.playing) MediaControl.pause else MediaControl.play,
-          MediaControl.stop,
-          MediaControl.skipToNext,
-        ],
-        systemActions: const {
-          MediaAction.seek,
-          MediaAction.seekForward,
-          MediaAction.seekBackward,
-        },
-        processingState: const {
-          ProcessingState.idle: AudioProcessingState.idle,
-          ProcessingState.loading: AudioProcessingState.loading,
-          ProcessingState.buffering: AudioProcessingState.buffering,
-          ProcessingState.ready: AudioProcessingState.ready,
-          ProcessingState.completed: AudioProcessingState.completed,
-        }[_player.processingState]!,
-        playing: _player.playing,
-        updatePosition: event.updatePosition,
-        bufferedPosition:
-            Duration(milliseconds: event.bufferedPosition.inMilliseconds),
-        speed: _player.speed,
-        queueIndex: event.currentIndex,
-      ),
-    );
+    playbackState.add(playbackState.value.copyWith(
+      controls: [
+        MediaControl.skipToPrevious,
+        if (_player.playing) MediaControl.pause else MediaControl.play,
+        MediaControl.stop,
+        MediaControl.skipToNext,
+      ],
+      systemActions: const {
+        MediaAction.seek,
+        MediaAction.seekForward,
+        MediaAction.seekBackward,
+      },
+      processingState: const {
+        ProcessingState.idle: AudioProcessingState.idle,
+        ProcessingState.loading: AudioProcessingState.loading,
+        ProcessingState.buffering: AudioProcessingState.buffering,
+        ProcessingState.ready: AudioProcessingState.ready,
+        ProcessingState.completed: AudioProcessingState.completed,
+      }[_player.processingState]!,
+      playing: _player.playing,
+      updatePosition: event.updatePosition,
+      bufferedPosition:
+          Duration(milliseconds: event.bufferedPosition.inMilliseconds),
+      speed: _player.speed,
+      queueIndex: event.currentIndex,
+    ));
   }
 
-  // used for rx dart for smooth playback
+  // Here, in every 10 the position of the audiobook is updated in the history box
+  // we can add a option in setting so user can put their own custom time later , TODO
+  void _startPositionUpdateTimer(String audiobookId) {
+    _positionUpdateTimer?.cancel();
+    _positionUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+      final currentIndex = _player.currentIndex;
+      if (currentIndex != null) {
+        historyOfAudiobook.updateAudiobookPosition(
+            audiobookId, currentIndex, _player.position.inMilliseconds);
+        playingAudiobookDetailsBox.put(
+            'position', _player.position.inMilliseconds);
+        print('Position updated: $_player.position.inMilliseconds ms');
+      }
+    });
+  }
 
   Stream<PositionData> getPositionStream() {
     return Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
@@ -125,19 +142,16 @@ class MyAudioHandler extends BaseAudioHandler {
       _player.durationStream,
       (position, bufferedPosition, duration) {
         return PositionData(
-          position,
-          bufferedPosition,
-          duration ?? Duration.zero,
-        );
+            position, bufferedPosition, duration ?? Duration.zero);
       },
     );
   }
 
-  void dispose() {
-    _player.dispose();
+  String getCurrentAudiobookId() {
+    final currentMediaItem = mediaItem.value;
+    return currentMediaItem?.extras!['audiobook_id'];
   }
 
-  // test
   List<AudioSource> getAudioSourcesFromPlaylist() {
     return _playlist.children;
   }
@@ -186,10 +200,8 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.setSkipSilenceEnabled(skipSilence);
   }
 
-  // get position
   Duration get position => _player.position;
 
-  // play previous queue item if current queue item is not the first one
   void playPrevious() {
     if (_player.currentIndex != 0) {
       _player.seekToPrevious();
@@ -204,11 +216,7 @@ class MyAudioHandler extends BaseAudioHandler {
 }
 
 class PositionData {
-  const PositionData(
-    this.position,
-    this.bufferedPosition,
-    this.duration,
-  );
+  const PositionData(this.position, this.bufferedPosition, this.duration);
   final Duration position;
   final Duration bufferedPosition;
   final Duration duration;

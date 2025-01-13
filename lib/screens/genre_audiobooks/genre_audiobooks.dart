@@ -184,7 +184,6 @@ class _AudiobookListViewState extends State<_AudiobookListView>
           return AudiobookItem(
             audiobook: audiobooks[index],
             width: 175,
-            height: 250,
           );
         },
       );

@@ -82,7 +82,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                     borderRadius: BorderRadius.circular(25),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.15),
+                        color: Colors.grey.withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -132,7 +132,8 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryColor.withOpacity(0.4),
+                                color: AppColors.primaryColor
+                                    .withValues(alpha: 0.4),
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),

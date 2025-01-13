@@ -56,8 +56,10 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
       int index = widget.playingAudiobookDetailsBox.get('index');
       Audiobook audiobook =
           Audiobook.fromMap(widget.playingAudiobookDetailsBox.get('audiobook'));
+
+      int position = widget.playingAudiobookDetailsBox.get('position');
       audioHandlerProvider.audioHandler
-          .initSongs(audiobookFiles, audiobook, index);
+          .initSongs(audiobookFiles, audiobook, index, position);
       idk++;
     }
   }
@@ -68,7 +70,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
       height: 4,
       margin: const EdgeInsets.only(top: 8, bottom: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(2),
       ),
     );

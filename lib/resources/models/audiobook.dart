@@ -39,7 +39,10 @@ class Audiobook {
         downloads = jsonAudiobook["downloads"] ?? 0,
         subject = jsonAudiobook["subject"] is String
             ? [jsonAudiobook["subject"]]
-            : jsonAudiobook["subject"],
+            : (jsonAudiobook["subject"] as List)
+                .where((s) => !["librivox", "audiobooks", "audiobook"]
+                    .contains(s.toLowerCase()))
+                .toList(),
         size = jsonAudiobook["item_size"],
         rating = jsonAudiobook["avg_rating"] != null
             ? double.parse(jsonAudiobook["avg_rating"].toString())

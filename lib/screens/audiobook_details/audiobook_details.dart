@@ -16,6 +16,8 @@ import 'package:aradia/widgets/rating_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
 
+import '../../resources/models/history_of_audiobook.dart';
+
 class AudiobookDetails extends StatefulWidget {
   final Audiobook audiobook;
   final bool isOffline;
@@ -32,9 +34,10 @@ class AudiobookDetails extends StatefulWidget {
 class _AudiobookDetailsState extends State<AudiobookDetails> {
   late AudiobookDetailsBloc _audiobookDetailsBloc;
   late Box<dynamic> playingAudiobookDetailsBox;
-  late Box<dynamic> historyAudiobookIndexBox;
   late WeSlideController _weSlideController;
   late AudioHandlerProvider audioHandlerProvider;
+
+  late HistoryOfAudiobook historyOfAudiobook;
   @override
   void initState() {
     _audiobookDetailsBloc = BlocProvider.of<AudiobookDetailsBloc>(context);
@@ -42,6 +45,9 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
     _audiobookDetailsBloc
         .add(FetchAudiobookDetails(widget.audiobook.id, widget.isOffline));
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
+
+    historyOfAudiobook = HistoryOfAudiobook();
+
     super.initState();
   }
 
@@ -186,7 +192,7 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                             Container(
                               height: 40,
                               width: 1,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                             ),
                             // Imporved by Nadia
@@ -204,11 +210,48 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                                         state.audiobookFiles
                                             .map((e) => e.toMap())
                                             .toList());
-                                    playingAudiobookDetailsBox.put('index', 0);
-                                    audioHandlerProvider.audioHandler.initSongs(
+
+                                    if (historyOfAudiobook.isAudiobookInHistory(
+                                        widget.audiobook.id)) {
+                                      audioHandlerProvider.audioHandler
+                                          .initSongs(
                                         state.audiobookFiles,
                                         widget.audiobook,
-                                        0);
+                                        historyOfAudiobook
+                                            .getHistoryOfAudiobookItem(
+                                                widget.audiobook.id)
+                                            .index,
+                                        historyOfAudiobook
+                                            .getHistoryOfAudiobookItem(
+                                                widget.audiobook.id)
+                                            .position,
+                                      );
+                                      playingAudiobookDetailsBox.put(
+                                          'index',
+                                          historyOfAudiobook
+                                              .getHistoryOfAudiobookItem(
+                                                  widget.audiobook.id)
+                                              .index);
+                                      playingAudiobookDetailsBox.put(
+                                          'position',
+                                          historyOfAudiobook
+                                              .getHistoryOfAudiobookItem(
+                                                  widget.audiobook.id)
+                                              .position);
+                                    } else {
+                                      playingAudiobookDetailsBox.put(
+                                          'index', 0);
+                                      playingAudiobookDetailsBox.put(
+                                          'position', 0);
+                                      audioHandlerProvider.audioHandler
+                                          .initSongs(
+                                        state.audiobookFiles,
+                                        widget.audiobook,
+                                        0,
+                                        0,
+                                      );
+                                    }
+
                                     audioHandlerProvider.audioHandler.play();
                                     _weSlideController.show();
                                   },
@@ -270,9 +313,11 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                                                 .toList());
                                         playingAudiobookDetailsBox.put(
                                             'index', index);
+                                        playingAudiobookDetailsBox.put(
+                                            'position', 0);
                                         audioHandlerProvider.audioHandler
                                             .initSongs(state.audiobookFiles,
-                                                widget.audiobook, index);
+                                                widget.audiobook, index, 0);
                                         audioHandlerProvider.audioHandler
                                             .play();
                                         _weSlideController.show();

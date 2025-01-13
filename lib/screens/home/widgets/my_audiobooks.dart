@@ -10,6 +10,7 @@ enum AudiobooksFetchType {
   latest,
   popular,
   popularOfWeek,
+  genre,
 }
 
 final fetchTypeMapping = {
@@ -32,14 +33,25 @@ final fetchTypeMapping = {
     'loadingState': PopularAudiobooksOfWeekFetchingLoadingState,
     'failedState': PopularAudiobooksOfWeekFetchingFailedState,
   },
+  // Add fetchType for genres
+  AudiobooksFetchType.genre: {
+    'fetchEvent': (int page, int rows, String genre, String sortBy) =>
+        FetchAudiobooksByGenre(page, rows, genre, sortBy),
+    'successState': GenreAudiobooksFetchingSuccessState,
+    'loadingState': GenreAudiobooksFetchingLoadingState,
+    'failedState': GenreAudiobooksFetchingFailedState,
+  },
 };
 
 class MyAudiobooks extends StatefulWidget {
   final String title;
   final HomeBloc homeBloc;
   final AudiobooksFetchType fetchType;
+  final String? genre;
+  final String? sortBy;
   final int initialPage;
   final int rowsPerPage;
+
   final ScrollController scrollController;
 
   const MyAudiobooks({
@@ -47,6 +59,8 @@ class MyAudiobooks extends StatefulWidget {
     required this.title,
     required this.homeBloc,
     required this.fetchType,
+    this.genre,
+    this.sortBy,
     required this.scrollController,
     this.initialPage = 1,
     this.rowsPerPage = 15,
@@ -70,7 +84,7 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
       if (widget.scrollController.position.pixels ==
           widget.scrollController.position.maxScrollExtent) {
         _currentPage++;
-        _fetchData(); // we fetched more data when we reached the end
+        _fetchData();
       }
     });
   }
@@ -78,7 +92,17 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
   void _fetchData() {
     final fetchEvent = fetchTypeMapping[widget.fetchType]?['fetchEvent'];
     if (fetchEvent != null && fetchEvent is Function) {
-      widget.homeBloc.add(fetchEvent(_currentPage, widget.rowsPerPage));
+      if (widget.fetchType == AudiobooksFetchType.genre &&
+          widget.genre != null) {
+        widget.homeBloc.add(fetchEvent(
+          _currentPage,
+          widget.rowsPerPage,
+          widget.genre!,
+          widget.sortBy ?? 'week',
+        ));
+      } else {
+        widget.homeBloc.add(fetchEvent(_currentPage, widget.rowsPerPage));
+      }
     } else {
       print('fetchEvent is not a function');
     }
@@ -137,8 +161,7 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
                   return ListView.builder(
                     controller: widget.scrollController,
                     scrollDirection: Axis.horizontal,
-                    itemCount:
-                        audiobooks.length + 1, // Extra for loading indicator
+                    itemCount: audiobooks.length + 1,
                     itemBuilder: (context, index) {
                       if (index == audiobooks.length) {
                         return const Center(
