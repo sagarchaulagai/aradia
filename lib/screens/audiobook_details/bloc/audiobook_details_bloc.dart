@@ -20,7 +20,7 @@ class AudiobookDetailsBloc
           event,
           emit,
           event.audiobookId,
-          event.isOffline,
+          event.isDownload,
         ));
     on<FavouriteIconButtonClicked>(favouriteIconButtonClicked);
 
@@ -38,12 +38,12 @@ class AudiobookDetailsBloc
     FetchAudiobookDetails event,
     Emitter<AudiobookDetailsState> emit,
     String id,
-    bool isOffline,
+    bool isDownload,
   ) async {
     emit(AudiobookDetailsLoading());
     Either<String, List<AudiobookFile>> audiobookFiles;
     try {
-      if (isOffline) {
+      if (isDownload) {
         print('fetching audiobook files from downloaded files');
         audiobookFiles = await AudiobookFile.fromDownloadedFiles(id);
       } else {
