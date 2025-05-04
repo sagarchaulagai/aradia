@@ -117,14 +117,19 @@ final GoRouter router = GoRouter(
 
             // for the audiobook details
             GoRoute(
-              path: '/audiobook/:isDownload',
-              name: 'audiobook',
-              builder: ((context, state) {
+              path: '/audiobook-details',
+              builder: (context, state) {
+                final extras = state.extra as Map<String, dynamic>;
+                final audiobook = extras['audiobook'] as Audiobook;
+                final isDownload = extras['isDownload'] as bool;
+                final isYoutube = extras['isYoutube'] as bool;
+
                 return AudiobookDetails(
-                  audiobook: state.extra as Audiobook,
-                  isDownload: state.pathParameters['isDownload'] == 'true',
+                  audiobook: audiobook,
+                  isDownload: isDownload,
+                  isYoutube: isYoutube,
                 );
-              }),
+              },
             ),
             // for the audiobook player
             GoRoute(

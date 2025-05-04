@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fpdart/fpdart.dart';
@@ -17,20 +18,82 @@ class AudiobookFile {
   final String? highQCoverImage;
 
   AudiobookFile.fromJson(Map json)
-      : identifier = json["identifier"],
-        title = json["title"],
-        name = json["name"],
-        track = int.parse(json["track"].toString().split("/")[0]),
-        size = int.parse(json["size"]),
-        length = double.parse(json["length"]),
+      : identifier = json["identifier"]?.toString(),
+        title = json["title"]?.toString(),
+        name = json["name"]?.toString(),
+        track = _parseTrack(json["track"]),
+        size = _parseIntSafely(json["size"]),
+        length = _parseDoubleSafely(json["length"]),
         url = "$_base/${json['identifier']}/${json['name']}",
         highQCoverImage =
             "$_base/${json['identifier']}/${json["highQCoverImage"]}";
 
+  AudiobookFile.fromYoutubeJson(Map json)
+      : identifier = json["identifier"]?.toString(),
+        title = json["title"]?.toString(),
+        name = json["name"]?.toString(),
+        track = _parseTrack(json["track"]),
+        size = _parseIntSafely(json["size"]),
+        length = _parseDoubleSafely(json["length"]),
+        url = json["url"]?.toString(),
+        highQCoverImage = json["highQCoverImage"]?.toString();
+
+  static int _parseTrack(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+
+    try {
+      final trackStr = value.toString();
+      return int.parse(trackStr.split("/")[0]);
+    } catch (e) {
+      print('Error parsing track value: $value, error: $e');
+      return 0;
+    }
+  }
+
+  static int _parseIntSafely(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+
+    try {
+      return int.parse(value.toString());
+    } catch (e) {
+      print('Error parsing int value: $value, error: $e');
+      return 0;
+    }
+  }
+
+  static double _parseDoubleSafely(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+
+    try {
+      return double.parse(value.toString());
+    } catch (e) {
+      print('Error parsing double value: $value, error: $e');
+      return 0.0;
+    }
+  }
+
   static List<AudiobookFile> fromJsonArray(List jsonFiles) {
     List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
-    for (var jsonFile in jsonFiles) {
-      audiobookFiles.add(AudiobookFile.fromJson(jsonFile));
+    for (var i = 0; i < jsonFiles.length; i++) {
+      try {
+        var jsonFile = jsonFiles[i];
+        audiobookFiles.add(AudiobookFile.fromJson(jsonFile));
+      } catch (e) {
+        print('Error parsing file at index $i: $e');
+        print('Data: ${jsonFiles[i]}');
+      }
+    }
+    return audiobookFiles;
+  }
+
+  static List<AudiobookFile> fromYoutubeJsonArray(List jsonFiles) {
+    List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
+    for (var i = 0; i < jsonFiles.length; i++) {
+      audiobookFiles.add(AudiobookFile.fromYoutubeJson(jsonFiles[i]));
     }
     return audiobookFiles;
   }
@@ -88,6 +151,44 @@ class AudiobookFile {
         }
       }
 
+      return Right(audiobookFiles);
+    } catch (e) {
+      print('Unexpected error: $e');
+      return Left('Unexpected error: $e');
+    }
+  }
+
+  static Future<Either<String, List<AudiobookFile>>> fromYoutubeFiles(
+      String audiobookId) async {
+    try {
+      final appDir = await getExternalStorageDirectory();
+      final downloadDir = Directory('${appDir?.path}/youtube/$audiobookId');
+      print('Reading from path: ${downloadDir.path}/files.txt');
+
+      final stringContent =
+          await File('${downloadDir.path}/files.txt').readAsString();
+      print('File content length: ${stringContent.length}');
+      print(
+          'First 100 chars: ${stringContent.substring(0, stringContent.length > 100 ? 100 : stringContent.length)}');
+
+      final jsonContent = jsonDecode(stringContent);
+      print('JSON type: ${jsonContent.runtimeType}');
+
+      if (jsonContent is List) {
+        print('JSON list length: ${jsonContent.length}');
+        if (jsonContent.isNotEmpty) {
+          print('First item sample fields:');
+          final item = jsonContent[0];
+          if (item is Map) {
+            item.forEach((key, value) {
+              print('  $key: $value (${value.runtimeType})');
+            });
+          }
+        }
+      }
+
+      final List<AudiobookFile> audiobookFiles =
+          AudiobookFile.fromYoutubeJsonArray(jsonContent);
       return Right(audiobookFiles);
     } catch (e) {
       print('Unexpected error: $e');

@@ -21,6 +21,7 @@ class AudiobookDetailsBloc
           emit,
           event.audiobookId,
           event.isDownload,
+          event.isYoutube,
         ));
     on<FavouriteIconButtonClicked>(favouriteIconButtonClicked);
 
@@ -39,6 +40,7 @@ class AudiobookDetailsBloc
     Emitter<AudiobookDetailsState> emit,
     String id,
     bool isDownload,
+    bool isYoutube,
   ) async {
     emit(AudiobookDetailsLoading());
     Either<String, List<AudiobookFile>> audiobookFiles;
@@ -46,6 +48,9 @@ class AudiobookDetailsBloc
       if (isDownload) {
         print('fetching audiobook files from downloaded files');
         audiobookFiles = await AudiobookFile.fromDownloadedFiles(id);
+      } else if (isYoutube) {
+        print('fetching audiobook files from imported files');
+        audiobookFiles = await AudiobookFile.fromYoutubeFiles(id);
       } else {
         print('fetching audiobook files from api');
         audiobookFiles = await ArchiveApi().getAudiobookFiles(id);

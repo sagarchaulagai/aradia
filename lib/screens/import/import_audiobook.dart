@@ -86,15 +86,13 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
       String playlistTitle = '';
       String playlistAuthor = '';
       String playlistDescription = '';
-      String playlistThumbnail = '';
 
       if (url.contains('playlist')) {
         final playlist = await yt.playlists.get(url);
         playlistId = playlist.id.value;
         playlistTitle = playlist.title;
         playlistAuthor = playlist.author;
-        playlistDescription = playlist.description ?? '';
-        playlistThumbnail = playlist.thumbnails.highResUrl;
+        playlistDescription = playlist.description;
 
         final videos = await yt.playlists.getVideos(playlist.id).toList();
         for (var video in videos) {
@@ -116,7 +114,6 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
         playlistTitle = video.title;
         playlistAuthor = video.author;
         playlistDescription = video.description;
-        playlistThumbnail = video.thumbnails.highResUrl;
 
         files.add(AudiobookFile.fromMap({
           "identifier": video.id.value,
@@ -266,7 +263,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
                             '/audiobook-details',
                             extra: {
                               'audiobook': audiobook,
-                              'isOffline': false,
+                              'isDownload': false,
                               'isYoutube': true,
                             },
                           );

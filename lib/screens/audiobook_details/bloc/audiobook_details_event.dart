@@ -6,8 +6,9 @@ sealed class AudiobookDetailsEvent {}
 class FetchAudiobookDetails extends AudiobookDetailsEvent {
   final String audiobookId;
   final bool isDownload;
+  final bool isYoutube;
 
-  FetchAudiobookDetails(this.audiobookId, this.isDownload);
+  FetchAudiobookDetails(this.audiobookId, this.isDownload, this.isYoutube);
 }
 
 class FavouriteIconButtonClicked extends AudiobookDetailsEvent {

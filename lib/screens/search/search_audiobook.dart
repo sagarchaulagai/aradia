@@ -254,8 +254,12 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                           ),
                           onTap: () {
                             context.push(
-                              '/audiobook/false',
-                              extra: audiobook,
+                              '/audiobook-details',
+                              extra: {
+                                'audiobook': audiobook,
+                                'isDownload': false,
+                                'isYoutube': false,
+                              },
                             );
                           },
                         ),

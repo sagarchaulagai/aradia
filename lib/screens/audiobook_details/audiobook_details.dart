@@ -21,10 +21,12 @@ import '../../resources/models/history_of_audiobook.dart';
 class AudiobookDetails extends StatefulWidget {
   final Audiobook audiobook;
   final bool isDownload;
+  final bool isYoutube;
   const AudiobookDetails({
     super.key,
     required this.audiobook,
     this.isDownload = false,
+    this.isYoutube = false,
   });
 
   @override
@@ -42,8 +44,11 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
   void initState() {
     _audiobookDetailsBloc = BlocProvider.of<AudiobookDetailsBloc>(context);
     _audiobookDetailsBloc.add(GetFavouriteStatus(widget.audiobook));
-    _audiobookDetailsBloc
-        .add(FetchAudiobookDetails(widget.audiobook.id, widget.isDownload));
+    _audiobookDetailsBloc.add(FetchAudiobookDetails(
+      widget.audiobook.id,
+      widget.isDownload,
+      widget.isYoutube,
+    ));
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
 
     historyOfAudiobook = HistoryOfAudiobook();
