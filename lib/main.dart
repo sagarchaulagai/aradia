@@ -116,12 +116,12 @@ final GoRouter router = GoRouter(
 
             // for the audiobook details
             GoRoute(
-              path: '/audiobook/:isOffline',
+              path: '/audiobook/:isDownload',
               name: 'audiobook',
               builder: ((context, state) {
                 return AudiobookDetails(
                   audiobook: state.extra as Audiobook,
-                  isOffline: state.pathParameters['isOffline'] == 'true',
+                  isDownload: state.pathParameters['isDownload'] == 'true',
                 );
               }),
             ),
