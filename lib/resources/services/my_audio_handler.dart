@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aradia/resources/services/youtube_audio_service.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
@@ -6,6 +7,7 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:rxdart_ext/utils.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
@@ -32,7 +34,7 @@ class MyAudioHandler extends BaseAudioHandler {
       speed: 1.0,
       queueIndex: null,
     ));
-    final mediaItems = parseMediaItems(playlist, audiobook);
+    final mediaItems = await parseMediaItems(playlist, audiobook);
     addQueueItems(mediaItems);
     _listenForCurrentSongIndexChanges();
     await _player.setAudioSource(
@@ -53,26 +55,43 @@ class MyAudioHandler extends BaseAudioHandler {
     _startPositionUpdateTimer(audiobook.id);
   }
 
-  List<MediaItem> parseMediaItems(
-      List<AudiobookFile> playlist, Audiobook audiobook) {
-    return playlist
-        .map((song) => MediaItem(
-              id: song.track.toString(),
-              album: audiobook.title,
-              title: song.title ?? '',
-              artist: audiobook.author ?? 'Librivox',
-              artUri: Uri.parse(song.highQCoverImage ?? ''),
-              extras: {'url': song.url, 'audiobook_id': audiobook.id},
-            ))
-        .toList();
+  Future<List<MediaItem>> parseMediaItems(
+      List<AudiobookFile> playlist, Audiobook audiobook) async {
+    final mediaItems = <MediaItem>[];
+
+    for (var song in playlist) {
+      final isYouTube = song.url?.contains('youtube.com') == true ||
+          song.url?.contains('youtu.be') == true;
+
+      MediaItem item = MediaItem(
+        id: song.track.toString(),
+        album: audiobook.title,
+        title: song.title ?? '',
+        artist: audiobook.author ?? 'Librivox',
+        artUri: Uri.parse(song.highQCoverImage ?? ''),
+        extras: {
+          'url': song.url,
+          'audiobook_id': audiobook.id,
+          'is_youtube': isYouTube,
+        },
+      );
+
+      mediaItems.add(item);
+
+      if (isYouTube) {
+        final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
+        _playlist.add(
+            YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
+      } else if (song.url != null) {
+        _playlist.add(AudioSource.uri(Uri.parse(song.url!), tag: item));
+      }
+    }
+
+    return mediaItems;
   }
 
   @override
   Future<void> addQueueItems(List<MediaItem> mediaItems) async {
-    final audioSource = mediaItems
-        .map((item) => AudioSource.uri(Uri.parse(item.extras!['url'])))
-        .toList();
-    _playlist.addAll(audioSource);
     queue.add(queue.value..addAll(mediaItems));
   }
 
