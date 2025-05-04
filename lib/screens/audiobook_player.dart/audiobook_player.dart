@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
@@ -8,7 +9,6 @@ import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
-import '../../services/audio_handler_provider.dart';
 import 'widgets/controls.dart';
 import 'widgets/progress_bar_widget.dart';
 

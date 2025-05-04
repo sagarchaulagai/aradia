@@ -1,4 +1,4 @@
-import 'package:aradia/services/my_audio_handler.dart';
+import 'package:aradia/resources/services/my_audio_handler.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';

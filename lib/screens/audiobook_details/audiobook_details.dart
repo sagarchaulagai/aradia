@@ -10,7 +10,7 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
 import 'package:aradia/screens/audiobook_details/widgets/description_text.dart';
 import 'package:aradia/screens/download_audiobook/widget/download_button.dart';
-import 'package:aradia/services/audio_handler_provider.dart';
+import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:aradia/widgets/rating_widget.dart';
 import 'package:provider/provider.dart';
