@@ -271,6 +271,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   mediaItem.album ?? 'Unknown',
@@ -280,6 +282,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                         ? Colors.grey[800]
                         : Colors.grey[300],
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   mediaItem.artist ?? 'Unknown',
@@ -289,6 +293,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                         ? Colors.grey[600]
                         : Colors.grey[200],
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 20),
                 ProgressBarWidget(
