@@ -41,8 +41,12 @@ class AudiobookItem extends StatelessWidget {
           onLongPress: onLongPressed,
           onTap: () {
             context.push(
-              '/audiobook/false',
-              extra: audiobook,
+              '/audiobook-details',
+              extra: {
+                'audiobook': audiobook,
+                'isDownload': false,
+                'isYoutube': false,
+              },
             );
           },
           child: Column(
