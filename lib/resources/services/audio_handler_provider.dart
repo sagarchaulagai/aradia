@@ -1,6 +1,6 @@
+import 'package:aradia/resources/services/my_audio_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:aradia/services/my_audio_handler.dart';
 
 class AudioHandlerProvider extends ChangeNotifier {
   late MyAudioHandler _audioHandler = MyAudioHandler();

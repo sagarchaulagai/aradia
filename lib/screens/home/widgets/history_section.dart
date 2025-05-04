@@ -1,5 +1,5 @@
 import 'package:aradia/resources/models/history_of_audiobook.dart';
-import 'package:aradia/services/audio_handler_provider.dart';
+import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';

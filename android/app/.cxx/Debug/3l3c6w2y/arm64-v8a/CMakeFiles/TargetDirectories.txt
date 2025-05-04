@@ -1,0 +1,2 @@
+C:/FlutterProject/aradia/android/app/.cxx/Debug/3l3c6w2y/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/FlutterProject/aradia/android/app/.cxx/Debug/3l3c6w2y/arm64-v8a/CMakeFiles/rebuild_cache.dir

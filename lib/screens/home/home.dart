@@ -1,6 +1,5 @@
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
-import 'package:aradia/services/recommendation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../resources/latest_version_fetch.dart';
 import '../../resources/models/latest_version_fetch_model.dart';
+import '../../resources/services/recommendation_service.dart';
 import 'widgets/history_section.dart';
 import 'widgets/update_prompt_dialog.dart';
 
@@ -56,73 +56,77 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> checkForUpdates() async {
-    final permissionStatus = await Permission.requestInstallPackages.status;
-
-    if (permissionStatus.isGranted) {
-      proceedWithUpdateCheck();
-    } else {
-      final shouldRequestPermission = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          return PermissionDialog(
-            onContinue: () => Navigator.of(context).pop(true),
-            onNotNow: () => Navigator.of(context).pop(false),
-          );
-        },
-      );
-
-      if (shouldRequestPermission == true) {
-        final newPermissionStatus =
-            await Permission.requestInstallPackages.request();
-        if (newPermissionStatus.isGranted) {
-          proceedWithUpdateCheck();
-        } else if (newPermissionStatus.isDenied ||
-            newPermissionStatus.isPermanentlyDenied) {
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return PermissionDialog(
-                onContinue: () async {
-                  Navigator.of(context).pop();
-                  await openAppSettings();
-                },
-                onNotNow: () => Navigator.of(context).pop(),
-              );
-            },
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> proceedWithUpdateCheck() async {
     final result = await _latestVersionFetch.getLatestVersion();
 
     result.fold(
       (error) => print(error),
       (latestVersionModel) async {
+        print('latest version is ${latestVersionModel.latestVersion}');
+        print('current version is $currentVersion');
         if (latestVersionModel.latestVersion != null &&
             latestVersionModel.latestVersion!.compareTo(currentVersion) > 0) {
-          // Check if we already have the APK
-          final existingApk = await _latestVersionFetch
-              .getApkPath(latestVersionModel.latestVersion!);
+          // Only request permission if there's an update available
+          final permissionStatus =
+              await Permission.requestInstallPackages.status;
 
-          if (existingApk != null) {
-            // We already have the APK, show install prompt
-            showUpdatePrompt(latestVersionModel);
+          if (permissionStatus.isGranted) {
+            proceedWithUpdate(latestVersionModel);
           } else {
-            // Download the update silently
-            final success = await _latestVersionFetch
-                .downloadUpdate(latestVersionModel.latestVersion!);
-            if (success) {
-              // Show install prompt after successful download
-              showUpdatePrompt(latestVersionModel);
+            final shouldRequestPermission = await showDialog<bool>(
+              context: context,
+              builder: (BuildContext context) {
+                return PermissionDialog(
+                  onContinue: () => Navigator.of(context).pop(true),
+                  onNotNow: () => Navigator.of(context).pop(false),
+                );
+              },
+            );
+
+            if (shouldRequestPermission == true) {
+              final newPermissionStatus =
+                  await Permission.requestInstallPackages.request();
+              if (newPermissionStatus.isGranted) {
+                proceedWithUpdate(latestVersionModel);
+              } else if (newPermissionStatus.isDenied ||
+                  newPermissionStatus.isPermanentlyDenied) {
+                if (!mounted) return;
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return PermissionDialog(
+                      onContinue: () async {
+                        Navigator.of(context).pop();
+                        await openAppSettings();
+                      },
+                      onNotNow: () => Navigator.of(context).pop(),
+                    );
+                  },
+                );
+              }
             }
           }
         }
       },
     );
+  }
+
+  Future<void> proceedWithUpdate(LatestVersionFetchModel versionModel) async {
+    // Check if we already have the APK
+    final existingApk =
+        await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
+
+    if (existingApk != null) {
+      // We already have the APK, show install prompt
+      showUpdatePrompt(versionModel);
+    } else {
+      // Download the update silently
+      final success =
+          await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
+      if (success) {
+        // Show install prompt after successful download
+        showUpdatePrompt(versionModel);
+      }
+    }
   }
 
   void showUpdatePrompt(LatestVersionFetchModel versionModel) {
@@ -228,9 +232,8 @@ class _HomeState extends State<Home> {
           ),
           SliverToBoxAdapter(
             child: FutureBuilder<String>(
-              future: RecommendationService()
-                  .getRecommendedGenres()
-                  .then((genres) => genres.join(' OR ')),
+              future: RecommendationService().getRecommendedGenres().then(
+                  (genres) => genres.map((genre) => '"$genre"').join(' OR ')),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done &&
                     snapshot.hasData) {

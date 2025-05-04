@@ -18,7 +18,7 @@ import 'package:aradia/screens/genre_audiobooks/genre_audiobooks.dart';
 import 'package:aradia/screens/home/home.dart';
 import 'package:aradia/screens/search/bloc/search_bloc.dart';
 import 'package:aradia/screens/search/search_audiobook.dart';
-import 'package:aradia/services/audio_handler_provider.dart';
+import 'package:aradia/resources/services/audio_handler_provider.dart';
 
 import 'package:aradia/widgets/scaffold_with_nav_bar.dart';
 import 'package:path_provider/path_provider.dart';
