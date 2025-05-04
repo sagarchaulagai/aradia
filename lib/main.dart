@@ -1,5 +1,6 @@
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/designs/themes.dart';
+import 'package:aradia/screens/import/import_audiobook.dart';
 import 'package:aradia/screens/recommendation/recommendation_screen.dart';
 import 'package:aradia/screens/setting/settings.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
@@ -160,15 +161,29 @@ final GoRouter router = GoRouter(
           ],
         ),
         // for the download tab
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/download',
-            name: 'download',
-            builder: ((context, state) {
-              return const DownloadsPage();
-            }),
-          ),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/download',
+              name: 'download',
+              builder: ((context, state) {
+                return const DownloadsPage();
+              }),
+            ),
+          ],
+        ),
+        //for import tab
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/import',
+              name: 'import',
+              builder: (context, state) {
+                return const ImportAudiobookScreen();
+              },
+            )
+          ],
+        )
       ],
     ),
   ],

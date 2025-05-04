@@ -54,6 +54,10 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                   icon: Icon(Ionicons.download),
                   label: '',
                 ),
+                BottomNavigationBarItem(
+                  icon: Icon(Ionicons.caret_down_circle_outline),
+                  label: '',
+                ),
               ],
               currentIndex: widget.navigationShell.currentIndex,
               onTap: _onTap,
@@ -85,6 +89,10 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Ionicons.download),
+                  label: '',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Ionicons.caret_down_circle_outline),
                   label: '',
                 ),
               ],
