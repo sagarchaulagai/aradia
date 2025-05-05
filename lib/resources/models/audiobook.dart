@@ -12,6 +12,7 @@ class Audiobook {
   final int? reviews;
   final String lowQCoverImage;
   final String? language;
+  final String? origin;
 
   Audiobook.empty()
       : title = '',
@@ -26,7 +27,8 @@ class Audiobook {
         rating = 0,
         reviews = 0,
         lowQCoverImage = '',
-        language = '';
+        language = '',
+        origin = '';
 
   Audiobook.fromJson(Map jsonAudiobook)
       : id = jsonAudiobook["identifier"] ?? '',
@@ -51,7 +53,8 @@ class Audiobook {
         description = jsonAudiobook["description"],
         language = jsonAudiobook["language"],
         lowQCoverImage =
-            "https://archive.org/services/get-item-image.php?identifier=${jsonAudiobook['identifier']}";
+            "https://archive.org/services/get-item-image.php?identifier=${jsonAudiobook['identifier']}",
+        origin = "librivox";
 
   static List<Audiobook> fromJsonArray(List jsonAudiobook) {
     List<Audiobook> audiobooks = <Audiobook>[];
@@ -85,6 +88,7 @@ class Audiobook {
       "reviews": reviews ?? 0,
       "lowQCoverImage": lowQCoverImage,
       "language": language ?? '',
+      "origin": origin ?? '',
     };
   }
 
@@ -103,7 +107,8 @@ class Audiobook {
             : 0.0,
         reviews = map["reviews"] ?? 0,
         lowQCoverImage = map["lowQCoverImage"] ?? '',
-        language = map["language"] ?? '';
+        language = map["language"] ?? '',
+        origin = map["origin"] ?? '';
 
   Map<String, dynamic> toJson() {
     return {
@@ -120,6 +125,7 @@ class Audiobook {
       "reviews": reviews,
       "lowQCoverImage": lowQCoverImage,
       "language": language,
+      "origin": origin,
     };
   }
 }
