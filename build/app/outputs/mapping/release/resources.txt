@@ -1,190 +1,190 @@
-Marking string:bg_downloader_cancel:2131558428 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:bg_downloader_pause:2131558431 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:bg_downloader_resume:2131558432 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:actionOverflowButtonStyle:2130903071 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:browser_actions_context_menu_min_padding:2131099730 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:browser_actions_context_menu_max_width:2131099729 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:preferenceCategoryStyle:2130903292 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:actionBarSize:2130903043 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:action_bar_activity_content:2131230761 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:action_bar_container:2131230762 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:action_bar:2131230760 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_config_prefDialogWidth:2131099671 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_cascading_menu_item_layout:2131427339 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_popup_menu_header_item_layout:2131427346 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:dialogPreferenceStyle:2130903159 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:compat_notification_large_icon_max_width:2131099737 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:compat_notification_large_icon_max_height:2131099736 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:edit_query:2131230816 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:nestedScrollViewStyle:2130903274 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:dropDownListViewStyle:2130903179 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_cascading_menus_min_smallest_width:2131099670 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:autoCompleteTextViewStyle:2130903093 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:alpha:2130903087 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:lStar:2130903235 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:editTextPreferenceStyle:2130903184 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:checkBoxPreferenceStyle:2130903119 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:switchPreferenceStyle:2130903364 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:androidx_startup:2131558427 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:spacer:2131230898 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_unhandled_key_listeners:2131230922 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:dropdownPreferenceStyle:2130903181 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_window_insets_animation_callback:2131230923 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_on_apply_window_listener:2131230915 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:actionModeStyle:2130903068 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:actionBarPopupTheme:2130903042 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_action_mode_close_item_material:2131427333 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_action_bar_title_item:2131427328 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:action_bar_title:2131230766 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:action_bar_subtitle:2131230765 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:actionBarStyle:2130903045 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:preferenceStyle:2130903300 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:preference:2131427378 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:bg_downloader_notification_channel_name:2131558430 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:bg_downloader_notification_channel_description:2131558429 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_error_outline_24:2131165306 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_download_done_24:2131165305 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_file_download_24:2131165307 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_file_upload_24:2131165308 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_cancel_24:2131165304 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_pause_24:2131165309 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:outline_play_arrow_24:2131165310 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:split_action_bar:2131230901 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:action_context_bar:2131230768 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_accessibility_pane_title:2131230914 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_textfield_default_mtrl_alpha:2131165258 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ab_share_pack_mtrl_alpha:2131165184 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_textfield_search_default_mtrl_alpha:2131165260 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_cab_background_internal_bg:2131165199 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_menu_hardkey_panel_mtrl_mult:2131165232 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_popup_background_mtrl_mult:2131165233 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_tab_indicator_material:2131165251 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_textfield_search_material:2131165261 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_check_material_anim:2131165188 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_radio_material_anim:2131165194 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_check_material:2131165187 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_radio_material:2131165193 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ic_commit_search_api_mtrl_alpha:2131165208 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_seekbar_tick_mark_material:2131165243 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ic_menu_share_mtrl_alpha:2131165215 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ic_menu_copy_mtrl_am_alpha:2131165210 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ic_menu_cut_mtrl_alpha:2131165211 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ic_menu_selectall_mtrl_alpha:2131165214 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ic_menu_paste_mtrl_am_alpha:2131165213 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_textfield_activated_mtrl_alpha:2131165257 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_textfield_search_activated_mtrl_alpha:2131165259 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_cab_background_top_mtrl_alpha:2131165201 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_text_cursor_material:2131165253 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_text_select_handle_left_mtrl:2131165254 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_text_select_handle_middle_mtrl:2131165255 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_text_select_handle_right_mtrl:2131165256 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:colorControlHighlight:2130903135 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:colorButtonNormal:2130903133 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_star_black_48dp:2131165247 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_star_half_black_48dp:2131165248 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_edit_text_material:2131165204 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking color:abc_tint_edittext:2131034133 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_switch_track_mtrl_alpha:2131165250 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking color:abc_tint_switch_track:2131034136 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_switch_thumb_material:2131165249 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:colorSwitchThumbNormal:2130903140 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:colorControlActivated:2130903134 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_default_mtrl_shape:2131165192 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_borderless_material:2131165186 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_btn_colored_material:2131165191 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:colorAccent:2130903131 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_spinner_mtrl_am_alpha:2131165245 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_spinner_textfield_background_material:2131165246 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:colorControlNormal:2130903136 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking color:abc_tint_default:2131034132 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking color:abc_tint_btn_checkable:2131034131 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_seekbar_thumb_material:2131165242 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking color:abc_tint_seek_thumb:2131034134 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking color:abc_tint_spinner:2131034135 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:fastscroll_default_thickness:2131099740 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:fastscroll_minimum_range:2131099742 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:fastscroll_margin:2131099741 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:preferenceScreenStyle:2130903299 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking bool:workmanager_test_configuration:2130968582 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:searchViewStyle:2130903316 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_search_view:2131427353 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_src_text:2131230889 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_edit_frame:2131230885 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_plate:2131230888 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:submit_area:2131230908 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_button:2131230883 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_go_btn:2131230886 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_close_btn:2131230884 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_voice_btn:2131230890 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:search_mag_icon:2131230887 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_searchview_description_search:2131558421 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_search_dropdown_item_icons_2line:2131427352 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_search_view_preferred_height:2131099702 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_search_view_preferred_width:2131099703 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:switchPreferenceCompatStyle:2130903363 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:topPanel:2131230933 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:buttonPanel:2131230797 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:contentPanel:2131230809 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:customPanel:2131230811 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_tooltip:2131427355 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:message:2131230850 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking style:Animation_AppCompat_Tooltip:2131623940 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_accessibility_actions:2131230911 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:accessibility_action_clickable_span:2131230726 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_accessibility_clickable_spans:2131230912 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:toolbarStyle:2130903403 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_action_bar_up_description:2131558401 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_screen_reader_focusable:2131230918 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_accessibility_heading:2131230913 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:tag_state_description:2131230919 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:tooltip_precise_anchor_threshold:2131099779 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:tooltip_precise_anchor_extra_offset:2131099778 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:tooltip_y_offset_touch:2131099782 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:tooltip_y_offset_non_touch:2131099781 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:actionOverflowMenuStyle:2130903072 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_action_menu_item_layout:2131427330 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:seekBarPreferenceStyle:2130903320 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:listMenuViewStyle:2130903252 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_prepend_shortcut_label:2131558417 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_meta_shortcut_label:2131558413 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_ctrl_shortcut_label:2131558409 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_alt_shortcut_label:2131558408 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_shift_shortcut_label:2131558414 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_sym_shortcut_label:2131558416 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_function_shortcut_label:2131558412 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_space_shortcut_label:2131558415 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_enter_shortcut_label:2131558411 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_menu_delete_shortcut_label:2131558410 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:title:2131230929 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:shortcut:2131230894 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:submenuarrow:2131230907 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:group_divider:2131230829 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:content:2131230808 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_list_menu_item_radio:2131427345 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_list_menu_item_checkbox:2131427342 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_list_menu_item_icon:2131427343 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking layout:abc_popup_menu_item_layout:2131427347 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:toolbarNavigationButtonStyle:2130903402 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_dropdownitem_icon_width:2131099689 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_dropdownitem_text_padding_left:2131099690 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:textColorSearchUrl:2130903380 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_cab_background_top_material:2131165200 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ratingbar_material:2131165235 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_star_big:2131099707 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ratingbar_indicator_material:2131165234 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_star_medium:2131099708 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_ratingbar_small_material:2131165236 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking dimen:abc_star_small:2131099709 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_vector_test:2131165262 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_seekbar_track_material:2131165244 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_list_divider_mtrl_alpha:2131165221 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking drawable:abc_dialog_material_background:2131165203 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking xml:bgd_file_paths:2131755008 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:not_set:2131558456 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking id:media_controller_compat_view_tag:2131230849 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking attr:switchStyle:2130903365 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_capital_on:2131558407 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
-Marking string:abc_capital_off:2131558406 reachable: referenced from C:\Projects\idkidk\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:bg_downloader_cancel:2131558428 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:bg_downloader_pause:2131558431 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:bg_downloader_resume:2131558432 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:actionOverflowButtonStyle:2130903071 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:browser_actions_context_menu_min_padding:2131099730 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:browser_actions_context_menu_max_width:2131099729 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:preferenceCategoryStyle:2130903292 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:actionBarSize:2130903043 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:action_bar_activity_content:2131230761 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:action_bar_container:2131230762 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:action_bar:2131230760 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_config_prefDialogWidth:2131099671 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_cascading_menu_item_layout:2131427339 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_popup_menu_header_item_layout:2131427346 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:dialogPreferenceStyle:2130903159 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:compat_notification_large_icon_max_width:2131099737 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:compat_notification_large_icon_max_height:2131099736 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:edit_query:2131230816 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:nestedScrollViewStyle:2130903274 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:dropDownListViewStyle:2130903179 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_cascading_menus_min_smallest_width:2131099670 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:autoCompleteTextViewStyle:2130903093 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:alpha:2130903087 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:lStar:2130903235 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:editTextPreferenceStyle:2130903184 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:checkBoxPreferenceStyle:2130903119 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:switchPreferenceStyle:2130903364 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:androidx_startup:2131558427 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:spacer:2131230898 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_unhandled_key_listeners:2131230922 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:dropdownPreferenceStyle:2130903181 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_window_insets_animation_callback:2131230923 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_on_apply_window_listener:2131230915 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:actionModeStyle:2130903068 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:actionBarPopupTheme:2130903042 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_action_mode_close_item_material:2131427333 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_action_bar_title_item:2131427328 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:action_bar_title:2131230766 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:action_bar_subtitle:2131230765 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:actionBarStyle:2130903045 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:preferenceStyle:2130903300 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:preference:2131427378 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:bg_downloader_notification_channel_name:2131558430 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:bg_downloader_notification_channel_description:2131558429 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_error_outline_24:2131165306 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_download_done_24:2131165305 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_file_download_24:2131165307 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_file_upload_24:2131165308 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_cancel_24:2131165304 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_pause_24:2131165309 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:outline_play_arrow_24:2131165310 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:split_action_bar:2131230901 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:action_context_bar:2131230768 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_accessibility_pane_title:2131230914 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_textfield_default_mtrl_alpha:2131165258 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ab_share_pack_mtrl_alpha:2131165184 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_textfield_search_default_mtrl_alpha:2131165260 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_cab_background_internal_bg:2131165199 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_menu_hardkey_panel_mtrl_mult:2131165232 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_popup_background_mtrl_mult:2131165233 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_tab_indicator_material:2131165251 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_textfield_search_material:2131165261 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_check_material_anim:2131165188 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_radio_material_anim:2131165194 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_check_material:2131165187 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_radio_material:2131165193 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ic_commit_search_api_mtrl_alpha:2131165208 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_seekbar_tick_mark_material:2131165243 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ic_menu_share_mtrl_alpha:2131165215 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ic_menu_copy_mtrl_am_alpha:2131165210 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ic_menu_cut_mtrl_alpha:2131165211 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ic_menu_selectall_mtrl_alpha:2131165214 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ic_menu_paste_mtrl_am_alpha:2131165213 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_textfield_activated_mtrl_alpha:2131165257 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_textfield_search_activated_mtrl_alpha:2131165259 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_cab_background_top_mtrl_alpha:2131165201 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_text_cursor_material:2131165253 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_text_select_handle_left_mtrl:2131165254 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_text_select_handle_middle_mtrl:2131165255 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_text_select_handle_right_mtrl:2131165256 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:colorControlHighlight:2130903135 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:colorButtonNormal:2130903133 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_star_black_48dp:2131165247 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_star_half_black_48dp:2131165248 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_edit_text_material:2131165204 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking color:abc_tint_edittext:2131034133 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_switch_track_mtrl_alpha:2131165250 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking color:abc_tint_switch_track:2131034136 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_switch_thumb_material:2131165249 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:colorSwitchThumbNormal:2130903140 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:colorControlActivated:2130903134 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_default_mtrl_shape:2131165192 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_borderless_material:2131165186 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_btn_colored_material:2131165191 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:colorAccent:2130903131 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_spinner_mtrl_am_alpha:2131165245 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_spinner_textfield_background_material:2131165246 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:colorControlNormal:2130903136 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking color:abc_tint_default:2131034132 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking color:abc_tint_btn_checkable:2131034131 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_seekbar_thumb_material:2131165242 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking color:abc_tint_seek_thumb:2131034134 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking color:abc_tint_spinner:2131034135 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:fastscroll_default_thickness:2131099740 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:fastscroll_minimum_range:2131099742 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:fastscroll_margin:2131099741 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:preferenceScreenStyle:2130903299 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking bool:workmanager_test_configuration:2130968582 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:searchViewStyle:2130903316 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_search_view:2131427353 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_src_text:2131230889 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_edit_frame:2131230885 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_plate:2131230888 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:submit_area:2131230908 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_button:2131230883 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_go_btn:2131230886 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_close_btn:2131230884 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_voice_btn:2131230890 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:search_mag_icon:2131230887 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_searchview_description_search:2131558421 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_search_dropdown_item_icons_2line:2131427352 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_search_view_preferred_height:2131099702 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_search_view_preferred_width:2131099703 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:switchPreferenceCompatStyle:2130903363 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:topPanel:2131230933 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:buttonPanel:2131230797 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:contentPanel:2131230809 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:customPanel:2131230811 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_tooltip:2131427355 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:message:2131230850 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking style:Animation_AppCompat_Tooltip:2131623940 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_accessibility_actions:2131230911 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:accessibility_action_clickable_span:2131230726 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_accessibility_clickable_spans:2131230912 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:toolbarStyle:2130903403 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_action_bar_up_description:2131558401 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_screen_reader_focusable:2131230918 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_accessibility_heading:2131230913 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:tag_state_description:2131230919 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:tooltip_precise_anchor_threshold:2131099779 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:tooltip_precise_anchor_extra_offset:2131099778 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:tooltip_y_offset_touch:2131099782 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:tooltip_y_offset_non_touch:2131099781 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:actionOverflowMenuStyle:2130903072 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_action_menu_item_layout:2131427330 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:seekBarPreferenceStyle:2130903320 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:listMenuViewStyle:2130903252 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_prepend_shortcut_label:2131558417 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_meta_shortcut_label:2131558413 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_ctrl_shortcut_label:2131558409 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_alt_shortcut_label:2131558408 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_shift_shortcut_label:2131558414 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_sym_shortcut_label:2131558416 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_function_shortcut_label:2131558412 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_space_shortcut_label:2131558415 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_enter_shortcut_label:2131558411 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_menu_delete_shortcut_label:2131558410 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:title:2131230929 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:shortcut:2131230894 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:submenuarrow:2131230907 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:group_divider:2131230829 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:content:2131230808 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_list_menu_item_radio:2131427345 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_list_menu_item_checkbox:2131427342 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_list_menu_item_icon:2131427343 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking layout:abc_popup_menu_item_layout:2131427347 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:toolbarNavigationButtonStyle:2130903402 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_dropdownitem_icon_width:2131099689 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_dropdownitem_text_padding_left:2131099690 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:textColorSearchUrl:2130903380 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_cab_background_top_material:2131165200 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ratingbar_material:2131165235 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_star_big:2131099707 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ratingbar_indicator_material:2131165234 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_star_medium:2131099708 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_ratingbar_small_material:2131165236 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking dimen:abc_star_small:2131099709 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_vector_test:2131165262 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_seekbar_track_material:2131165244 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_list_divider_mtrl_alpha:2131165221 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking drawable:abc_dialog_material_background:2131165203 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking xml:bgd_file_paths:2131755008 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:not_set:2131558456 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking id:media_controller_compat_view_tag:2131230849 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking attr:switchStyle:2130903365 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_capital_on:2131558407 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
+Marking string:abc_capital_off:2131558406 reachable: referenced from C:\FlutterProject\aradia\build\app\intermediates\dex\release\minifyReleaseWithR8\classes.dex
 android.content.res.Resources#getIdentifier present: true
 Web content present: true
 Referenced Strings:
@@ -941,11 +941,13 @@ mediumseagreen
 DONE_RCV
 android.support.v4.media.description....
 android.support.customtabs.action.Cus...
+TextInputType.twitter
 ListPreference
 dev.flutter.pigeon.path_provider_andr...
 dub
 orange
 Trace
+androidx.core.view.inputmethod.Editor...
 extra_messenger
 bytes
 ALBUM
@@ -970,6 +972,7 @@ omx.ffmpeg.
 06
 07
 08
+io.flutter.embedding.android.DisableM...
 09
 constraints
 granted
@@ -1034,6 +1037,7 @@ TextCapitalization.none
 open
 android.widget.EditText
 NO_DECISION
+Scribe.startStylusHandwriting
 forced
 DrawableDelegate
 ACTION_CANCEL_WORK
@@ -1078,6 +1082,7 @@ mp3
 dev.flutter.pigeon.url_launcher_andro...
 Speech
 java.lang.Object
+TextInputType.webSearch
 /Library
 LINEAR
 SystemChrome.setSystemUIChangeListener
@@ -1660,6 +1665,7 @@ maxSpl
 R9
 androidx.media2.metadata.ADVERTISEMENT
 OMX.SEC.mp3.dec
+io.flutter.embedding.android.EnableSu...
 RE
 Soul
 dbObj
@@ -2027,9 +2033,11 @@ FRAMEWORK_CLIENT
 cs
 flounder_lte
 skipToPrevious
+flutter/scribe
 cy
 android.os.action.CHARGING
 USAGE_ASSISTANCE_NAVIGATION_GUIDANCE
+enableOnBackInvokedCallbackState
 com.bbflight.background_downloader.Ta...
 config
 db
@@ -2050,6 +2058,7 @@ forced_subtitle
 F02H
 image
 android.speech.extra.MAX_RESULTS
+SCROLL_TO_OFFSET
 el
 proportionalControlFactor
 em
@@ -3350,6 +3359,7 @@ panell_ds
 android.intent.extra.KEY_EVENT
 android.support.v4.media.session.acti...
 video/av01
+Scribe.isFeatureAvailable
 1601
 schemeIdUri
 setState
@@ -4106,6 +4116,7 @@ over
 woods_fn
 cbc1
 Tango
+Scribe.isStylusHandwritingAvailable
 ServiceDescription
 os.arch
 false
@@ -4257,7 +4268,6 @@ com.apple.iTunes
 srp
 MenuItemImpl
 F3213
-io.flutter.embedding.android.EnableMe...
 F3211
 setLoopMode
 F3215
@@ -4291,7 +4301,6 @@ CONDITION_FALSE
 Crossover
 Eclectic
 primitive
-io.flutter.embedding.android.DisableS...
 fillAlpha
 ASC
 current

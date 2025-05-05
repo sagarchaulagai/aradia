@@ -142,6 +142,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
         "reviews": 0,
         "lowQCoverImage": files[0].highQCoverImage,
         "language": "en",
+        "origin": "youtube",
       });
 
       await _saveAudiobook(audiobook, files);

@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class DownloadManager {
   static final DownloadManager _instance = DownloadManager._internal();
@@ -71,6 +72,8 @@ class DownloadManager {
     Function(double) onProgressUpdate,
     Function(bool) onCompleted,
   ) async {
+    YoutubeExplode? yt;
+
     try {
       if (!await checkAndRequestPermissions()) {
         throw Exception(
@@ -105,6 +108,8 @@ class DownloadManager {
         'audiobookId': audiobookId,
       });
 
+      yt = YoutubeExplode();
+
       for (var file in files) {
         // Check if download was cancelled
         if (_activeDownloads[audiobookId] != true) {
@@ -118,47 +123,84 @@ class DownloadManager {
         final String fileName = '${file['title']}.mp3';
         final String url = file['url'];
 
-        DownloadTask task = DownloadTask(
-          taskId: audiobookId,
-          url: url,
-          filename: fileName,
-          directory: audiobookId,
-          baseDirectory: BaseDirectory.applicationDocuments,
-          updates: Updates.statusAndProgress,
-          allowPause: true,
-        );
+        // Check if the URL is from YouTube
+        final bool isYouTubeUrl =
+            url.contains('youtube.com') || url.contains('youtu.be');
 
-        // save this task to hive
-        await downloadStatusBox.put('task_$audiobookId', task.toJson());
+        if (isYouTubeUrl) {
+          try {
+            // Get application documents directory
+            final appDir = await getExternalStorageDirectory();
+            final String filePath = '${appDir?.path}/$audiobookId/$fileName';
 
-        try {
-          final result = await _downloader.download(
-            task,
-            onProgress: (progress) {
+            // Create directory if it doesn't exist
+            final directory = Directory('${appDir?.path}/$audiobookId');
+            if (!await directory.exists()) {
+              await directory.create(recursive: true);
+            }
+
+            // Extract video ID from URL
+            String? videoId;
+            if (url.contains('youtube.com/watch?v=')) {
+              videoId = Uri.parse(url).queryParameters['v'];
+            } else if (url.contains('youtu.be/')) {
+              videoId = url.split('youtu.be/')[1].split('?')[0];
+            }
+
+            if (videoId == null) {
+              throw Exception('Invalid YouTube URL');
+            }
+
+            // Get the stream manifest - using the same parameters as in youtube_audio_service.dart
+            final manifest = await yt.videos.streams.getManifest(videoId);
+
+            // Get the audio stream with highest bitrate
+            final audioStream = manifest.audioOnly.withHighestBitrate();
+
+            // Create output file
+            final outputFile = File(filePath);
+            final fileStream = outputFile.openWrite();
+
+            print(outputFile.path + "is output file path");
+
+            // Track download progress
+            int totalBytes = audioStream.size.totalBytes;
+            int receivedBytes = 0;
+
+            // Download the stream using the correct method signature
+            final stream = yt.videos.streams.get(audioStream);
+
+            // Download and track progress
+            await for (final data in stream) {
+              // Check if download was cancelled
               if (_activeDownloads[audiobookId] != true) {
+                await fileStream.close();
                 throw Exception('Download cancelled');
               }
+
+              fileStream.add(data);
+              receivedBytes += data.length;
+
+              // Calculate progress
+              final progress = receivedBytes / totalBytes;
               totalProgress = (completedFiles + progress) / totalFiles;
+
               onProgressUpdate(totalProgress);
-              downloadStatusBox.put('status_$audiobookId', {
+              await downloadStatusBox.put('status_$audiobookId', {
                 'isDownloading': true,
                 'progress': totalProgress,
                 'isCompleted': false,
                 'audiobookTitle': audiobookTitle,
                 'audiobookId': audiobookId,
               });
-            },
-          );
+            }
 
-          if (result.status == TaskStatus.complete) {
+            await fileStream.flush();
+            await fileStream.close();
             completedFiles++;
-          }
-        } catch (e) {
-          print('Download error: $e');
-          _activeDownloads.remove(audiobookId);
-          if (e.toString().contains('Download cancelled')) {
-            await downloadStatusBox.delete('status_$audiobookId');
-          } else {
+          } catch (e) {
+            print('YouTube download error: $e');
+            _activeDownloads.remove(audiobookId);
             await downloadStatusBox.put('status_$audiobookId', {
               'isDownloading': false,
               'progress': totalProgress,
@@ -167,9 +209,64 @@ class DownloadManager {
               'audiobookTitle': audiobookTitle,
               'audiobookId': audiobookId,
             });
+            onCompleted(false);
+            return;
           }
-          onCompleted(false);
-          return;
+        } else {
+          // Handle direct URL downloads using background_downloader
+          DownloadTask task = DownloadTask(
+            taskId: audiobookId,
+            url: url,
+            filename: fileName,
+            directory: audiobookId,
+            baseDirectory: BaseDirectory.applicationDocuments,
+            updates: Updates.statusAndProgress,
+            allowPause: true,
+          );
+
+          // save this task to hive
+          await downloadStatusBox.put('task_$audiobookId', task.toJson());
+
+          try {
+            final result = await _downloader.download(
+              task,
+              onProgress: (progress) {
+                if (_activeDownloads[audiobookId] != true) {
+                  throw Exception('Download cancelled');
+                }
+                totalProgress = (completedFiles + progress) / totalFiles;
+                onProgressUpdate(totalProgress);
+                downloadStatusBox.put('status_$audiobookId', {
+                  'isDownloading': true,
+                  'progress': totalProgress,
+                  'isCompleted': false,
+                  'audiobookTitle': audiobookTitle,
+                  'audiobookId': audiobookId,
+                });
+              },
+            );
+
+            if (result.status == TaskStatus.complete) {
+              completedFiles++;
+            }
+          } catch (e) {
+            print('Download error: $e');
+            _activeDownloads.remove(audiobookId);
+            if (e.toString().contains('Download cancelled')) {
+              await downloadStatusBox.delete('status_$audiobookId');
+            } else {
+              await downloadStatusBox.put('status_$audiobookId', {
+                'isDownloading': false,
+                'progress': totalProgress,
+                'isCompleted': false,
+                'error': e.toString(),
+                'audiobookTitle': audiobookTitle,
+                'audiobookId': audiobookId,
+              });
+            }
+            onCompleted(false);
+            return;
+          }
         }
       }
 
@@ -191,6 +288,9 @@ class DownloadManager {
       _activeDownloads.remove(audiobookId);
       await downloadStatusBox.delete('status_$audiobookId');
       onCompleted(false);
+    } finally {
+      // Dispose YouTube client
+      yt?.close();
     }
   }
 

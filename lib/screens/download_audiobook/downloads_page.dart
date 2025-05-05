@@ -285,8 +285,12 @@ class DownloadsPage extends StatelessWidget {
                           print(
                               'Audiobook object is parsed and navigating to details');
                           context.push(
-                            '/audiobook/true',
-                            extra: audiobook,
+                            '/audiobook-details',
+                            extra: {
+                              'audiobook': audiobook,
+                              'isDownload': true,
+                              'isYoutube': false,
+                            },
                           );
                         } catch (parseError) {
                           print('Error parsing audiobook JSON: $parseError');

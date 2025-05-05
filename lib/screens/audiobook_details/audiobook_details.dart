@@ -170,6 +170,13 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+                    Text(
+                      "${widget.audiobook.origin ?? "librivox"}",
+                      style: GoogleFonts.ubuntu(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
                     RatingWidget(
                       rating: widget.audiobook.rating ?? 0.0,
                       size: 20,

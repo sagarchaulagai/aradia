@@ -4,10 +4,10 @@
     minSdkVersion="21"
     targetSdkVersion="35"
     shrinking="true"
-    mergedManifest="C:\Projects\idkidk\aradia\build\app\intermediates\merged_manifest\release\AndroidManifest.xml"
-    proguardFiles="C:\Projects\idkidk\aradia\build\app\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.2.1;C:\Development\flutter\packages\flutter_tools\gradle\flutter_proguard_rules.pro;proguard-rules.pro"
-    partialResultsDir="C:\Projects\idkidk\aradia\build\app\intermediates\lint_vital_partial_results\release\out"
-    desugaredMethodsFiles="C:\Users\Lenovo\.gradle\caches\transforms-3\57d2179a8a332ef5a12881b535a33d76\transformed\D8BackportedDesugaredMethods.txt">
+    mergedManifest="C:\FlutterProject\aradia\build\app\intermediates\merged_manifest\release\AndroidManifest.xml"
+    proguardFiles="C:\FlutterProject\aradia\build\app\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.2.1;C:\Development\flutter\packages\flutter_tools\gradle\flutter_proguard_rules.pro;proguard-rules.pro"
+    partialResultsDir="C:\FlutterProject\aradia\build\app\intermediates\lint_vital_partial_results\release\out"
+    desugaredMethodsFiles="C:\Users\Asus Tuf\.gradle\caches\transforms-3\ba0b84e37186af21742a14a23cad2eef\transformed\D8BackportedDesugaredMethods.txt">
   <buildFeatures
       namespacing="REQUIRED"/>
   <sourceProviders>
@@ -27,11 +27,11 @@
         value="android.app.Application" />
   </manifestPlaceholders>
   <artifact
-      classOutputs="C:\Projects\idkidk\aradia\build\app\intermediates\javac\release\classes;C:\Projects\idkidk\aradia\build\app\tmp\kotlin-classes\release;C:\Projects\idkidk\aradia\build\app\kotlinToolingMetadata;C:\Projects\idkidk\aradia\build\app\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\R.jar"
+      classOutputs="C:\FlutterProject\aradia\build\app\intermediates\javac\release\classes;C:\FlutterProject\aradia\build\app\tmp\kotlin-classes\release;C:\FlutterProject\aradia\build\app\kotlinToolingMetadata;C:\FlutterProject\aradia\build\app\intermediates\compile_and_runtime_not_namespaced_r_class_jar\release\R.jar"
       type="MAIN"
       applicationId="com.aradia.audiobook"
-      generatedSourceFolders="C:\Projects\idkidk\aradia\build\app\generated\ap_generated_sources\release\out"
-      generatedResourceFolders="C:\Projects\idkidk\aradia\build\app\generated\res\resValues\release"
-      desugaredMethodsFiles="C:\Users\Lenovo\.gradle\caches\transforms-3\57d2179a8a332ef5a12881b535a33d76\transformed\D8BackportedDesugaredMethods.txt">
+      generatedSourceFolders="C:\FlutterProject\aradia\build\app\generated\ap_generated_sources\release\out"
+      generatedResourceFolders="C:\FlutterProject\aradia\build\app\generated\res\resValues\release"
+      desugaredMethodsFiles="C:\Users\Asus Tuf\.gradle\caches\transforms-3\ba0b84e37186af21742a14a23cad2eef\transformed\D8BackportedDesugaredMethods.txt">
   </artifact>
 </variant>
