@@ -37,6 +37,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
   @override
   void initState() {
     super.initState();
+    weSlideController = Provider.of<WeSlideController>(context, listen: false);
   }
 
   @override
@@ -44,7 +45,6 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
     super.didChangeDependencies();
     if (idk == 0) {
       audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
-      weSlideController = Provider.of<WeSlideController>(context);
 
       List<AudiobookFile> audiobookFiles = [];
       for (int i = 0;

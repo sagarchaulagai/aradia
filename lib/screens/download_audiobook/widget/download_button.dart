@@ -111,7 +111,11 @@ class _DownloadButtonState extends State<DownloadButton> {
       }
       // Now create a file name audiobook.txt and save the audiobook details
       final audiobookFile = File('${downloadDir.path}/audiobook.txt');
-      await audiobookFile.writeAsString(jsonEncode(widget.audiobook.toMap()));
+      // Create a modified copy of the audiobook with origin set to 'download'
+      final modifiedAudiobook =
+          Map<String, dynamic>.from(widget.audiobook.toMap())
+            ..['origin'] = 'download';
+      await audiobookFile.writeAsString(jsonEncode(modifiedAudiobook));
 
       // Now create a file name files.txt and save the audiobook files
       final filesFile = File('${downloadDir.path}/files.txt');

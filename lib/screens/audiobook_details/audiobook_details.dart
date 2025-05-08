@@ -150,26 +150,30 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                       alignment: Alignment.center,
                       child: Text(
                         widget.audiobook.title,
+                        textAlign: TextAlign.center,
+                        softWrap: true,
                         style: GoogleFonts.ubuntu(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
+                    const SizedBox(height: 5),
                     Text(
                       widget.audiobook.author ?? 'N/A',
                       style: GoogleFonts.ubuntu(
                         fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
-                    Text(
-                      "Downloads : ${widget.audiobook.downloads != null ? widget.audiobook.downloads! > 999 ? widget.audiobook.downloads! > 999999 ? "${(widget.audiobook.downloads! / 1000000).toStringAsFixed(1)}M" : "${(widget.audiobook.downloads! / 1000).toStringAsFixed(1)}K" : widget.audiobook.downloads.toString() : "N/A"}",
-                      style: GoogleFonts.ubuntu(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                    if (widget.audiobook.origin == 'librivox')
+                      Text(
+                        "Downloads : ${widget.audiobook.downloads != null ? widget.audiobook.downloads! > 999 ? widget.audiobook.downloads! > 999999 ? "${(widget.audiobook.downloads! / 1000000).toStringAsFixed(1)}M" : "${(widget.audiobook.downloads! / 1000).toStringAsFixed(1)}K" : widget.audiobook.downloads.toString() : "N/A"}",
+                        style: GoogleFonts.ubuntu(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
-                    ),
                     Text(
                       "${widget.audiobook.origin ?? "librivox"}",
                       style: GoogleFonts.ubuntu(
@@ -177,10 +181,11 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                         fontWeight: FontWeight.w300,
                       ),
                     ),
-                    RatingWidget(
-                      rating: widget.audiobook.rating ?? 0.0,
-                      size: 20,
-                    ),
+                    if (widget.audiobook.origin == 'librivox')
+                      RatingWidget(
+                        rating: widget.audiobook.rating ?? 0.0,
+                        size: 20,
+                      ),
                     const SizedBox(height: 10),
                     Card(
                       color: const Color.fromRGBO(204, 119, 34, 1),
@@ -374,25 +379,34 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                           children: List.generate(
                             widget.audiobook.subject!.length,
                             (index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  final subjectName =
-                                      widget.audiobook.subject![index];
-                                  context.push(
-                                    '/genre_audiobooks',
-                                    extra: subjectName,
-                                  );
-                                  print('Tapped subject: $subjectName');
-                                },
-                                child: Chip(
-                                  label: Text(
-                                    widget.audiobook.subject![index],
-                                    style: GoogleFonts.ubuntu(
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              );
+                              return widget.audiobook.origin == 'youtube'
+                                  ? Chip(
+                                      label: Text(
+                                        widget.audiobook.subject![index],
+                                        style: GoogleFonts.ubuntu(
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      onTap: () {
+                                        final subjectName =
+                                            widget.audiobook.subject![index];
+                                        context.push(
+                                          '/genre_audiobooks',
+                                          extra: subjectName,
+                                        );
+                                        print('Tapped subject: $subjectName');
+                                      },
+                                      child: Chip(
+                                        label: Text(
+                                          widget.audiobook.subject![index],
+                                          style: GoogleFonts.ubuntu(
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    );
                             },
                           ),
                         ),

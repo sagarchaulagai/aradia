@@ -8,7 +8,6 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../widgets/low_and_high_image.dart';
 
 class ImportAudiobookScreen extends StatefulWidget {
@@ -53,7 +52,6 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
           if (await audiobookFile.exists()) {
             final content = await audiobookFile.readAsString();
             final audiobookData = jsonDecode(content) as Map<String, dynamic>;
-
             audiobooks.add(Audiobook.fromMap(audiobookData));
           }
         }
@@ -86,6 +84,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
       String playlistTitle = '';
       String playlistAuthor = '';
       String playlistDescription = '';
+      List<String> tags = [];
 
       if (url.contains('playlist')) {
         final playlist = await yt.playlists.get(url);
@@ -93,6 +92,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
         playlistTitle = playlist.title;
         playlistAuthor = playlist.author;
         playlistDescription = playlist.description;
+        tags = _extractTags(playlistDescription);
 
         final videos = await yt.playlists.getVideos(playlist.id).toList();
         for (var video in videos) {
@@ -114,6 +114,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
         playlistTitle = video.title;
         playlistAuthor = video.author;
         playlistDescription = video.description;
+        tags = _extractTags(video.description);
+        print(tags);
 
         files.add(AudiobookFile.fromMap({
           "identifier": video.id.value,
@@ -134,9 +136,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
         "author": playlistAuthor,
         "date": DateTime.now().toIso8601String(),
         "downloads": 0,
-        "subject": [
-          "YouTube ${url.contains('playlist') ? 'Playlist' : 'Video'}"
-        ],
+        "subject": tags,
         "size": 0,
         "rating": 0.0,
         "reviews": 0,
@@ -151,7 +151,6 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
         _urlController.clear();
       });
 
-      // Close the keyboard
       FocusScope.of(context).unfocus();
 
       if (mounted) {
@@ -167,6 +166,25 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+// idk why direct regex was not working so hyaa , i do this
+  List<String> _extractTags(String description) {
+    final tags = <String>[];
+
+    // Split by whitespace (spaces, tabs, newlines)
+    final words = description.split(RegExp(r'\s+'));
+
+    for (final word in words) {
+      if (word.startsWith('#') && word.length > 1) {
+        final cleaned = word.substring(1).replaceAll(RegExp(r'[^\w-]'), '');
+        if (cleaned.isNotEmpty) {
+          tags.add(cleaned);
+        }
+      }
+    }
+
+    return tags;
   }
 
   Future<void> _saveAudiobook(
