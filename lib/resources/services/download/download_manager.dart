@@ -161,14 +161,13 @@ class DownloadManager {
             final outputFile = File(filePath);
             final fileStream = outputFile.openWrite();
 
-            print(outputFile.path + "is output file path");
-
             // Track download progress
             int totalBytes = audioStream.size.totalBytes;
             int receivedBytes = 0;
 
-            // Download the stream using the correct method signature
-            final stream = yt.videos.streams.get(audioStream);
+            // Download the stream using the correct method signature (stream, start, end)
+            final stream = yt.videos.streams
+                .get(audioStream, 0, audioStream.size.totalBytes);
 
             // Download and track progress
             await for (final data in stream) {

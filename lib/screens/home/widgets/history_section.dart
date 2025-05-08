@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
+import 'package:ionicons/ionicons.dart';
 
 import '../../../resources/designs/app_colors.dart';
 import '../../../widgets/low_and_high_image.dart';
@@ -260,6 +261,30 @@ class _HistorySectionState extends State<HistorySection> {
                       ),
                     ),
                   ),
+                  Positioned(
+                    bottom: 16,
+                    right: 8,
+                    child: Stack(
+                      children: [
+                        // Shadow/outline icon
+                        IconTheme(
+                          data: IconThemeData(
+                            color: Colors.black,
+                            size: 14,
+                          ),
+                          child: _getOriginIcon(item.audiobook.origin),
+                        ),
+                        // Main icon
+                        IconTheme(
+                          data: IconThemeData(
+                            color: Colors.white,
+                            size: 12,
+                          ),
+                          child: _getOriginIcon(item.audiobook.origin),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -308,6 +333,35 @@ class _HistorySectionState extends State<HistorySection> {
         ),
       ),
     );
+  }
+
+  Widget _getOriginIcon(String? origin) {
+    if (origin == 'librivox') {
+      return const Icon(
+        Ionicons.book,
+        color: Colors.white,
+        size: 15,
+      );
+    } else if (origin == 'youtube') {
+      return const Icon(
+        Ionicons.logo_youtube,
+        color: Colors.white,
+        size: 15,
+      );
+    } else if (origin == 'download') {
+      return const Icon(
+        Ionicons.cloud_download,
+        color: Colors.white,
+        size: 15,
+      );
+    } else {
+      // Default icon for unknown origin
+      return const Icon(
+        Ionicons.help_circle,
+        color: Colors.white,
+        size: 15,
+      );
+    }
   }
 
   @override

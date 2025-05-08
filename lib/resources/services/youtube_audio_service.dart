@@ -44,7 +44,7 @@ class YouTubeAudioSource extends StreamAudioSource {
         end = audioStream.size.totalBytes;
       }
 
-      final stream = ytExplode.videos.streams.get(audioStream);
+      final stream = ytExplode.videos.streams.get(audioStream, start, end);
       return StreamAudioResponse(
         sourceLength: audioStream.size.totalBytes,
         contentLength: end - start,

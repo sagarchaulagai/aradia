@@ -3,141 +3,123 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:aradia/resources/archive_api.dart';
 import 'package:aradia/resources/models/audiobook.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:meta/meta.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc() : super(HomeInitial()) {
-    on<FetchLatestAudiobooks>((event, emit) async {
-      await fetchLatestAudiobooks(event, emit, event.page, event.rows);
-    });
+  final ArchiveApi _archiveApi;
 
-    on<FetchPopularAudiobooks>((event, emit) async {
-      await fetchPopularAudiobooks(event, emit, event.page, event.rows);
-    });
-
-    on<FetchPopularThisWeekAudiobooks>((event, emit) async {
-      await fetchPopularThisWeekAudiobooks(event, emit, event.page, event.rows);
-    });
-
-    on<FetchAudiobooksByGenre>((event, emit) async {
-      await fetchAudiobooksByGenre(
-          event, emit, event.page, event.rows, event.genre, event.sortBy);
-    });
+  HomeBloc({ArchiveApi? archiveApi})
+      : _archiveApi = archiveApi ?? ArchiveApi(),
+        super(HomeInitial()) {
+    on<FetchLatestAudiobooks>(_onFetchLatestAudiobooks);
+    on<FetchPopularAudiobooks>(_onFetchPopularAudiobooks);
+    on<FetchPopularThisWeekAudiobooks>(_onFetchPopularThisWeekAudiobooks);
+    on<FetchAudiobooksByGenre>(_onFetchAudiobooksByGenre);
   }
 
-  FutureOr<void> fetchLatestAudiobooks(
+  Future<void> _onFetchLatestAudiobooks(
     FetchLatestAudiobooks event,
     Emitter<HomeState> emit,
-    int page,
-    int rows,
   ) async {
-    if (page == 1) {
-      emit(LatestAudiobooksFetchingLoadingState());
-    }
-    try {
-      var audiobooks = await ArchiveApi().getLatestAudiobook(page, rows);
-      audiobooks.fold(
-        (left) {
-          if (page == 1) {
-            emit(LatestAudiobooksFetchingFailedState());
-          }
-        },
-        (right) {
-          emit(LatestAudiobooksFetchingSuccessState(right));
-        },
-      );
-    } catch (e) {
-      emit(LatestAudiobooksFetchingFailedState());
-    }
+    await _fetchAudiobooks(
+      page: event.page,
+      rows: event.rows,
+      fetchFunction: () =>
+          _archiveApi.getLatestAudiobook(event.page, event.rows),
+      loadingState: LatestAudiobooksFetchingLoadingState(),
+      successState: (audiobooks) =>
+          LatestAudiobooksFetchingSuccessState(audiobooks),
+      failureState: LatestAudiobooksFetchingFailedState(),
+      emit: emit,
+    );
   }
 
-  FutureOr<void> fetchPopularAudiobooks(
+  Future<void> _onFetchPopularAudiobooks(
     FetchPopularAudiobooks event,
     Emitter<HomeState> emit,
-    int page,
-    int rows,
   ) async {
-    if (page == 1) {
-      emit(PopularAudiobooksFetchingLoadingState());
-    }
-    try {
-      var audiobooks =
-          await ArchiveApi().getMostDownloadedEverAudiobook(page, rows);
-
-      audiobooks.fold(
-        (left) {
-          if (page == 1) {
-            emit(PopularAudiobooksFetchingFailedState());
-          }
-        },
-        (right) {
-          emit(PopularAudiobooksFetchingSuccessState(right));
-        },
-      );
-    } catch (e) {
-      emit(PopularAudiobooksFetchingFailedState());
-    }
+    await _fetchAudiobooks(
+      page: event.page,
+      rows: event.rows,
+      fetchFunction: () =>
+          _archiveApi.getMostDownloadedEverAudiobook(event.page, event.rows),
+      loadingState: PopularAudiobooksFetchingLoadingState(),
+      successState: (audiobooks) =>
+          PopularAudiobooksFetchingSuccessState(audiobooks),
+      failureState: PopularAudiobooksFetchingFailedState(),
+      emit: emit,
+    );
   }
 
-  FutureOr<void> fetchPopularThisWeekAudiobooks(
+  Future<void> _onFetchPopularThisWeekAudiobooks(
     FetchPopularThisWeekAudiobooks event,
     Emitter<HomeState> emit,
-    int page,
-    int rows,
   ) async {
-    if (page == 1) {
-      emit(PopularAudiobooksOfWeekFetchingLoadingState());
-    }
-    try {
-      var audiobooks = await ArchiveApi().getMostViewedWeeklyAudiobook(
-        page,
-        rows,
-      );
-
-      audiobooks.fold(
-        (left) {
-          if (page == 1) {
-            emit(PopularAudiobooksOfWeekFetchingFailedState());
-          }
-        },
-        (right) {
-          emit(PopularAudiobooksOfWeekFetchingSuccessState(right));
-        },
-      );
-    } catch (e) {
-      emit(PopularAudiobooksOfWeekFetchingFailedState());
-    }
+    await _fetchAudiobooks(
+      page: event.page,
+      rows: event.rows,
+      fetchFunction: () =>
+          _archiveApi.getMostViewedWeeklyAudiobook(event.page, event.rows),
+      loadingState: PopularAudiobooksOfWeekFetchingLoadingState(),
+      successState: (audiobooks) =>
+          PopularAudiobooksOfWeekFetchingSuccessState(audiobooks),
+      failureState: PopularAudiobooksOfWeekFetchingFailedState(),
+      emit: emit,
+    );
   }
 
-  FutureOr<void> fetchAudiobooksByGenre(
+  Future<void> _onFetchAudiobooksByGenre(
     FetchAudiobooksByGenre event,
     Emitter<HomeState> emit,
-    int page,
-    int rows,
-    String genre,
-    String sortBy,
   ) async {
+    await _fetchAudiobooks(
+      page: event.page,
+      rows: event.rows,
+      fetchFunction: () => _archiveApi.getAudiobooksByGenre(
+        event.genre,
+        event.page,
+        event.rows,
+        event.sortBy,
+      ),
+      loadingState: GenreAudiobooksFetchingLoadingState(),
+      successState: (audiobooks) =>
+          GenreAudiobooksFetchingSuccessState(audiobooks),
+      failureState: GenreAudiobooksFetchingFailedState(),
+      emit: emit,
+    );
+  }
+
+  Future<void> _fetchAudiobooks({
+    required int page,
+    required int rows,
+    required Future<Either<String, List<Audiobook>>> Function() fetchFunction,
+    required HomeState loadingState,
+    required HomeState Function(List<Audiobook>) successState,
+    required HomeState failureState,
+    required Emitter<HomeState> emit,
+  }) async {
     if (page == 1) {
-      emit(GenreAudiobooksFetchingLoadingState());
+      emit(loadingState);
     }
+
     try {
-      var audiobooks =
-          await ArchiveApi().getAudiobooksByGenre(genre, page, rows, sortBy);
-      audiobooks.fold(
-        (left) {
+      final result = await fetchFunction();
+      result.fold(
+        (error) {
           if (page == 1) {
-            emit(GenreAudiobooksFetchingFailedState());
+            emit(failureState);
           }
         },
-        (right) {
-          emit(GenreAudiobooksFetchingSuccessState(right));
-        },
+        (audiobooks) => emit(successState(audiobooks)),
       );
     } catch (e) {
-      emit(GenreAudiobooksFetchingFailedState());
+      if (page == 1) {
+        emit(failureState);
+      }
     }
   }
 }

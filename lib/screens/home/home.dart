@@ -14,11 +14,13 @@ import '../../resources/models/latest_version_fetch_model.dart';
 import '../../resources/services/recommendation_service.dart';
 import 'widgets/history_section.dart';
 import 'widgets/update_prompt_dialog.dart';
+import 'widgets/app_bar_actions.dart';
+import 'widgets/welcome_section.dart';
+import 'widgets/genre_grid.dart';
+import 'constants/home_constants.dart';
 
 class Home extends StatefulWidget {
-  const Home({
-    super.key,
-  });
+  const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -46,7 +48,7 @@ class _HomeState extends State<Home> {
   late RecommendationService recommendationService;
   late List<String> recommendedGenres;
   final LatestVersionFetch _latestVersionFetch = LatestVersionFetch();
-  String currentVersion = "2.0.0";
+  final String currentVersion = "2.0.0";
 
   @override
   void initState() {
@@ -61,69 +63,67 @@ class _HomeState extends State<Home> {
     result.fold(
       (error) => print(error),
       (latestVersionModel) async {
-        print('latest version is ${latestVersionModel.latestVersion}');
-        print('current version is $currentVersion');
         if (latestVersionModel.latestVersion != null &&
             latestVersionModel.latestVersion!.compareTo(currentVersion) > 0) {
-          // Only request permission if there's an update available
-          final permissionStatus =
-              await Permission.requestInstallPackages.status;
-
-          if (permissionStatus.isGranted) {
-            proceedWithUpdate(latestVersionModel);
-          } else {
-            final shouldRequestPermission = await showDialog<bool>(
-              context: context,
-              builder: (BuildContext context) {
-                return PermissionDialog(
-                  onContinue: () => Navigator.of(context).pop(true),
-                  onNotNow: () => Navigator.of(context).pop(false),
-                );
-              },
-            );
-
-            if (shouldRequestPermission == true) {
-              final newPermissionStatus =
-                  await Permission.requestInstallPackages.request();
-              if (newPermissionStatus.isGranted) {
-                proceedWithUpdate(latestVersionModel);
-              } else if (newPermissionStatus.isDenied ||
-                  newPermissionStatus.isPermanentlyDenied) {
-                if (!mounted) return;
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return PermissionDialog(
-                      onContinue: () async {
-                        Navigator.of(context).pop();
-                        await openAppSettings();
-                      },
-                      onNotNow: () => Navigator.of(context).pop(),
-                    );
-                  },
-                );
-              }
-            }
-          }
+          await _handleUpdateAvailable(latestVersionModel);
         }
       },
     );
   }
 
+  Future<void> _handleUpdateAvailable(
+      LatestVersionFetchModel versionModel) async {
+    final permissionStatus = await Permission.requestInstallPackages.status;
+
+    if (permissionStatus.isGranted) {
+      proceedWithUpdate(versionModel);
+    } else {
+      final shouldRequestPermission = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) => PermissionDialog(
+          onContinue: () => Navigator.of(context).pop(true),
+          onNotNow: () => Navigator.of(context).pop(false),
+        ),
+      );
+
+      if (shouldRequestPermission == true) {
+        await _requestInstallPermission(versionModel);
+      }
+    }
+  }
+
+  Future<void> _requestInstallPermission(
+      LatestVersionFetchModel versionModel) async {
+    final newPermissionStatus =
+        await Permission.requestInstallPackages.request();
+    if (newPermissionStatus.isGranted) {
+      proceedWithUpdate(versionModel);
+    } else if (newPermissionStatus.isDenied ||
+        newPermissionStatus.isPermanentlyDenied) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => PermissionDialog(
+          onContinue: () async {
+            Navigator.of(context).pop();
+            await openAppSettings();
+          },
+          onNotNow: () => Navigator.of(context).pop(),
+        ),
+      );
+    }
+  }
+
   Future<void> proceedWithUpdate(LatestVersionFetchModel versionModel) async {
-    // Check if we already have the APK
     final existingApk =
         await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
 
     if (existingApk != null) {
-      // We already have the APK, show install prompt
       showUpdatePrompt(versionModel);
     } else {
-      // Download the update silently
       final success =
           await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
       if (success) {
-        // Show install prompt after successful download
         showUpdatePrompt(versionModel);
       }
     }
@@ -132,15 +132,13 @@ class _HomeState extends State<Home> {
   void showUpdatePrompt(LatestVersionFetchModel versionModel) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return UpdatePromptDialog(
-          currentVersion: currentVersion,
-          newVersion: versionModel.latestVersion!,
-          changelogs: versionModel.changelogs ?? [],
-          onUpdate: () =>
-              _latestVersionFetch.installUpdate(versionModel.latestVersion!),
-        );
-      },
+      builder: (BuildContext context) => UpdatePromptDialog(
+        currentVersion: currentVersion,
+        newVersion: versionModel.latestVersion!,
+        changelogs: versionModel.changelogs ?? [],
+        onUpdate: () =>
+            _latestVersionFetch.installUpdate(versionModel.latestVersion!),
+      ),
     );
   }
 
@@ -167,67 +165,21 @@ class _HomeState extends State<Home> {
           ),
         ),
         actions: [
-          AnimatedIconButton(
-            onPressed: themeNotifier.toggleTheme,
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return RotationTransition(
-                  turns: animation,
-                  child: child,
-                );
-              },
-              child: Icon(
-                themeNotifier.themeMode == ThemeMode.light
-                    ? Icons.nightlight_round
-                    : Icons.wb_sunny,
-                key: ValueKey<bool>(themeNotifier.themeMode == ThemeMode.light),
-              ),
-            ),
-            tooltip: 'Toggle theme mode',
-          ),
-          AnimatedIconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => context.push('/settings'),
-            tooltip: 'Settings',
+          AppBarActions(
+            themeNotifier: themeNotifier,
+            onSettingsPressed: () => context.push('/settings'),
           ),
         ],
       ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back!',
-                    style: GoogleFonts.ubuntu(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Discover your next favorite audiobook',
-                    style: GoogleFonts.ubuntu(
-                      fontSize: 16,
-                      color: theme.textTheme.bodyMedium?.color
-                          ?.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: WelcomeSection(theme: theme),
           ),
           SliverToBoxAdapter(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: 290,
-              ),
-              child: HistorySection(),
+              constraints: const BoxConstraints(maxHeight: 290),
+              child: const HistorySection(),
             ),
           ),
           SliverToBoxAdapter(
@@ -239,11 +191,10 @@ class _HomeState extends State<Home> {
                     snapshot.hasData) {
                   return _buildLazyLoadSection(
                       context, 'Recommended for you', snapshot.data!);
-                } else {
-                  return CircularProgressIndicator(
-                    color: AppColors.primaryColor,
-                  );
                 }
+                return const CircularProgressIndicator(
+                  color: AppColors.primaryColor,
+                );
               },
             ),
           ),
@@ -264,18 +215,7 @@ class _HomeState extends State<Home> {
           ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 2.5,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildGenreChip(context, genres[index]),
-                childCount: genres.length,
-              ),
-            ),
+            sliver: GenreGrid(genres: HomeConstants.genres),
           ),
           SliverToBoxAdapter(
             child: FutureBuilder<Widget>(
@@ -284,11 +224,10 @@ class _HomeState extends State<Home> {
                 if (snapshot.connectionState == ConnectionState.done &&
                     snapshot.hasData) {
                   return snapshot.data!;
-                } else {
-                  return CircularProgressIndicator(
-                    color: AppColors.primaryColor,
-                  );
                 }
+                return const CircularProgressIndicator(
+                  color: AppColors.primaryColor,
+                );
               },
             ),
           ),
@@ -316,39 +255,12 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildGenreChip(BuildContext context, String genre) {
-    return Material(
-      color: AppColors.primaryColor,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          context.push('/genre_audiobooks', extra: genre);
-        },
-        child: Container(
-          alignment: Alignment.center,
-          child: Text(
-            genre,
-            style: GoogleFonts.ubuntu(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Implementing later in another version with better recommendation algorithm
-  // TODO: Implement this
   Future<Widget> _buildGenreSections() async {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          SizedBox(height: 16),
-
+          const SizedBox(height: 16),
           Text(
             'Or Go To Search, Choose Subjects button And Search Your Favorite Genre/s',
             style: GoogleFonts.ubuntu(
@@ -356,18 +268,10 @@ class _HomeState extends State<Home> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          // for top 5 genres in RecommendationService().getRecommendedGenres()
-          // but it can be less than 5 too
-          // for (String genre in recommendedGenres.take(5))
-          //   _buildLazyLoadSection(
-          //       context, capitalize(genre) + "'s Audiobooks", genre),
         ],
       ),
     );
   }
-
-  String capitalize(String s) =>
-      s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}' : s;
 
   Widget _buildLazyLoadSection(
       BuildContext context, String title, String genre) {
@@ -385,29 +289,6 @@ class _HomeState extends State<Home> {
         genre: genre,
         scrollController: ScrollController(),
       ),
-    );
-  }
-}
-
-class AnimatedIconButton extends StatelessWidget {
-  final Widget icon;
-  final VoidCallback onPressed;
-  final String? tooltip;
-
-  const AnimatedIconButton({
-    required this.icon,
-    required this.onPressed,
-    this.tooltip,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: icon,
-      onPressed: onPressed,
-      tooltip: tooltip,
-      splashRadius: 24,
     );
   }
 }

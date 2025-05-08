@@ -47,7 +47,9 @@ dependencies:
   back_button_interceptor: ^8.0.0
   visibility_detector: ^0.4.0+2
   open_file: ^3.5.10
-  youtube_explode_dart: ^2.4.0
+  youtube_explode_dart:
+    git:
+      url: https://github.com/sheikhhaziq/youtube_explode_dart.git
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2

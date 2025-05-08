@@ -68,19 +68,13 @@ class _FavouriteState extends State<Favourite> {
               var key = box.keyAt(index);
               final audiobook = Audiobook.fromMap(box.get(key)!);
 
-              return GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/audiobook',
-                      arguments: audiobook);
+              return AudiobookItem(
+                audiobook: audiobook,
+                width: width,
+                height: desiredHeight,
+                onLongPressed: () {
+                  _showDeleteConfirmation(context, index);
                 },
-                child: AudiobookItem(
-                  audiobook: audiobook,
-                  width: width,
-                  height: desiredHeight,
-                  onLongPressed: () {
-                    _showDeleteConfirmation(context, index);
-                  },
-                ),
               );
             },
           );
