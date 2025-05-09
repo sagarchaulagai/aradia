@@ -50,6 +50,9 @@ dependencies:
   youtube_explode_dart:
     git:
       url: https://github.com/sheikhhaziq/youtube_explode_dart.git
+  file_picker: ^10.1.4
+  path: ^1.9.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2

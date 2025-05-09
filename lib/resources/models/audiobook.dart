@@ -117,7 +117,7 @@ class Audiobook {
       "description": description,
       "totalTime": totalTime,
       "author": author,
-      "date": date.toString(),
+      "date": date?.toIso8601String(),
       "downloads": downloads,
       "subject": subject,
       "size": size,
@@ -127,5 +127,39 @@ class Audiobook {
       "language": language,
       "origin": origin,
     };
+  }
+
+  Audiobook copyWith({
+    String? title,
+    String? id,
+    String? description,
+    String? totalTime,
+    String? author,
+    DateTime? date,
+    int? downloads,
+    List<String>? subject,
+    int? size,
+    double? rating,
+    int? reviews,
+    String? lowQCoverImage,
+    String? language,
+    String? origin,
+  }) {
+    return Audiobook.fromMap({
+      'title': title ?? this.title,
+      'id': id ?? this.id,
+      'description': description ?? this.description,
+      'totalTime': totalTime ?? this.totalTime,
+      'author': author ?? this.author,
+      'date': date ?? this.date?.toIso8601String(),
+      'downloads': downloads ?? this.downloads,
+      'subject': subject ?? this.subject,
+      'size': size ?? this.size,
+      'rating': rating ?? this.rating,
+      'reviews': reviews ?? this.reviews,
+      'lowQCoverImage': lowQCoverImage ?? this.lowQCoverImage,
+      'language': language ?? this.language,
+      'origin': origin ?? this.origin,
+    });
   }
 }
