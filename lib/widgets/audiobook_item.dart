@@ -46,6 +46,7 @@ class AudiobookItem extends StatelessWidget {
                 'audiobook': audiobook,
                 'isDownload': audiobook.origin == 'download',
                 'isYoutube': audiobook.origin == 'youtube',
+                'isLocal': audiobook.origin == 'local',
               },
             );
           },

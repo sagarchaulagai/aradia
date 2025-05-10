@@ -290,6 +290,7 @@ class DownloadsPage extends StatelessWidget {
                               'audiobook': audiobook,
                               'isDownload': true,
                               'isYoutube': false,
+                              'isLocal': false,
                             },
                           );
                         } catch (parseError) {
