@@ -22,11 +22,13 @@ class AudiobookDetails extends StatefulWidget {
   final Audiobook audiobook;
   final bool isDownload;
   final bool isYoutube;
+  final bool isLocal;
   const AudiobookDetails({
     super.key,
     required this.audiobook,
     this.isDownload = false,
     this.isYoutube = false,
+    this.isLocal = false,
   });
 
   @override
@@ -48,6 +50,7 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
       widget.audiobook.id,
       widget.isDownload,
       widget.isYoutube,
+      widget.isLocal,
     ));
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
 
