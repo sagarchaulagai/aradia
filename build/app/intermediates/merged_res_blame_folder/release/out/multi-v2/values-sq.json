@@ -4,7 +4,7 @@
             "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-4:/values-sq/values-sq.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-sq\\values-sq.xml",
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-sq\\values-sq.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

@@ -4,23 +4,6 @@
             "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-4:/values-zh-rTW/values-zh-rTW.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-zh-rTW\\values-zh-rTW.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,147,246,340,434,527,620,716",
-                        "endColumns": "91,98,93,93,92,92,95,100",
-                        "endOffsets": "142,241,335,429,522,615,711,812"
-                    },
-                    "to": {
-                        "startLines": "29,30,31,32,33,34,35,59",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "2671,2763,2862,2956,3050,3143,3236,5186",
-                        "endColumns": "91,98,93,93,92,92,95,100",
-                        "endOffsets": "2758,2857,2951,3045,3138,3231,3327,5282"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\7abf5c28583437f00146de6befc41907\\transformed\\appcompat-1.6.1\\res\\values-zh-rTW\\values-zh-rTW.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
@@ -103,6 +86,23 @@
                         "startOffsets": "3482,4575,4669,4960,5071",
                         "endColumns": "96,93,91,110,114",
                         "endOffsets": "3574,4664,4756,5066,5181"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-zh-rTW\\values-zh-rTW.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,147,246,340,434,527,620,716",
+                        "endColumns": "91,98,93,93,92,92,95,100",
+                        "endOffsets": "142,241,335,429,522,615,711,812"
+                    },
+                    "to": {
+                        "startLines": "29,30,31,32,33,34,35,59",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "2671,2763,2862,2956,3050,3143,3236,5186",
+                        "endColumns": "91,98,93,93,92,92,95,100",
+                        "endOffsets": "2758,2857,2951,3045,3138,3231,3327,5282"
                     }
                 }
             ]

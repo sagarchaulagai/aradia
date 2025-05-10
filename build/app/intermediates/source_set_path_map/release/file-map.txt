@@ -11,58 +11,61 @@ com.aradia.audiobook.app-packaged_res-9 C:\FlutterProject\aradia\build\audio_ses
 com.aradia.audiobook.app-packaged_res-10 C:\FlutterProject\aradia\build\background_downloader\intermediates\packaged_res\release
 com.aradia.audiobook.app-packaged_res-11 C:\FlutterProject\aradia\build\connectivity_plus\intermediates\packaged_res\release
 com.aradia.audiobook.app-packaged_res-12 C:\FlutterProject\aradia\build\device_info_plus\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-13 C:\FlutterProject\aradia\build\flutter_background\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-14 C:\FlutterProject\aradia\build\just_audio\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-15 C:\FlutterProject\aradia\build\media_store_plus\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-16 C:\FlutterProject\aradia\build\open_file_android\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-17 C:\FlutterProject\aradia\build\path_provider_android\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-18 C:\FlutterProject\aradia\build\permission_handler_android\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-19 C:\FlutterProject\aradia\build\sqflite_android\intermediates\packaged_res\release
-com.aradia.audiobook.app-packaged_res-20 C:\FlutterProject\aradia\build\url_launcher_android\intermediates\packaged_res\release
-com.aradia.audiobook.app-media-1.6.0-21 C:\Users\Asus Tuf\.gradle\caches\transforms-3\0baad62e8ef5c4a470f8d29215ec602e\transformed\media-1.6.0\res
-com.aradia.audiobook.app-recyclerview-1.0.0-22 C:\Users\Asus Tuf\.gradle\caches\transforms-3\0e725de17b1b7f97badd699e2c242a10\transformed\recyclerview-1.0.0\res
-com.aradia.audiobook.app-jetified-savedstate-ktx-1.2.1-23 C:\Users\Asus Tuf\.gradle\caches\transforms-3\0f675a386b86191360f2139fe61e8938\transformed\jetified-savedstate-ktx-1.2.1\res
-com.aradia.audiobook.app-jetified-window-1.2.0-24 C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\res
-com.aradia.audiobook.app-jetified-window-java-1.2.0-25 C:\Users\Asus Tuf\.gradle\caches\transforms-3\183e9becff3881c24192bb5a253de7d4\transformed\jetified-window-java-1.2.0\res
-com.aradia.audiobook.app-core-1.13.1-26 C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\res
-com.aradia.audiobook.app-jetified-annotation-experimental-1.4.0-27 C:\Users\Asus Tuf\.gradle\caches\transforms-3\1eb82b4b710031195e37c48c607b9009\transformed\jetified-annotation-experimental-1.4.0\res
-com.aradia.audiobook.app-sqlite-2.3.0-28 C:\Users\Asus Tuf\.gradle\caches\transforms-3\1fc8429962d48f50ee90123d6672b9da\transformed\sqlite-2.3.0\res
-com.aradia.audiobook.app-jetified-lifecycle-service-2.7.0-29 C:\Users\Asus Tuf\.gradle\caches\transforms-3\214790bc01f6eddc7167d1dca9a5a6c5\transformed\jetified-lifecycle-service-2.7.0\res
-com.aradia.audiobook.app-jetified-lifecycle-livedata-core-ktx-2.7.0-30 C:\Users\Asus Tuf\.gradle\caches\transforms-3\41db3c5cebd9b5fe818cf8b3093d3ea2\transformed\jetified-lifecycle-livedata-core-ktx-2.7.0\res
-com.aradia.audiobook.app-lifecycle-runtime-2.7.0-31 C:\Users\Asus Tuf\.gradle\caches\transforms-3\48356f0b90a6a47412ec39a923613034\transformed\lifecycle-runtime-2.7.0\res
-com.aradia.audiobook.app-lifecycle-viewmodel-2.7.0-32 C:\Users\Asus Tuf\.gradle\caches\transforms-3\48cd4ede733bce590260ee3a834dcd08\transformed\lifecycle-viewmodel-2.7.0\res
-com.aradia.audiobook.app-jetified-profileinstaller-1.3.1-33 C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\res
-com.aradia.audiobook.app-work-runtime-ktx-2.9.0-34 C:\Users\Asus Tuf\.gradle\caches\transforms-3\555e7795b0a4c1171d04e1c151542e11\transformed\work-runtime-ktx-2.9.0\res
-com.aradia.audiobook.app-jetified-tracing-1.2.0-35 C:\Users\Asus Tuf\.gradle\caches\transforms-3\60623d262d87fc34c0f52d0b40514f35\transformed\jetified-tracing-1.2.0\res
-com.aradia.audiobook.app-jetified-appcompat-resources-1.6.1-36 C:\Users\Asus Tuf\.gradle\caches\transforms-3\630819da98dc92cc46de6a2240c9804a\transformed\jetified-appcompat-resources-1.6.1\res
-com.aradia.audiobook.app-jetified-lifecycle-viewmodel-savedstate-2.7.0-37 C:\Users\Asus Tuf\.gradle\caches\transforms-3\70a4437a7b225c71a63c26c5ecf38c33\transformed\jetified-lifecycle-viewmodel-savedstate-2.7.0\res
-com.aradia.audiobook.app-lifecycle-livedata-core-2.7.0-38 C:\Users\Asus Tuf\.gradle\caches\transforms-3\74a1113311a183620700cfa8755290bc\transformed\lifecycle-livedata-core-2.7.0\res
-com.aradia.audiobook.app-appcompat-1.6.1-39 C:\Users\Asus Tuf\.gradle\caches\transforms-3\7abf5c28583437f00146de6befc41907\transformed\appcompat-1.6.1\res
-com.aradia.audiobook.app-jetified-startup-runtime-1.1.1-40 C:\Users\Asus Tuf\.gradle\caches\transforms-3\8098cb9d021933836cf25cfb034a837a\transformed\jetified-startup-runtime-1.1.1\res
-com.aradia.audiobook.app-work-runtime-2.9.0-41 C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\res
-com.aradia.audiobook.app-slidingpanelayout-1.2.0-42 C:\Users\Asus Tuf\.gradle\caches\transforms-3\96a27a0a334e4311d3659d29e38880ab\transformed\slidingpanelayout-1.2.0\res
-com.aradia.audiobook.app-jetified-emoji2-views-helper-1.2.0-43 C:\Users\Asus Tuf\.gradle\caches\transforms-3\97e6f965ae1b8993e81deb755f80ac2f\transformed\jetified-emoji2-views-helper-1.2.0\res
-com.aradia.audiobook.app-jetified-media2-session-1.2.1-44 C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\res
-com.aradia.audiobook.app-jetified-preference-ktx-1.2.1-45 C:\Users\Asus Tuf\.gradle\caches\transforms-3\9f6a79d4a6d027eadd7721bc40534bec\transformed\jetified-preference-ktx-1.2.1\res
-com.aradia.audiobook.app-room-runtime-2.5.0-46 C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\res
-com.aradia.audiobook.app-jetified-lifecycle-viewmodel-ktx-2.7.0-47 C:\Users\Asus Tuf\.gradle\caches\transforms-3\a38f493ec5cb0a369ef34b4eca093128\transformed\jetified-lifecycle-viewmodel-ktx-2.7.0\res
-com.aradia.audiobook.app-jetified-exoplayer-core-2.18.7-48 C:\Users\Asus Tuf\.gradle\caches\transforms-3\a4bc9433f92eb4ff2cf3dddd189dbcee\transformed\jetified-exoplayer-core-2.18.7\res
-com.aradia.audiobook.app-jetified-lifecycle-process-2.7.0-49 C:\Users\Asus Tuf\.gradle\caches\transforms-3\a9dec742d0b50c3c2f8bcd02508464c3\transformed\jetified-lifecycle-process-2.7.0\res
-com.aradia.audiobook.app-jetified-media2-common-1.2.1-50 C:\Users\Asus Tuf\.gradle\caches\transforms-3\aa2c55185a50bad370b79715e6cbe68e\transformed\jetified-media2-common-1.2.1\res
-com.aradia.audiobook.app-jetified-activity-1.8.1-51 C:\Users\Asus Tuf\.gradle\caches\transforms-3\ae939fdb699aa320964a0fdb8924fa17\transformed\jetified-activity-1.8.1\res
-com.aradia.audiobook.app-transition-1.4.1-52 C:\Users\Asus Tuf\.gradle\caches\transforms-3\b2ea6932244865b7b576d8c30bf85b53\transformed\transition-1.4.1\res
-com.aradia.audiobook.app-jetified-lifecycle-runtime-ktx-2.7.0-53 C:\Users\Asus Tuf\.gradle\caches\transforms-3\b69d7b41ebfd1dc11d6d41125866d2a5\transformed\jetified-lifecycle-runtime-ktx-2.7.0\res
-com.aradia.audiobook.app-core-runtime-2.2.0-54 C:\Users\Asus Tuf\.gradle\caches\transforms-3\b8433f216a035674bdc3fbbd8f494f13\transformed\core-runtime-2.2.0\res
-com.aradia.audiobook.app-fragment-1.7.1-55 C:\Users\Asus Tuf\.gradle\caches\transforms-3\c11fe9aa8d929f331d1341c2a3298d0f\transformed\fragment-1.7.1\res
-com.aradia.audiobook.app-lifecycle-livedata-2.7.0-56 C:\Users\Asus Tuf\.gradle\caches\transforms-3\ca89cbc6e9f87b1f80614315cc599f4a\transformed\lifecycle-livedata-2.7.0\res
-com.aradia.audiobook.app-browser-1.8.0-57 C:\Users\Asus Tuf\.gradle\caches\transforms-3\cb64507ad990b98ed2a263940c2eed59\transformed\browser-1.8.0\res
-com.aradia.audiobook.app-jetified-core-ktx-1.13.1-58 C:\Users\Asus Tuf\.gradle\caches\transforms-3\d0db8fe1e78a334fdff91ba1d1e7d47a\transformed\jetified-core-ktx-1.13.1\res
+com.aradia.audiobook.app-packaged_res-13 C:\FlutterProject\aradia\build\file_picker\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-14 C:\FlutterProject\aradia\build\flutter_background\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-15 C:\FlutterProject\aradia\build\flutter_plugin_android_lifecycle\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-16 C:\FlutterProject\aradia\build\image_picker_android\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-17 C:\FlutterProject\aradia\build\just_audio\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-18 C:\FlutterProject\aradia\build\media_store_plus\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-19 C:\FlutterProject\aradia\build\open_file_android\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-20 C:\FlutterProject\aradia\build\path_provider_android\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-21 C:\FlutterProject\aradia\build\permission_handler_android\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-22 C:\FlutterProject\aradia\build\sqflite_android\intermediates\packaged_res\release
+com.aradia.audiobook.app-packaged_res-23 C:\FlutterProject\aradia\build\url_launcher_android\intermediates\packaged_res\release
+com.aradia.audiobook.app-media-1.6.0-24 C:\Users\Asus Tuf\.gradle\caches\transforms-3\0baad62e8ef5c4a470f8d29215ec602e\transformed\media-1.6.0\res
+com.aradia.audiobook.app-recyclerview-1.0.0-25 C:\Users\Asus Tuf\.gradle\caches\transforms-3\0e725de17b1b7f97badd699e2c242a10\transformed\recyclerview-1.0.0\res
+com.aradia.audiobook.app-jetified-savedstate-ktx-1.2.1-26 C:\Users\Asus Tuf\.gradle\caches\transforms-3\0f675a386b86191360f2139fe61e8938\transformed\jetified-savedstate-ktx-1.2.1\res
+com.aradia.audiobook.app-jetified-window-1.2.0-27 C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\res
+com.aradia.audiobook.app-jetified-window-java-1.2.0-28 C:\Users\Asus Tuf\.gradle\caches\transforms-3\183e9becff3881c24192bb5a253de7d4\transformed\jetified-window-java-1.2.0\res
+com.aradia.audiobook.app-lifecycle-livedata-2.8.7-29 C:\Users\Asus Tuf\.gradle\caches\transforms-3\1df416134ce9e1d4faf07c1ef4a35ff0\transformed\lifecycle-livedata-2.8.7\res
+com.aradia.audiobook.app-jetified-lifecycle-viewmodel-release-30 C:\Users\Asus Tuf\.gradle\caches\transforms-3\1ee9cd42bafcb999218f959c46e13491\transformed\jetified-lifecycle-viewmodel-release\res
+com.aradia.audiobook.app-sqlite-2.3.0-31 C:\Users\Asus Tuf\.gradle\caches\transforms-3\1fc8429962d48f50ee90123d6672b9da\transformed\sqlite-2.3.0\res
+com.aradia.audiobook.app-jetified-activity-1.9.3-32 C:\Users\Asus Tuf\.gradle\caches\transforms-3\2451bc76b9dabc2949f1ed8d31d07b52\transformed\jetified-activity-1.9.3\res
+com.aradia.audiobook.app-jetified-activity-ktx-1.9.3-33 C:\Users\Asus Tuf\.gradle\caches\transforms-3\3f78dc42cd1f952fc9be45270eeb5ba7\transformed\jetified-activity-ktx-1.9.3\res
+com.aradia.audiobook.app-jetified-lifecycle-service-2.8.7-34 C:\Users\Asus Tuf\.gradle\caches\transforms-3\48c949dfc999f627a42f62ebce517d2e\transformed\jetified-lifecycle-service-2.8.7\res
+com.aradia.audiobook.app-jetified-profileinstaller-1.3.1-35 C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\res
+com.aradia.audiobook.app-jetified-lifecycle-livedata-core-ktx-2.8.7-36 C:\Users\Asus Tuf\.gradle\caches\transforms-3\53efe06045d476a61de84c0e92d3592d\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\res
+com.aradia.audiobook.app-work-runtime-ktx-2.9.0-37 C:\Users\Asus Tuf\.gradle\caches\transforms-3\555e7795b0a4c1171d04e1c151542e11\transformed\work-runtime-ktx-2.9.0\res
+com.aradia.audiobook.app-jetified-tracing-1.2.0-38 C:\Users\Asus Tuf\.gradle\caches\transforms-3\60623d262d87fc34c0f52d0b40514f35\transformed\jetified-tracing-1.2.0\res
+com.aradia.audiobook.app-jetified-appcompat-resources-1.6.1-39 C:\Users\Asus Tuf\.gradle\caches\transforms-3\630819da98dc92cc46de6a2240c9804a\transformed\jetified-appcompat-resources-1.6.1\res
+com.aradia.audiobook.app-jetified-annotation-experimental-1.4.1-40 C:\Users\Asus Tuf\.gradle\caches\transforms-3\666befa2243159b4ef6f5827442b3986\transformed\jetified-annotation-experimental-1.4.1\res
+com.aradia.audiobook.app-jetified-core-ktx-1.15.0-41 C:\Users\Asus Tuf\.gradle\caches\transforms-3\67e312176977c348dda245e45f62d222\transformed\jetified-core-ktx-1.15.0\res
+com.aradia.audiobook.app-appcompat-1.6.1-42 C:\Users\Asus Tuf\.gradle\caches\transforms-3\7abf5c28583437f00146de6befc41907\transformed\appcompat-1.6.1\res
+com.aradia.audiobook.app-jetified-startup-runtime-1.1.1-43 C:\Users\Asus Tuf\.gradle\caches\transforms-3\8098cb9d021933836cf25cfb034a837a\transformed\jetified-startup-runtime-1.1.1\res
+com.aradia.audiobook.app-core-1.15.0-44 C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\res
+com.aradia.audiobook.app-work-runtime-2.9.0-45 C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\res
+com.aradia.audiobook.app-slidingpanelayout-1.2.0-46 C:\Users\Asus Tuf\.gradle\caches\transforms-3\96a27a0a334e4311d3659d29e38880ab\transformed\slidingpanelayout-1.2.0\res
+com.aradia.audiobook.app-jetified-emoji2-views-helper-1.2.0-47 C:\Users\Asus Tuf\.gradle\caches\transforms-3\97e6f965ae1b8993e81deb755f80ac2f\transformed\jetified-emoji2-views-helper-1.2.0\res
+com.aradia.audiobook.app-jetified-media2-session-1.2.1-48 C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\res
+com.aradia.audiobook.app-jetified-preference-ktx-1.2.1-49 C:\Users\Asus Tuf\.gradle\caches\transforms-3\9f6a79d4a6d027eadd7721bc40534bec\transformed\jetified-preference-ktx-1.2.1\res
+com.aradia.audiobook.app-room-runtime-2.5.0-50 C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\res
+com.aradia.audiobook.app-jetified-exoplayer-core-2.18.7-51 C:\Users\Asus Tuf\.gradle\caches\transforms-3\a4bc9433f92eb4ff2cf3dddd189dbcee\transformed\jetified-exoplayer-core-2.18.7\res
+com.aradia.audiobook.app-jetified-media2-common-1.2.1-52 C:\Users\Asus Tuf\.gradle\caches\transforms-3\aa2c55185a50bad370b79715e6cbe68e\transformed\jetified-media2-common-1.2.1\res
+com.aradia.audiobook.app-transition-1.4.1-53 C:\Users\Asus Tuf\.gradle\caches\transforms-3\b2ea6932244865b7b576d8c30bf85b53\transformed\transition-1.4.1\res
+com.aradia.audiobook.app-jetified-lifecycle-process-2.8.7-54 C:\Users\Asus Tuf\.gradle\caches\transforms-3\b7d1a204637c5c04633da56d94b3544f\transformed\jetified-lifecycle-process-2.8.7\res
+com.aradia.audiobook.app-core-runtime-2.2.0-55 C:\Users\Asus Tuf\.gradle\caches\transforms-3\b8433f216a035674bdc3fbbd8f494f13\transformed\core-runtime-2.2.0\res
+com.aradia.audiobook.app-fragment-1.7.1-56 C:\Users\Asus Tuf\.gradle\caches\transforms-3\c11fe9aa8d929f331d1341c2a3298d0f\transformed\fragment-1.7.1\res
+com.aradia.audiobook.app-jetified-lifecycle-viewmodel-ktx-2.8.7-57 C:\Users\Asus Tuf\.gradle\caches\transforms-3\c9438c8da12d04da663c95b3cd186c88\transformed\jetified-lifecycle-viewmodel-ktx-2.8.7\res
+com.aradia.audiobook.app-browser-1.8.0-58 C:\Users\Asus Tuf\.gradle\caches\transforms-3\cb64507ad990b98ed2a263940c2eed59\transformed\browser-1.8.0\res
 com.aradia.audiobook.app-jetified-savedstate-1.2.1-59 C:\Users\Asus Tuf\.gradle\caches\transforms-3\dfe48ad41beb20d02c403be1218a09cb\transformed\jetified-savedstate-1.2.1\res
 com.aradia.audiobook.app-jetified-room-ktx-2.5.0-60 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e102005f3d95e5734f078f0b17c79ae0\transformed\jetified-room-ktx-2.5.0\res
-com.aradia.audiobook.app-coordinatorlayout-1.0.0-61 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e540ac0c301e10c7a7be046eea8d3473\transformed\coordinatorlayout-1.0.0\res
-com.aradia.audiobook.app-jetified-fragment-ktx-1.7.1-62 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e62d24414a1acb7e74eae7eaa6a664c8\transformed\jetified-fragment-ktx-1.7.1\res
-com.aradia.audiobook.app-sqlite-framework-2.3.0-63 C:\Users\Asus Tuf\.gradle\caches\transforms-3\f0c1aa1d766770b113c1c9cb79767f54\transformed\sqlite-framework-2.3.0\res
-com.aradia.audiobook.app-preference-1.2.1-64 C:\Users\Asus Tuf\.gradle\caches\transforms-3\f3522019042a810953baa0fa8739e15c\transformed\preference-1.2.1\res
-com.aradia.audiobook.app-jetified-activity-ktx-1.8.1-65 C:\Users\Asus Tuf\.gradle\caches\transforms-3\f6d66893554f70b48d134273e1b8d04a\transformed\jetified-activity-ktx-1.8.1\res
-com.aradia.audiobook.app-jetified-core-1.0.0-66 C:\Users\Asus Tuf\.gradle\caches\transforms-3\fbdfdca6e7b41e6f3864463550b31483\transformed\jetified-core-1.0.0\res
-com.aradia.audiobook.app-jetified-emoji2-1.2.0-67 C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\res
+com.aradia.audiobook.app-jetified-lifecycle-runtime-release-61 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e1d5c089e748069b32a80e0f7e6af1f6\transformed\jetified-lifecycle-runtime-release\res
+com.aradia.audiobook.app-jetified-lifecycle-viewmodel-savedstate-2.8.7-62 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e45934a653bdf6b6042ba038bc195e2f\transformed\jetified-lifecycle-viewmodel-savedstate-2.8.7\res
+com.aradia.audiobook.app-coordinatorlayout-1.0.0-63 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e540ac0c301e10c7a7be046eea8d3473\transformed\coordinatorlayout-1.0.0\res
+com.aradia.audiobook.app-jetified-fragment-ktx-1.7.1-64 C:\Users\Asus Tuf\.gradle\caches\transforms-3\e62d24414a1acb7e74eae7eaa6a664c8\transformed\jetified-fragment-ktx-1.7.1\res
+com.aradia.audiobook.app-lifecycle-livedata-core-2.8.7-65 C:\Users\Asus Tuf\.gradle\caches\transforms-3\ebb4c1a40d7be7dabf11f1c472faa694\transformed\lifecycle-livedata-core-2.8.7\res
+com.aradia.audiobook.app-sqlite-framework-2.3.0-66 C:\Users\Asus Tuf\.gradle\caches\transforms-3\f0c1aa1d766770b113c1c9cb79767f54\transformed\sqlite-framework-2.3.0\res
+com.aradia.audiobook.app-jetified-lifecycle-runtime-ktx-release-67 C:\Users\Asus Tuf\.gradle\caches\transforms-3\f30c653f9b7ce1e1c6c36eb8d959431c\transformed\jetified-lifecycle-runtime-ktx-release\res
+com.aradia.audiobook.app-preference-1.2.1-68 C:\Users\Asus Tuf\.gradle\caches\transforms-3\f3522019042a810953baa0fa8739e15c\transformed\preference-1.2.1\res
+com.aradia.audiobook.app-jetified-core-1.0.0-69 C:\Users\Asus Tuf\.gradle\caches\transforms-3\fbdfdca6e7b41e6f3864463550b31483\transformed\jetified-core-1.0.0\res
+com.aradia.audiobook.app-jetified-emoji2-1.2.0-70 C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\res

@@ -4,6 +4,25 @@
             "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-4:/values-v21/values-v21.xml",
             "map": [
                 {
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-v21\\values-v21.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,13",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,173,237,304,368,484,610,736,864,1036",
+                        "endLines": "2,3,4,5,6,7,8,9,12,17",
+                        "endColumns": "117,63,66,63,115,125,125,127,12,12",
+                        "endOffsets": "168,232,299,363,479,605,731,859,1031,1383"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,271,272,279,283,287,290",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,173,237,304,19054,19170,19627,19921,20216,20388",
+                        "endLines": "2,3,4,5,271,272,279,283,289,294",
+                        "endColumns": "117,63,66,63,115,125,125,127,12,12",
+                        "endOffsets": "168,232,299,363,19165,19291,19748,20044,20383,20735"
+                    }
+                },
+                {
                     "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\f3522019042a810953baa0fa8739e15c\\transformed\\preference-1.2.1\\res\\values-v21\\values-v21.xml",
                     "from": {
                         "startLines": "2,3,6",
@@ -20,25 +39,6 @@
                         "endLines": "6,267,270",
                         "endColumns": "64,12,12",
                         "endOffsets": "428,18871,19049"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-v21\\values-v21.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,13",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,173,237,304,368,484,610,736,864,1036",
-                        "endLines": "2,3,4,5,6,7,8,9,12,17",
-                        "endColumns": "117,63,66,63,115,125,125,127,12,12",
-                        "endOffsets": "168,232,299,363,479,605,731,859,1031,1383"
-                    },
-                    "to": {
-                        "startLines": "2,3,4,5,271,272,279,283,287,290",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,173,237,304,19054,19170,19627,19921,20216,20388",
-                        "endLines": "2,3,4,5,271,272,279,283,289,294",
-                        "endColumns": "117,63,66,63,115,125,125,127,12,12",
-                        "endOffsets": "168,232,299,363,19165,19291,19748,20044,20383,20735"
                     }
                 },
                 {

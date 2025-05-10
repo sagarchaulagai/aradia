@@ -1,4 +1,4 @@
-#Wed May 07 14:29:47 NPT 2025
+#Fri May 09 11:42:22 NPT 2025
 base.0=C\:\\FlutterProject\\aradia\\build\\app\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
 path.0=classes.dex
 renamed.0=classes.dex

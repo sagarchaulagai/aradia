@@ -55,23 +55,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-zh-rCN\\values-zh-rCN.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,147,248,342,436,529,623,719",
-                        "endColumns": "91,100,93,93,92,93,95,100",
-                        "endOffsets": "142,243,337,431,524,618,714,815"
-                    },
-                    "to": {
-                        "startLines": "29,30,31,32,33,34,35,59",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "2662,2754,2855,2949,3043,3136,3230,5177",
-                        "endColumns": "91,100,93,93,92,93,95,100",
-                        "endOffsets": "2749,2850,2944,3038,3131,3225,3321,5273"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\f3522019042a810953baa0fa8739e15c\\transformed\\preference-1.2.1\\res\\values-zh-rCN\\values-zh-rCN.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8",
@@ -103,6 +86,23 @@
                         "startOffsets": "3392,4214,4306,4407",
                         "endColumns": "82,91,100,92",
                         "endOffsets": "3470,4301,4402,4495"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-zh-rCN\\values-zh-rCN.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,147,248,342,436,529,623,719",
+                        "endColumns": "91,100,93,93,92,93,95,100",
+                        "endOffsets": "142,243,337,431,524,618,714,815"
+                    },
+                    "to": {
+                        "startLines": "29,30,31,32,33,34,35,59",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "2662,2754,2855,2949,3043,3136,3230,5177",
+                        "endColumns": "91,100,93,93,92,93,95,100",
+                        "endOffsets": "2749,2850,2944,3038,3131,3225,3321,5273"
                     }
                 }
             ]

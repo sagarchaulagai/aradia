@@ -38,6 +38,16 @@ class AudiobookFile {
         url = json["url"]?.toString(),
         highQCoverImage = json["highQCoverImage"]?.toString();
 
+  AudiobookFile.fromLocalJson(Map json, String location)
+      : identifier = json["identifier"]?.toString(),
+        title = json["title"]?.toString(),
+        name = json["name"]?.toString(),
+        track = _parseTrack(json["track"]),
+        size = _parseIntSafely(json["size"]),
+        length = _parseDoubleSafely(json["length"]),
+        url = location + "/" + json["url"]!.toString(),
+        highQCoverImage = location + "/cover.jpg";
+
   static int _parseTrack(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -86,6 +96,15 @@ class AudiobookFile {
         print('Error parsing file at index $i: $e');
         print('Data: ${jsonFiles[i]}');
       }
+    }
+    return audiobookFiles;
+  }
+
+  static List<AudiobookFile> fromLocalJsonArray(
+      List jsonFiles, String location) {
+    List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
+    for (var i = 0; i < jsonFiles.length; i++) {
+      audiobookFiles.add(AudiobookFile.fromLocalJson(jsonFiles[i], location));
     }
     return audiobookFiles;
   }
@@ -158,22 +177,46 @@ class AudiobookFile {
     }
   }
 
+  static Future<Either<String, List<AudiobookFile>>> fromLocalFiles(
+      String audiobookId) async {
+    try {
+      final appDir = await getExternalStorageDirectory();
+      final downloadDir = Directory('${appDir?.path}/local/$audiobookId');
+
+      final stringContent =
+          await File('${downloadDir.path}/files.txt').readAsString();
+      final jsonContent = jsonDecode(stringContent);
+      if (jsonContent is List) {
+        print('JSON list length: ${jsonContent.length}');
+        if (jsonContent.isNotEmpty) {
+          print('First item sample fields:');
+          final item = jsonContent[0];
+          if (item is Map) {
+            item.forEach((key, value) {
+              print('  $key: $value (${value.runtimeType})');
+            });
+          }
+        }
+      }
+
+      final List<AudiobookFile> audiobookFiles =
+          AudiobookFile.fromLocalJsonArray(jsonContent, downloadDir.path);
+      return Right(audiobookFiles);
+    } catch (e) {
+      print('Unexpected error: $e');
+      return Left('Unexpected error: $e');
+    }
+  }
+
   static Future<Either<String, List<AudiobookFile>>> fromYoutubeFiles(
       String audiobookId) async {
     try {
       final appDir = await getExternalStorageDirectory();
       final downloadDir = Directory('${appDir?.path}/youtube/$audiobookId');
-      print('Reading from path: ${downloadDir.path}/files.txt');
 
       final stringContent =
           await File('${downloadDir.path}/files.txt').readAsString();
-      print('File content length: ${stringContent.length}');
-      print(
-          'First 100 chars: ${stringContent.substring(0, stringContent.length > 100 ? 100 : stringContent.length)}');
-
       final jsonContent = jsonDecode(stringContent);
-      print('JSON type: ${jsonContent.runtimeType}');
-
       if (jsonContent is List) {
         print('JSON list length: ${jsonContent.length}');
         if (jsonContent.isNotEmpty) {

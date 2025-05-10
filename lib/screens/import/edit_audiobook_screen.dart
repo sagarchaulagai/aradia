@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math'; // For Random and min
 import 'package:aradia/resources/designs/app_colors.dart'; // Ensure this path is correct
+import 'package:aradia/resources/models/google_book_result.dart';
 import 'package:aradia/widgets/low_and_high_image.dart'; // Your LowAndHighImage widget
 import 'package:flutter/material.dart';
 import 'package:aradia/resources/models/audiobook.dart';
@@ -19,38 +20,6 @@ import 'package:device_info_plus/device_info_plus.dart'; // For permission handl
 const String _youtubeDirNameEdit = 'youtube';
 const String _localDirNameEdit = 'local';
 const String _coverFileNameEdit = 'cover.jpg'; // Standardized cover name
-
-// Re-using GoogleBookResult model (can be moved to a shared file if also used in import_audiobook.dart)
-class GoogleBookResult {
-  final String id;
-  final String title;
-  final String authors;
-  final String? description;
-  final String? thumbnailUrl;
-
-  GoogleBookResult({
-    required this.id,
-    required this.title,
-    required this.authors,
-    this.description,
-    this.thumbnailUrl,
-  });
-
-  factory GoogleBookResult.fromJson(Map<String, dynamic> json) {
-    final volumeInfo = json['volumeInfo'] as Map<String, dynamic>? ?? {};
-    return GoogleBookResult(
-      id: json['id'] as String? ?? '',
-      title: volumeInfo['title'] as String? ?? 'No Title',
-      authors: (volumeInfo['authors'] as List<dynamic>?)?.join(', ') ??
-          'Unknown Author',
-      description: volumeInfo['description'] as String?,
-      thumbnailUrl: (volumeInfo['imageLinks']
-              as Map<String, dynamic>?)?['thumbnail'] as String? ??
-          (volumeInfo['imageLinks'] as Map<String, dynamic>?)?['smallThumbnail']
-              as String?,
-    );
-  }
-}
 
 class EditAudiobookScreen extends StatefulWidget {
   final Audiobook audiobook;

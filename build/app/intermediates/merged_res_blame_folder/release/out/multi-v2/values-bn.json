@@ -4,23 +4,6 @@
             "outputFile": "com.aradia.audiobook.app-mergeReleaseResources-4:/values-bn/values-bn.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-bn\\values-bn.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,154,256,358,461,562,664,784",
-                        "endColumns": "98,101,101,102,100,101,119,100",
-                        "endOffsets": "149,251,353,456,557,659,779,880"
-                    },
-                    "to": {
-                        "startLines": "29,30,31,32,33,34,35,59",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "2835,2934,3036,3138,3241,3342,3444,5764",
-                        "endColumns": "98,101,101,102,100,101,119,100",
-                        "endOffsets": "2929,3031,3133,3236,3337,3439,3559,5860"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\7abf5c28583437f00146de6befc41907\\transformed\\appcompat-1.6.1\\res\\values-bn\\values-bn.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
@@ -52,6 +35,23 @@
                         "startOffsets": "3742,5083,5182,5513,5635",
                         "endColumns": "100,98,94,121,128",
                         "endOffsets": "3838,5177,5272,5630,5759"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-bn\\values-bn.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,154,256,358,461,562,664,784",
+                        "endColumns": "98,101,101,102,100,101,119,100",
+                        "endOffsets": "149,251,353,456,557,659,779,880"
+                    },
+                    "to": {
+                        "startLines": "29,30,31,32,33,34,35,59",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "2835,2934,3036,3138,3241,3342,3444,5764",
+                        "endColumns": "98,101,101,102,100,101,119,100",
+                        "endOffsets": "2929,3031,3133,3236,3337,3439,3559,5860"
                     }
                 },
                 {

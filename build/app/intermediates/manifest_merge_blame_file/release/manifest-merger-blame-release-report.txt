@@ -65,500 +65,551 @@
 33-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:87:19-48
 34        </intent>
 35        <intent>
-35-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:25:9-27:18
-36            <action android:name="android.media.browse.MediaBrowserService" />
-36-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:17-83
-36-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:25-80
-37        </intent>
-38        <intent>
-38-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:28:9-30:18
-39            <action android:name="androidx.media2.session.MediaSessionService" />
-39-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:29:13-82
-39-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:29:21-79
-40        </intent>
-41        <intent>
-41-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:31:9-33:18
-42            <action android:name="androidx.media2.session.MediaLibraryService" />
-42-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:32:13-82
-42-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:32:21-79
-43        </intent>
-44    </queries>
-45
-46    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-46-->[:flutter_background] C:\FlutterProject\aradia\build\flutter_background\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-95
-46-->[:flutter_background] C:\FlutterProject\aradia\build\flutter_background\intermediates\merged_manifest\release\AndroidManifest.xml:9:22-92
-47    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-47-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:25:5-81
-47-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:25:22-78
-48
-49    <permission
-49-->[androidx.core:core:1.13.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
-50        android:name="com.aradia.audiobook.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-50-->[androidx.core:core:1.13.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
-51        android:protectionLevel="signature" />
-51-->[androidx.core:core:1.13.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
-52
-53    <uses-permission android:name="com.aradia.audiobook.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-53-->[androidx.core:core:1.13.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
-53-->[androidx.core:core:1.13.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
-54
-55    <application
-56        android:name="android.app.Application"
-56-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:24:9-42
-57        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-57-->[androidx.core:core:1.13.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\18c4f74717697486e996e6b3af184519\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
-58        android:enableOnBackInvokedCallback="false"
-58-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:25:9-52
-59        android:extractNativeLibs="true"
-60        android:icon="@mipmap/ic_launcher"
-60-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:26:9-43
-61        android:label="Aradia"
-61-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:21:9-31
-62        android:requestLegacyExternalStorage="true"
-62-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:22:9-52
-63        android:usesCleartextTraffic="true" >
-63-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:23:9-44
-64        <activity
-64-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:27:9-44:20
-65            android:name="com.ryanheise.audioservice.AudioServiceActivity"
-65-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:28:13-75
-66            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-66-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:34:13-163
-67            android:exported="true"
-67-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:29:13-36
-68            android:hardwareAccelerated="true"
-68-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:35:13-47
-69            android:launchMode="singleTop"
-69-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:30:13-43
-70            android:taskAffinity=""
-70-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:31:13-36
-71            android:theme="@style/LaunchTheme"
-71-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:33:13-47
-72            android:usesCleartextTraffic="true"
-72-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:32:13-48
-73            android:windowSoftInputMode="adjustResize" >
-73-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:36:13-55
-74            <meta-data
-74-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:37:13-39:55
-75                android:name="io.flutter.embedding.android.NormalTheme"
-75-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:38:15-70
-76                android:resource="@style/NormalTheme" />
-76-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:39:15-52
-77
-78            <intent-filter>
-78-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:40:13-43:29
-79                <action android:name="android.intent.action.MAIN" />
-79-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:41:17-68
-79-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:41:25-66
-80
-81                <category android:name="android.intent.category.LAUNCHER" />
-81-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:42:17-76
-81-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:42:27-74
-82            </intent-filter>
-83        </activity>
-84
-85        <!-- For fileprovider configuration, install app -->
-86        <provider
-87            android:name="androidx.core.content.FileProvider"
-87-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:48:13-62
-88            android:authorities="com.aradia.audiobook.provider"
-88-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:49:13-60
-89            android:exported="false"
-89-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:50:13-37
-90            android:grantUriPermissions="true" >
-90-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:51:13-47
-91            <meta-data
-91-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
-92                android:name="android.support.FILE_PROVIDER_PATHS"
-92-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
-93                android:resource="@xml/provider_paths" />
-93-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
-94        </provider>
-95        <!--
-96             Don't delete the meta-data below.
-97             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
-98        -->
-99        <meta-data
-99-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:58:9-60:33
-100            android:name="flutterEmbedding"
-100-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:59:13-44
-101            android:value="2" />
-101-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:60:13-30
-102
-103        <service
-103-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:62:9-70:19
-104            android:name="com.ryanheise.audioservice.AudioService"
-104-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:63:13-67
-105            android:exported="true"
-105-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:65:13-36
-106            android:foregroundServiceType="mediaPlayback" >
-106-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:64:13-58
-107            <intent-filter>
-107-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:67:13-69:29
-108                <action android:name="android.media.browse.MediaBrowserService" />
-108-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:17-83
-108-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:25-80
-109            </intent-filter>
-110        </service>
-111
-112        <!-- ADD THIS "RECEIVER" element -->
-113        <receiver
-113-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:73:9-80:20
-114            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
-114-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:74:13-74
-115            android:exported="true" >
-115-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:75:13-36
-116            <intent-filter>
-116-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:77:13-79:29
-117                <action android:name="android.intent.action.MEDIA_BUTTON" />
-117-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:78:17-77
-117-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:78:25-74
-118            </intent-filter>
-119        </receiver>
-120        <receiver
-120-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:9:9-21:20
-121            android:name="com.bbflight.background_downloader.NotificationReceiver"
-121-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-83
-122            android:exported="false" >
-122-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-37
-123            <intent-filter>
-123-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:12:13-14:29
-124                <action android:name="com.bbflight.background_downloader.cancelActive" />
-124-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:13:17-90
-124-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:13:25-87
-125            </intent-filter>
-126            <intent-filter>
-126-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:15:13-17:29
-127                <action android:name="com.bbflight.background_downloader.pause" />
-127-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:16:17-83
-127-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:16:25-80
-128            </intent-filter>
-129            <intent-filter>
-129-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:18:13-20:29
-130                <action android:name="com.bbflight.background_downloader.resume" />
-130-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:19:17-84
-130-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:19:25-81
-131            </intent-filter>
-132        </receiver>
-133
-134        <provider
-134-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:23:9-32:20
-135            android:name="com.bbflight.background_downloader.OpenFileProvider"
-135-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:24:13-79
-136            android:authorities="com.aradia.audiobook.com.bbflight.background_downloader.fileprovider"
-136-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:25:13-99
-137            android:exported="false"
-137-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:26:13-37
-138            android:grantUriPermissions="true" >
-138-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:27:13-47
-139            <meta-data
-139-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
-140                android:name="android.support.FILE_PROVIDER_PATHS"
-140-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
-141                android:resource="@xml/bgd_file_paths" />
-141-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
-142        </provider>
-143        <provider
-143-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:9-19:20
-144            android:name="com.crazecoder.openfile.FileProvider"
-144-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-64
-145            android:authorities="com.aradia.audiobook.fileProvider.com.crazecoder.openfile"
-145-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-88
-146            android:exported="false"
-146-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:12:13-37
-147            android:grantUriPermissions="true"
-147-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:13:13-47
-148            android:requestLegacyExternalStorage="true" >
-148-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:14:13-56
-149            <meta-data
-149-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
-150                android:name="android.support.FILE_PROVIDER_PATHS"
-150-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
-151                android:resource="@xml/filepaths" />
-151-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
-152        </provider>
-153
-154        <activity
-154-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:8:9-11:74
-155            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
-155-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:13-74
-156            android:exported="false"
-156-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-37
-157            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
-157-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-71
-158
-159        <uses-library
-159-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:23:9-25:40
-160            android:name="androidx.window.extensions"
-160-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:24:13-54
-161            android:required="false" />
-161-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:25:13-37
-162        <uses-library
-162-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:26:9-28:40
-163            android:name="androidx.window.sidecar"
-163-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:27:13-51
-164            android:required="false" />
-164-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:28:13-37
-165
-166        <provider
-166-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:29:9-37:20
-167            android:name="androidx.startup.InitializationProvider"
-167-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:30:13-67
-168            android:authorities="com.aradia.audiobook.androidx-startup"
-168-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:31:13-68
-169            android:exported="false" >
-169-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:32:13-37
-170            <meta-data
-170-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:34:13-36:52
-171                android:name="androidx.work.WorkManagerInitializer"
-171-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:35:17-68
-172                android:value="androidx.startup" />
-172-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:36:17-49
-173            <meta-data
-173-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
-174                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-174-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
-175                android:value="androidx.startup" />
-175-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
-176            <meta-data
-176-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a9dec742d0b50c3c2f8bcd02508464c3\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
-177                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-177-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a9dec742d0b50c3c2f8bcd02508464c3\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
-178                android:value="androidx.startup" />
-178-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a9dec742d0b50c3c2f8bcd02508464c3\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
-179            <meta-data
-179-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
-180                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-180-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
-181                android:value="androidx.startup" />
-181-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
-182        </provider>
-183
-184        <service
-184-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:39:9-45:35
-185            android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"
-185-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:40:13-88
-186            android:directBootAware="false"
-186-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:41:13-44
-187            android:enabled="@bool/enable_system_alarm_service_default"
-187-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:42:13-72
-188            android:exported="false" />
-188-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:43:13-37
-189        <service
-189-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:46:9-52:35
-190            android:name="androidx.work.impl.background.systemjob.SystemJobService"
-190-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:47:13-84
-191            android:directBootAware="false"
-191-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:48:13-44
-192            android:enabled="@bool/enable_system_job_service_default"
-192-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:49:13-70
-193            android:exported="true"
-193-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:50:13-36
-194            android:permission="android.permission.BIND_JOB_SERVICE" />
-194-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:51:13-69
-195        <service
-195-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:53:9-59:35
-196            android:name="androidx.work.impl.foreground.SystemForegroundService"
-196-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:54:13-81
-197            android:directBootAware="false"
-197-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:55:13-44
-198            android:enabled="@bool/enable_system_foreground_service_default"
-198-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:56:13-77
-199            android:exported="false" />
-199-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:57:13-37
-200
-201        <receiver
-201-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:61:9-66:35
-202            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
-202-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:62:13-88
-203            android:directBootAware="false"
-203-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:63:13-44
-204            android:enabled="true"
-204-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:64:13-35
-205            android:exported="false" />
-205-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:65:13-37
-206        <receiver
-206-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:67:9-77:20
-207            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy"
-207-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:68:13-106
-208            android:directBootAware="false"
-208-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:69:13-44
-209            android:enabled="false"
-209-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:70:13-36
-210            android:exported="false" >
-210-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:71:13-37
-211            <intent-filter>
-211-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:73:13-76:29
-212                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
-212-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:74:17-87
-212-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:74:25-84
-213                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
-213-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:75:17-90
-213-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:75:25-87
-214            </intent-filter>
-215        </receiver>
-216        <receiver
-216-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:78:9-88:20
-217            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
-217-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:79:13-104
+35-->[:file_picker] C:\FlutterProject\aradia\build\file_picker\intermediates\merged_manifest\release\AndroidManifest.xml:8:9-12:18
+36            <action android:name="android.intent.action.GET_CONTENT" />
+36-->[:file_picker] C:\FlutterProject\aradia\build\file_picker\intermediates\merged_manifest\release\AndroidManifest.xml:9:13-72
+36-->[:file_picker] C:\FlutterProject\aradia\build\file_picker\intermediates\merged_manifest\release\AndroidManifest.xml:9:21-69
+37
+38            <data android:mimeType="*/*" />
+38-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:87:13-50
+38-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:87:19-48
+39        </intent>
+40        <intent>
+40-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:25:9-27:18
+41            <action android:name="android.media.browse.MediaBrowserService" />
+41-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:17-83
+41-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:25-80
+42        </intent>
+43        <intent>
+43-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:28:9-30:18
+44            <action android:name="androidx.media2.session.MediaSessionService" />
+44-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:29:13-82
+44-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:29:21-79
+45        </intent>
+46        <intent>
+46-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:31:9-33:18
+47            <action android:name="androidx.media2.session.MediaLibraryService" />
+47-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:32:13-82
+47-->[androidx.media2:media2-session:1.2.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\98d477e4e386aeec148ea2384ade18cb\transformed\jetified-media2-session-1.2.1\AndroidManifest.xml:32:21-79
+48        </intent>
+49    </queries>
+50
+51    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+51-->[:flutter_background] C:\FlutterProject\aradia\build\flutter_background\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-95
+51-->[:flutter_background] C:\FlutterProject\aradia\build\flutter_background\intermediates\merged_manifest\release\AndroidManifest.xml:9:22-92
+52    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+52-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:25:5-81
+52-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:25:22-78
+53
+54    <permission
+54-->[androidx.core:core:1.15.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\AndroidManifest.xml:22:5-24:47
+55        android:name="com.aradia.audiobook.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+55-->[androidx.core:core:1.15.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\AndroidManifest.xml:23:9-81
+56        android:protectionLevel="signature" />
+56-->[androidx.core:core:1.15.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\AndroidManifest.xml:24:9-44
+57
+58    <uses-permission android:name="com.aradia.audiobook.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+58-->[androidx.core:core:1.15.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\AndroidManifest.xml:26:5-97
+58-->[androidx.core:core:1.15.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\AndroidManifest.xml:26:22-94
+59
+60    <application
+61        android:name="android.app.Application"
+61-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:24:9-42
+62        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+62-->[androidx.core:core:1.15.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\8cdd5c6d219bc53f0a64e28961017aa5\transformed\core-1.15.0\AndroidManifest.xml:28:18-86
+63        android:enableOnBackInvokedCallback="false"
+63-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:25:9-52
+64        android:extractNativeLibs="true"
+65        android:icon="@mipmap/ic_launcher"
+65-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:26:9-43
+66        android:label="Aradia"
+66-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:21:9-31
+67        android:requestLegacyExternalStorage="true"
+67-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:22:9-52
+68        android:usesCleartextTraffic="true" >
+68-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:23:9-44
+69        <activity
+69-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:27:9-44:20
+70            android:name="com.ryanheise.audioservice.AudioServiceActivity"
+70-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:28:13-75
+71            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+71-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:34:13-163
+72            android:exported="true"
+72-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:29:13-36
+73            android:hardwareAccelerated="true"
+73-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:35:13-47
+74            android:launchMode="singleTop"
+74-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:30:13-43
+75            android:taskAffinity=""
+75-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:31:13-36
+76            android:theme="@style/LaunchTheme"
+76-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:33:13-47
+77            android:usesCleartextTraffic="true"
+77-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:32:13-48
+78            android:windowSoftInputMode="adjustResize" >
+78-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:36:13-55
+79            <meta-data
+79-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:37:13-39:55
+80                android:name="io.flutter.embedding.android.NormalTheme"
+80-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:38:15-70
+81                android:resource="@style/NormalTheme" />
+81-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:39:15-52
+82
+83            <intent-filter>
+83-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:40:13-43:29
+84                <action android:name="android.intent.action.MAIN" />
+84-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:41:17-68
+84-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:41:25-66
+85
+86                <category android:name="android.intent.category.LAUNCHER" />
+86-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:42:17-76
+86-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:42:27-74
+87            </intent-filter>
+88        </activity>
+89
+90        <!-- For fileprovider configuration, install app -->
+91        <provider
+92            android:name="androidx.core.content.FileProvider"
+92-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:48:13-62
+93            android:authorities="com.aradia.audiobook.provider"
+93-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:49:13-60
+94            android:exported="false"
+94-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:50:13-37
+95            android:grantUriPermissions="true" >
+95-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:51:13-47
+96            <meta-data
+96-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
+97                android:name="android.support.FILE_PROVIDER_PATHS"
+97-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
+98                android:resource="@xml/provider_paths" />
+98-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
+99        </provider>
+100        <!--
+101             Don't delete the meta-data below.
+102             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
+103        -->
+104        <meta-data
+104-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:58:9-60:33
+105            android:name="flutterEmbedding"
+105-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:59:13-44
+106            android:value="2" />
+106-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:60:13-30
+107
+108        <service
+108-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:62:9-70:19
+109            android:name="com.ryanheise.audioservice.AudioService"
+109-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:63:13-67
+110            android:exported="true"
+110-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:65:13-36
+111            android:foregroundServiceType="mediaPlayback" >
+111-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:64:13-58
+112            <intent-filter>
+112-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:67:13-69:29
+113                <action android:name="android.media.browse.MediaBrowserService" />
+113-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:17-83
+113-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:68:25-80
+114            </intent-filter>
+115        </service>
+116
+117        <!-- ADD THIS "RECEIVER" element -->
+118        <receiver
+118-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:73:9-80:20
+119            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+119-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:74:13-74
+120            android:exported="true" >
+120-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:75:13-36
+121            <intent-filter>
+121-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:77:13-79:29
+122                <action android:name="android.intent.action.MEDIA_BUTTON" />
+122-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:78:17-77
+122-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:78:25-74
+123            </intent-filter>
+124        </receiver>
+125        <receiver
+125-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:9:9-21:20
+126            android:name="com.bbflight.background_downloader.NotificationReceiver"
+126-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-83
+127            android:exported="false" >
+127-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-37
+128            <intent-filter>
+128-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:12:13-14:29
+129                <action android:name="com.bbflight.background_downloader.cancelActive" />
+129-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:13:17-90
+129-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:13:25-87
+130            </intent-filter>
+131            <intent-filter>
+131-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:15:13-17:29
+132                <action android:name="com.bbflight.background_downloader.pause" />
+132-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:16:17-83
+132-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:16:25-80
+133            </intent-filter>
+134            <intent-filter>
+134-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:18:13-20:29
+135                <action android:name="com.bbflight.background_downloader.resume" />
+135-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:19:17-84
+135-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:19:25-81
+136            </intent-filter>
+137        </receiver>
+138
+139        <provider
+139-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:23:9-32:20
+140            android:name="com.bbflight.background_downloader.OpenFileProvider"
+140-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:24:13-79
+141            android:authorities="com.aradia.audiobook.com.bbflight.background_downloader.fileprovider"
+141-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:25:13-99
+142            android:exported="false"
+142-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:26:13-37
+143            android:grantUriPermissions="true" >
+143-->[:background_downloader] C:\FlutterProject\aradia\build\background_downloader\intermediates\merged_manifest\release\AndroidManifest.xml:27:13-47
+144            <meta-data
+144-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
+145                android:name="android.support.FILE_PROVIDER_PATHS"
+145-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
+146                android:resource="@xml/bgd_file_paths" />
+146-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
+147        </provider>
+148        <provider
+148-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:9-17:20
+149            android:name="io.flutter.plugins.imagepicker.ImagePickerFileProvider"
+149-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-82
+150            android:authorities="com.aradia.audiobook.flutter.image_provider"
+150-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-74
+151            android:exported="false"
+151-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:12:13-37
+152            android:grantUriPermissions="true" >
+152-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:13:13-47
+153            <meta-data
+153-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
+154                android:name="android.support.FILE_PROVIDER_PATHS"
+154-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
+155                android:resource="@xml/flutter_image_picker_file_paths" />
+155-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
+156        </provider> <!-- Trigger Google Play services to install the backported photo picker module. -->
+157        <service
+157-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:19:9-31:19
+158            android:name="com.google.android.gms.metadata.ModuleDependencies"
+158-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:20:13-78
+159            android:enabled="false"
+159-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:21:13-36
+160            android:exported="false" >
+160-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:22:13-37
+161            <intent-filter>
+161-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:24:13-26:29
+162                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+162-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:25:17-94
+162-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:25:25-91
+163            </intent-filter>
+164
+165            <meta-data
+165-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:28:13-30:36
+166                android:name="photopicker_activity:0:required"
+166-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:29:17-63
+167                android:value="" />
+167-->[:image_picker_android] C:\FlutterProject\aradia\build\image_picker_android\intermediates\merged_manifest\release\AndroidManifest.xml:30:17-33
+168        </service>
+169
+170        <activity
+170-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:8:9-11:74
+171            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+171-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:13-74
+172            android:exported="false"
+172-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-37
+173            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+173-->[:url_launcher_android] C:\FlutterProject\aradia\build\url_launcher_android\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-71
+174
+175        <provider
+175-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:9-19:20
+176            android:name="com.crazecoder.openfile.FileProvider"
+176-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-64
+177            android:authorities="com.aradia.audiobook.fileProvider.com.crazecoder.openfile"
+177-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:11:13-88
+178            android:exported="false"
+178-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:12:13-37
+179            android:grantUriPermissions="true"
+179-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:13:13-47
+180            android:requestLegacyExternalStorage="true" >
+180-->[:open_file_android] C:\FlutterProject\aradia\build\open_file_android\intermediates\merged_manifest\release\AndroidManifest.xml:14:13-56
+181            <meta-data
+181-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:52:9-54:54
+182                android:name="android.support.FILE_PROVIDER_PATHS"
+182-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:53:13-63
+183                android:resource="@xml/filepaths" />
+183-->C:\FlutterProject\aradia\android\app\src\main\AndroidManifest.xml:54:13-51
+184        </provider>
+185
+186        <uses-library
+186-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:23:9-25:40
+187            android:name="androidx.window.extensions"
+187-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:24:13-54
+188            android:required="false" />
+188-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:25:13-37
+189        <uses-library
+189-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:26:9-28:40
+190            android:name="androidx.window.sidecar"
+190-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:27:13-51
+191            android:required="false" />
+191-->[androidx.window:window:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\183cd6c2330dddb482b941af35de5637\transformed\jetified-window-1.2.0\AndroidManifest.xml:28:13-37
+192
+193        <provider
+193-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:29:9-37:20
+194            android:name="androidx.startup.InitializationProvider"
+194-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:30:13-67
+195            android:authorities="com.aradia.audiobook.androidx-startup"
+195-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:31:13-68
+196            android:exported="false" >
+196-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:32:13-37
+197            <meta-data
+197-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:34:13-36:52
+198                android:name="androidx.work.WorkManagerInitializer"
+198-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:35:17-68
+199                android:value="androidx.startup" />
+199-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:36:17-49
+200            <meta-data
+200-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+201                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+201-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+202                android:value="androidx.startup" />
+202-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\ff965dc43cd3a40b053d1df42efdd669\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+203            <meta-data
+203-->[androidx.lifecycle:lifecycle-process:2.8.7] C:\Users\Asus Tuf\.gradle\caches\transforms-3\b7d1a204637c5c04633da56d94b3544f\transformed\jetified-lifecycle-process-2.8.7\AndroidManifest.xml:29:13-31:52
+204                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+204-->[androidx.lifecycle:lifecycle-process:2.8.7] C:\Users\Asus Tuf\.gradle\caches\transforms-3\b7d1a204637c5c04633da56d94b3544f\transformed\jetified-lifecycle-process-2.8.7\AndroidManifest.xml:30:17-78
+205                android:value="androidx.startup" />
+205-->[androidx.lifecycle:lifecycle-process:2.8.7] C:\Users\Asus Tuf\.gradle\caches\transforms-3\b7d1a204637c5c04633da56d94b3544f\transformed\jetified-lifecycle-process-2.8.7\AndroidManifest.xml:31:17-49
+206            <meta-data
+206-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+207                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+207-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+208                android:value="androidx.startup" />
+208-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+209        </provider>
+210
+211        <service
+211-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:39:9-45:35
+212            android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"
+212-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:40:13-88
+213            android:directBootAware="false"
+213-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:41:13-44
+214            android:enabled="@bool/enable_system_alarm_service_default"
+214-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:42:13-72
+215            android:exported="false" />
+215-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:43:13-37
+216        <service
+216-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:46:9-52:35
+217            android:name="androidx.work.impl.background.systemjob.SystemJobService"
+217-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:47:13-84
 218            android:directBootAware="false"
-218-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:80:13-44
-219            android:enabled="false"
-219-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:81:13-36
-220            android:exported="false" >
-220-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:82:13-37
-221            <intent-filter>
-221-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:84:13-87:29
-222                <action android:name="android.intent.action.BATTERY_OKAY" />
-222-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:85:17-77
-222-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:85:25-74
-223                <action android:name="android.intent.action.BATTERY_LOW" />
-223-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:86:17-76
-223-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:86:25-73
-224            </intent-filter>
-225        </receiver>
-226        <receiver
-226-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:89:9-99:20
-227            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy"
-227-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:90:13-104
-228            android:directBootAware="false"
-228-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:91:13-44
-229            android:enabled="false"
-229-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:92:13-36
-230            android:exported="false" >
-230-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:93:13-37
-231            <intent-filter>
-231-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:95:13-98:29
-232                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
-232-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:96:17-83
-232-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:96:25-80
-233                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
-233-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:97:17-82
-233-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:97:25-79
-234            </intent-filter>
-235        </receiver>
-236        <receiver
-236-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:100:9-109:20
-237            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy"
-237-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:101:13-103
-238            android:directBootAware="false"
-238-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:102:13-44
-239            android:enabled="false"
-239-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:103:13-36
-240            android:exported="false" >
-240-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:104:13-37
-241            <intent-filter>
-241-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:106:13-108:29
-242                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-242-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:107:17-79
-242-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:107:25-76
-243            </intent-filter>
-244        </receiver>
-245        <receiver
-245-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:110:9-121:20
-246            android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
-246-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:111:13-88
-247            android:directBootAware="false"
-247-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:112:13-44
-248            android:enabled="false"
-248-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:113:13-36
-249            android:exported="false" >
-249-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:114:13-37
-250            <intent-filter>
-250-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:116:13-120:29
-251                <action android:name="android.intent.action.BOOT_COMPLETED" />
-251-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:117:17-79
-251-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:117:25-76
-252                <action android:name="android.intent.action.TIME_SET" />
-252-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:118:17-73
-252-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:118:25-70
-253                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
-253-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:119:17-81
-253-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:119:25-78
-254            </intent-filter>
-255        </receiver>
-256        <receiver
-256-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:122:9-131:20
-257            android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver"
-257-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:123:13-99
-258            android:directBootAware="false"
-258-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:124:13-44
-259            android:enabled="@bool/enable_system_alarm_service_default"
-259-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:125:13-72
-260            android:exported="false" >
-260-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:126:13-37
-261            <intent-filter>
-261-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:128:13-130:29
-262                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies" />
-262-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:129:17-98
-262-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:129:25-95
-263            </intent-filter>
-264        </receiver>
-265        <receiver
-265-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:132:9-142:20
-266            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
-266-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:133:13-78
-267            android:directBootAware="false"
-267-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:134:13-44
-268            android:enabled="true"
-268-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:135:13-35
-269            android:exported="true"
-269-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:136:13-36
-270            android:permission="android.permission.DUMP" >
-270-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:137:13-57
-271            <intent-filter>
-271-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:139:13-141:29
-272                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS" />
-272-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:140:17-88
-272-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:140:25-85
-273            </intent-filter>
-274        </receiver>
-275        <receiver
-275-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
-276            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-276-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
-277            android:directBootAware="false"
-277-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
-278            android:enabled="true"
-278-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
-279            android:exported="true"
-279-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
-280            android:permission="android.permission.DUMP" >
-280-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
-281            <intent-filter>
-281-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
-282                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-282-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
-282-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
-283            </intent-filter>
-284            <intent-filter>
-284-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
-285                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-285-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
-285-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
-286            </intent-filter>
-287            <intent-filter>
-287-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
-288                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-288-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
-288-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
-289            </intent-filter>
-290            <intent-filter>
-290-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
-291                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-291-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
-291-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
-292            </intent-filter>
-293        </receiver>
-294
-295        <service
-295-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:24:9-28:63
-296            android:name="androidx.room.MultiInstanceInvalidationService"
-296-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:25:13-74
-297            android:directBootAware="true"
-297-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:26:13-43
-298            android:exported="false" />
-298-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:27:13-37
-299    </application>
-300
-301</manifest>
+218-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:48:13-44
+219            android:enabled="@bool/enable_system_job_service_default"
+219-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:49:13-70
+220            android:exported="true"
+220-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:50:13-36
+221            android:permission="android.permission.BIND_JOB_SERVICE" />
+221-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:51:13-69
+222        <service
+222-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:53:9-59:35
+223            android:name="androidx.work.impl.foreground.SystemForegroundService"
+223-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:54:13-81
+224            android:directBootAware="false"
+224-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:55:13-44
+225            android:enabled="@bool/enable_system_foreground_service_default"
+225-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:56:13-77
+226            android:exported="false" />
+226-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:57:13-37
+227
+228        <receiver
+228-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:61:9-66:35
+229            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
+229-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:62:13-88
+230            android:directBootAware="false"
+230-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:63:13-44
+231            android:enabled="true"
+231-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:64:13-35
+232            android:exported="false" />
+232-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:65:13-37
+233        <receiver
+233-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:67:9-77:20
+234            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy"
+234-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:68:13-106
+235            android:directBootAware="false"
+235-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:69:13-44
+236            android:enabled="false"
+236-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:70:13-36
+237            android:exported="false" >
+237-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:71:13-37
+238            <intent-filter>
+238-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:73:13-76:29
+239                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+239-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:74:17-87
+239-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:74:25-84
+240                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+240-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:75:17-90
+240-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:75:25-87
+241            </intent-filter>
+242        </receiver>
+243        <receiver
+243-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:78:9-88:20
+244            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
+244-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:79:13-104
+245            android:directBootAware="false"
+245-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:80:13-44
+246            android:enabled="false"
+246-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:81:13-36
+247            android:exported="false" >
+247-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:82:13-37
+248            <intent-filter>
+248-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:84:13-87:29
+249                <action android:name="android.intent.action.BATTERY_OKAY" />
+249-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:85:17-77
+249-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:85:25-74
+250                <action android:name="android.intent.action.BATTERY_LOW" />
+250-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:86:17-76
+250-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:86:25-73
+251            </intent-filter>
+252        </receiver>
+253        <receiver
+253-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:89:9-99:20
+254            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy"
+254-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:90:13-104
+255            android:directBootAware="false"
+255-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:91:13-44
+256            android:enabled="false"
+256-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:92:13-36
+257            android:exported="false" >
+257-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:93:13-37
+258            <intent-filter>
+258-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:95:13-98:29
+259                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
+259-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:96:17-83
+259-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:96:25-80
+260                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
+260-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:97:17-82
+260-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:97:25-79
+261            </intent-filter>
+262        </receiver>
+263        <receiver
+263-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:100:9-109:20
+264            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy"
+264-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:101:13-103
+265            android:directBootAware="false"
+265-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:102:13-44
+266            android:enabled="false"
+266-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:103:13-36
+267            android:exported="false" >
+267-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:104:13-37
+268            <intent-filter>
+268-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:106:13-108:29
+269                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+269-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:107:17-79
+269-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:107:25-76
+270            </intent-filter>
+271        </receiver>
+272        <receiver
+272-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:110:9-121:20
+273            android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
+273-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:111:13-88
+274            android:directBootAware="false"
+274-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:112:13-44
+275            android:enabled="false"
+275-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:113:13-36
+276            android:exported="false" >
+276-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:114:13-37
+277            <intent-filter>
+277-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:116:13-120:29
+278                <action android:name="android.intent.action.BOOT_COMPLETED" />
+278-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:117:17-79
+278-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:117:25-76
+279                <action android:name="android.intent.action.TIME_SET" />
+279-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:118:17-73
+279-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:118:25-70
+280                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+280-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:119:17-81
+280-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:119:25-78
+281            </intent-filter>
+282        </receiver>
+283        <receiver
+283-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:122:9-131:20
+284            android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver"
+284-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:123:13-99
+285            android:directBootAware="false"
+285-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:124:13-44
+286            android:enabled="@bool/enable_system_alarm_service_default"
+286-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:125:13-72
+287            android:exported="false" >
+287-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:126:13-37
+288            <intent-filter>
+288-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:128:13-130:29
+289                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies" />
+289-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:129:17-98
+289-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:129:25-95
+290            </intent-filter>
+291        </receiver>
+292        <receiver
+292-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:132:9-142:20
+293            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+293-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:133:13-78
+294            android:directBootAware="false"
+294-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:134:13-44
+295            android:enabled="true"
+295-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:135:13-35
+296            android:exported="true"
+296-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:136:13-36
+297            android:permission="android.permission.DUMP" >
+297-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:137:13-57
+298            <intent-filter>
+298-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:139:13-141:29
+299                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS" />
+299-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:140:17-88
+299-->[androidx.work:work-runtime:2.9.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\92f126a9c4402da7e0b2386f4edd39d7\transformed\work-runtime-2.9.0\AndroidManifest.xml:140:25-85
+300            </intent-filter>
+301        </receiver>
+302
+303        <service
+303-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:24:9-28:63
+304            android:name="androidx.room.MultiInstanceInvalidationService"
+304-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:25:13-74
+305            android:directBootAware="true"
+305-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:26:13-43
+306            android:exported="false" />
+306-->[androidx.room:room-runtime:2.5.0] C:\Users\Asus Tuf\.gradle\caches\transforms-3\a0827f56d0398995d196b0b6a4e666b9\transformed\room-runtime-2.5.0\AndroidManifest.xml:27:13-37
+307
+308        <receiver
+308-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+309            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+309-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+310            android:directBootAware="false"
+310-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+311            android:enabled="true"
+311-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+312            android:exported="true"
+312-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+313            android:permission="android.permission.DUMP" >
+313-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+314            <intent-filter>
+314-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+315                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+315-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+315-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+316            </intent-filter>
+317            <intent-filter>
+317-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+318                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+318-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+318-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+319            </intent-filter>
+320            <intent-filter>
+320-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+321                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+321-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+321-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+322            </intent-filter>
+323            <intent-filter>
+323-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+324                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+324-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+324-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Asus Tuf\.gradle\caches\transforms-3\49f00f23d960fc1461736efa715d881f\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+325            </intent-filter>
+326        </receiver>
+327    </application>
+328
+329</manifest>

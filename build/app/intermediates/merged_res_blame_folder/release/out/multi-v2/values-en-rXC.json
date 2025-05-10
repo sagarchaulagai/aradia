@@ -21,6 +21,23 @@
                     }
                 },
                 {
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-en-rXC\\values-en-rXC.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,251,456,657,858,1065,1270,1482",
+                        "endColumns": "195,204,200,200,206,204,211,203",
+                        "endOffsets": "246,451,652,853,1060,1265,1477,1681"
+                    },
+                    "to": {
+                        "startLines": "29,30,31,32,33,34,35,50",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "5528,5724,5929,6130,6331,6538,6743,9797",
+                        "endColumns": "195,204,200,200,206,204,211,203",
+                        "endOffsets": "5719,5924,6125,6326,6533,6738,6950,9996"
+                    }
+                },
+                {
                     "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\98d477e4e386aeec148ea2384ade18cb\\transformed\\jetified-media2-session-1.2.1\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6",
@@ -35,23 +52,6 @@
                         "startOffsets": "7326,8511,8710,9342,9566",
                         "endColumns": "206,198,193,223,230",
                         "endOffsets": "7528,8705,8899,9561,9792"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-en-rXC\\values-en-rXC.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,251,456,657,858,1065,1270,1482",
-                        "endColumns": "195,204,200,200,206,204,211,203",
-                        "endOffsets": "246,451,652,853,1060,1265,1477,1681"
-                    },
-                    "to": {
-                        "startLines": "29,30,31,32,33,34,35,50",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "5528,5724,5929,6130,6331,6538,6743,9797",
-                        "endColumns": "195,204,200,200,206,204,211,203",
-                        "endOffsets": "5719,5924,6125,6326,6533,6738,6950,9996"
                     }
                 },
                 {

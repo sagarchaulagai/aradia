@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math'; // For Random and min
+import 'dart:math';
 import 'package:aradia/resources/designs/app_colors.dart';
+import 'package:aradia/resources/models/google_book_result.dart';
 import 'package:aradia/screens/import/edit_audiobook_screen.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -16,12 +17,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart'; // For picking local cover
-import 'package:aradia/widgets/low_and_high_image.dart'; // Your LowAndHighImage widget
+import 'package:image_picker/image_picker.dart';
+import 'package:aradia/widgets/low_and_high_image.dart';
 
 const String _youtubeDirName = 'youtube';
 const String _localDirName = 'local';
-const String _coverFileName = 'cover.jpg'; // Standardized cover name
+const String _coverFileName = 'cover.jpg';
 
 const List<String> _supportedAudioExtensions = [
   '.mp3',
@@ -32,38 +33,6 @@ const List<String> _supportedAudioExtensions = [
   '.opus',
   '.flac',
 ];
-
-// Model for Google Books search results
-class GoogleBookResult {
-  final String id;
-  final String title;
-  final String authors;
-  final String? description;
-  final String? thumbnailUrl;
-
-  GoogleBookResult({
-    required this.id,
-    required this.title,
-    required this.authors,
-    this.description,
-    this.thumbnailUrl,
-  });
-
-  factory GoogleBookResult.fromJson(Map<String, dynamic> json) {
-    final volumeInfo = json['volumeInfo'] as Map<String, dynamic>? ?? {};
-    return GoogleBookResult(
-      id: json['id'] as String? ?? '',
-      title: volumeInfo['title'] as String? ?? 'No Title',
-      authors: (volumeInfo['authors'] as List<dynamic>?)?.join(', ') ??
-          'Unknown Author',
-      description: volumeInfo['description'] as String?,
-      thumbnailUrl: (volumeInfo['imageLinks']
-              as Map<String, dynamic>?)?['thumbnail'] as String? ??
-          (volumeInfo['imageLinks'] as Map<String, dynamic>?)?['smallThumbnail']
-              as String?,
-    );
-  }
-}
 
 class ImportAudiobookScreen extends StatefulWidget {
   const ImportAudiobookScreen({super.key});
@@ -79,7 +48,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
   final TextEditingController _authorController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  File? _pickedLocalCoverFile; // For locally picked cover
+  File? _pickedLocalCoverFile;
   String? _selectedGBooksCoverUrl; // For cover URL from selected Google Book
 
   bool _isLoading = false;
@@ -482,9 +451,10 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
     if (!mounted) return;
     setState(() => _isLoading = true);
     String query = _titleController.text.trim();
-    if (_authorController.text.trim().isNotEmpty) {
-      query += " inauthor:${_authorController.text.trim()}";
-    }
+    // we will later put the author in the query if we need to
+    // if (_authorController.text.trim().isNotEmpty) {
+    //   query += " inauthor:${_authorController.text.trim()}";
+    // }
 
     if (query.isEmpty) {
       if (mounted) {

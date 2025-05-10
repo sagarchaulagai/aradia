@@ -38,23 +38,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\18c4f74717697486e996e6b3af184519\\transformed\\core-1.13.1\\res\\values-tr\\values-tr.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,152,254,352,449,551,657,768",
-                        "endColumns": "96,101,97,96,101,105,110,100",
-                        "endOffsets": "147,249,347,444,546,652,763,864"
-                    },
-                    "to": {
-                        "startLines": "29,30,31,32,33,34,35,59",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "2797,2894,2996,3094,3191,3293,3399,5605",
-                        "endColumns": "96,101,97,96,101,105,110,100",
-                        "endOffsets": "2889,2991,3089,3186,3288,3394,3505,5701"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\a4bc9433f92eb4ff2cf3dddd189dbcee\\transformed\\jetified-exoplayer-core-2.18.7\\res\\values-tr\\values-tr.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
@@ -103,6 +86,23 @@
                         "startOffsets": "3510,4467,4873,5146,5706,5875,5958",
                         "endColumns": "70,86,77,131,168,82,77",
                         "endOffsets": "3576,4549,4946,5273,5870,5953,6031"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Asus Tuf\\.gradle\\caches\\transforms-3\\8cdd5c6d219bc53f0a64e28961017aa5\\transformed\\core-1.15.0\\res\\values-tr\\values-tr.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,152,254,352,449,551,657,768",
+                        "endColumns": "96,101,97,96,101,105,110,100",
+                        "endOffsets": "147,249,347,444,546,652,763,864"
+                    },
+                    "to": {
+                        "startLines": "29,30,31,32,33,34,35,59",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "2797,2894,2996,3094,3191,3293,3399,5605",
+                        "endColumns": "96,101,97,96,101,105,110,100",
+                        "endOffsets": "2889,2991,3089,3186,3288,3394,3505,5701"
                     }
                 }
             ]
