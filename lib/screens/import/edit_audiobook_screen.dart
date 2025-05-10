@@ -16,6 +16,7 @@ import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // For permission handling
+import 'package:just_audio/just_audio.dart';
 
 const String _youtubeDirNameEdit = 'youtube';
 const String _localDirNameEdit = 'local';
@@ -375,6 +376,19 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
     return finalSavedAbsolutePath; // Path to 'cover.jpg' or an intended URL if download failed
   }
 
+  Future<double> _getAudioDuration(File file) async {
+    try {
+      final player = AudioPlayer();
+      await player.setFilePath(file.path);
+      final duration = await player.duration;
+      await player.dispose();
+      return duration?.inSeconds.toDouble() ?? 0.0;
+    } catch (e) {
+      print('Error getting audio duration for ${file.path}: $e');
+      return 0.0;
+    }
+  }
+
   Future<void> _saveChanges() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
@@ -405,6 +419,7 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
             ? allFiles.map((f) => f.track ?? 0).fold(0, max) + 1
             : 1;
 
+        // Process new files and get their metadata
         for (var newFileSource in _newlySelectedAudioFiles) {
           final newFileName = p.basename(newFileSource.path);
           final targetFile = File(p.join(audiobookDir.path, newFileName));
@@ -413,6 +428,9 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
           }
           await newFileSource.copy(targetFile.path);
 
+          // Get the audio duration
+          final duration = await _getAudioDuration(newFileSource);
+
           final newAudiobookFile = AudiobookFile.fromMap({
             "identifier":
                 "${updatedAudiobook.id}_track${trackNumber}_${DateTime.now().millisecondsSinceEpoch}",
@@ -420,7 +438,7 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
             "name": newFileName,
             "track": trackNumber,
             "size": await newFileSource.length(),
-            "length": 0.0,
+            "length": duration,
             "url": newFileName,
             "highQCoverImage": "",
           });

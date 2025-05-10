@@ -45,6 +45,10 @@ class AudiobookDetailsBloc
     bool isLocal,
   ) async {
     emit(AudiobookDetailsLoading());
+    print('fetching audiobook details for id: $id');
+    print('isDownload: $isDownload');
+    print('isYoutube: $isYoutube');
+    print('isLocal: $isLocal');
     Either<String, List<AudiobookFile>> audiobookFiles;
     try {
       if (isDownload) {

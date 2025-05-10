@@ -467,6 +467,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                                       'audiobook': audiobook,
                                       'isDownload': false,
                                       'isYoutube': false,
+                                      'isLocal': false,
                                     },
                                   );
                                 },

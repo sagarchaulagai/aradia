@@ -19,6 +19,7 @@ import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
+import 'package:just_audio/just_audio.dart';
 
 const String _youtubeDirName = 'youtube';
 const String _localDirName = 'local';
@@ -546,19 +547,22 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       final String? localCoverFinalPath =
           await _saveCoverImageToAppDirectory(audiobookId, appDocDir);
 
-      final files = _selectedFiles.asMap().entries.map((entry) {
+      // Process files and get their metadata
+      final files =
+          await Future.wait(_selectedFiles.asMap().entries.map((entry) async {
         final file = entry.value;
+        final duration = await _getAudioDuration(file);
         return AudiobookFile.fromMap({
           "identifier": "${audiobookId}_${entry.key}",
           "title": p.basenameWithoutExtension(file.path),
           "name": p.basename(file.path),
           "track": entry.key + 1,
           "size": file.lengthSync(),
-          "length": 0.0,
+          "length": duration,
           "url": p.basename(file.path),
           "highQCoverImage": "",
         });
-      }).toList();
+      }));
 
       final audiobook = Audiobook.fromMap({
         "title": _titleController.text.trim(),
@@ -594,6 +598,19 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
         setState(() => _errorMessageLocal = 'Error importing from local: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<double> _getAudioDuration(File file) async {
+    try {
+      final player = AudioPlayer();
+      await player.setFilePath(file.path);
+      final duration = await player.duration;
+      await player.dispose();
+      return duration?.inSeconds.toDouble() ?? 0.0;
+    } catch (e) {
+      print('Error getting audio duration for ${file.path}: $e');
+      return 0.0;
     }
   }
 
@@ -1295,14 +1312,18 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                                 .withValues(alpha: 0.9)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
-                    onLongPress: () =>
-                        _showAudiobookActions(context, audiobook, theme),
-                    onTap: () => context.push('/audiobook-details', extra: {
-                      'audiobook': audiobook,
-                      'isDownload': false,
-                      'isYoutube': audiobook.origin == _youtubeDirName,
-                      'isLocal': audiobook.origin == _localDirName,
-                    }),
+                    onLongPress: () {
+                      _showAudiobookActions(context, audiobook, theme);
+                    },
+                    onTap: () {
+                      print('onTap and origin:${audiobook.origin}');
+                      context.push('/audiobook-details', extra: {
+                        'audiobook': audiobook,
+                        'isDownload': false,
+                        'isYoutube': audiobook.origin == _youtubeDirName,
+                        'isLocal': audiobook.origin == _localDirName,
+                      });
+                    },
                   ),
                 );
               },
@@ -1340,43 +1361,72 @@ class _GoogleBooksSelectionDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AlertDialog(
-      title: Text('Select Book from Google', style: GoogleFonts.ubuntu()),
-      backgroundColor: theme.dialogTheme.backgroundColor,
+      title: Text('Select Book Info',
+          style: GoogleFonts.ubuntu(color: theme.colorScheme.onSurface)),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       content: SizedBox(
-        width: double.maxFinite,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: results.length,
-          itemBuilder: (context, index) {
-            final book = results[index];
-            return ListTile(
-              leading: book.thumbnailUrl != null
-                  ? SizedBox(
-                      width: 40,
-                      height: 60,
-                      child: Image.network(
-                        book.thumbnailUrl!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (c, e, s) =>
-                            const Icon(Icons.broken_image_outlined, size: 30),
-                      ))
-                  : const SizedBox(
-                      width: 40,
-                      height: 60,
-                      child: Icon(Icons.book_outlined, size: 30)),
-              title: Text(book.title,
-                  style: GoogleFonts.ubuntu(
-                      fontSize: 15, color: theme.colorScheme.onSurface)),
-              subtitle: Text(book.authors,
-                  style: GoogleFonts.ubuntu(
-                      fontSize: 13, color: theme.colorScheme.onSurfaceVariant)),
-              onTap: () {
-                Navigator.of(context).pop(book);
-              },
-            );
-          },
-        ),
+        width: min(
+            MediaQuery.of(context).size.width * 0.9, 400), // Responsive width
+        child: results.isEmpty
+            ? Center(
+                child: Text("No results to display.",
+                    style:
+                        TextStyle(color: theme.colorScheme.onSurfaceVariant)))
+            : ListView.separated(
+                shrinkWrap: true,
+                itemCount: results.length,
+                separatorBuilder: (context, index) =>
+                    Divider(color: theme.dividerColor.withOpacity(0.5)),
+                itemBuilder: (context, index) {
+                  final book = results[index];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 4.0, horizontal: 8.0),
+                    leading: book.thumbnailUrl != null
+                        ? SizedBox(
+                            width: 40,
+                            height: 60,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.network(
+                                book.thumbnailUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (c, e, s) => const Icon(
+                                    Icons.broken_image_outlined,
+                                    size: 30),
+                                loadingBuilder: (c, child, progress) =>
+                                    progress == null
+                                        ? child
+                                        : const Center(
+                                            child: SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                        strokeWidth: 2))),
+                              ),
+                            ))
+                        : Container(
+                            width: 40,
+                            height: 60,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                                color: theme.colorScheme.surfaceVariant),
+                            child: const Icon(Icons.book_outlined, size: 30)),
+                    title: Text(book.title,
+                        style: GoogleFonts.ubuntu(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface)),
+                    subtitle: Text(book.authors,
+                        style: GoogleFonts.ubuntu(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurfaceVariant)),
+                    onTap: () => Navigator.of(context).pop(book),
+                  );
+                },
+              ),
       ),
       actions: [
         TextButton(

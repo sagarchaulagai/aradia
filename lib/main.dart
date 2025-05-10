@@ -123,11 +123,13 @@ final GoRouter router = GoRouter(
                 final audiobook = extras['audiobook'] as Audiobook;
                 final isDownload = extras['isDownload'] as bool;
                 final isYoutube = extras['isYoutube'] as bool;
+                final isLocal = extras['isLocal'] as bool;
 
                 return AudiobookDetails(
                   audiobook: audiobook,
                   isDownload: isDownload,
                   isYoutube: isYoutube,
+                  isLocal: isLocal,
                 );
               },
             ),
