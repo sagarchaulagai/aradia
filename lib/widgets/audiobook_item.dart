@@ -1,3 +1,4 @@
+import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -58,11 +59,11 @@ class AudiobookItem extends StatelessWidget {
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
                 ),
-                child: CachedNetworkImage(
-                  imageUrl: audiobook.lowQCoverImage,
+                child: LowAndHighImage(
+                  lowQImage: audiobook.lowQCoverImage,
+                  highQImage: audiobook.lowQCoverImage,
                   width: width,
                   height: width,
-                  fit: BoxFit.cover,
                 ),
               ),
               Padding(

@@ -23,7 +23,6 @@ class LowAndHighImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String mainImage = highQImage ?? lowQImage;
-    print('mainImage: $mainImage');
 
     Widget _buildFallback() {
       if (_isLocalPath(lowQImage)) {

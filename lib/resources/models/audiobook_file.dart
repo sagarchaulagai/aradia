@@ -134,7 +134,7 @@ class AudiobookFile {
       String audiobookId) async {
     try {
       final appDir = await getExternalStorageDirectory();
-      final downloadDir = Directory('${appDir?.path}/$audiobookId');
+      final downloadDir = Directory('${appDir?.path}/downloads/$audiobookId');
 
       // Get all MP3 files in the directory sorted by date
       List<FileSystemEntity> files = downloadDir

@@ -105,7 +105,15 @@ class _DownloadButtonState extends State<DownloadButton> {
     try {
       // we will save audiobook and files in the
       final appDir = await getExternalStorageDirectory();
-      final downloadDir = Directory('${appDir?.path}/${widget.audiobook.id}');
+
+      // Create parent downloads directory if it doesn't exist
+      final downloadsDir = Directory('${appDir?.path}/downloads');
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      final downloadDir =
+          Directory('${appDir?.path}/downloads/${widget.audiobook.id}');
       if (!await downloadDir.exists()) {
         await downloadDir.create();
       }
@@ -155,6 +163,8 @@ class _DownloadButtonState extends State<DownloadButton> {
       setState(() {
         _isDownloading = false;
       });
+
+      print(e);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

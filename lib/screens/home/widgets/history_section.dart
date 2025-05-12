@@ -354,6 +354,12 @@ class _HistorySectionState extends State<HistorySection> {
         color: Colors.white,
         size: 15,
       );
+    } else if (origin == 'local') {
+      return const Icon(
+        Ionicons.musical_notes,
+        color: Colors.white,
+        size: 15,
+      );
     } else {
       // Default icon for unknown origin
       return const Icon(
