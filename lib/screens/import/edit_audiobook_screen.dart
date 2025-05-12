@@ -479,10 +479,12 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+            color:
+                Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: Icon(Icons.photo_library_outlined,
-          size: 60, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7)),
+          size: 60,
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
     );
 
     if (_currentCoverDisplayPath == null || _currentCoverDisplayPath!.isEmpty) {
@@ -532,8 +534,8 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
     final textFieldFillColor = isLightMode
         ? (AppColors
             .lightOrange) // Assuming AppColors is your aradia/resources/designs/app_colors.dart
-        : (AppColors.cardColor.withOpacity(
-            0.5)); // Adjust opacity or color as needed for dark mode
+        : (AppColors.cardColor.withValues(
+            alpha: 0.5)); // Adjust opacity or color as needed for dark mode
 
     return Scaffold(
       appBar: AppBar(
@@ -774,7 +776,7 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
         enabledBorder: theme.inputDecorationTheme.enabledBorder ??
             OutlineInputBorder(
                 borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.5)),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5)),
                 borderRadius: const BorderRadius.all(Radius.circular(8.0))),
         focusedBorder: theme.inputDecorationTheme.focusedBorder ??
             OutlineInputBorder(
@@ -819,7 +821,7 @@ class _GoogleBooksSelectionDialogEdit extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: results.length,
                 separatorBuilder: (context, index) =>
-                    Divider(color: theme.dividerColor.withOpacity(0.5)),
+                    Divider(color: theme.dividerColor.withValues(alpha: 0.5)),
                 itemBuilder: (context, index) {
                   final book = results[index];
                   return ListTile(

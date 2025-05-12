@@ -131,10 +131,19 @@ class DownloadManager {
           try {
             // Get application documents directory
             final appDir = await getExternalStorageDirectory();
-            final String filePath = '${appDir?.path}/$audiobookId/$fileName';
+
+            // Create parent downloads directory if it doesn't exist
+            final downloadsDir = Directory('${appDir?.path}/downloads');
+            if (!await downloadsDir.exists()) {
+              await downloadsDir.create(recursive: true);
+            }
+
+            final String filePath =
+                '${appDir?.path}/downloads/$audiobookId/$fileName';
 
             // Create directory if it doesn't exist
-            final directory = Directory('${appDir?.path}/$audiobookId');
+            final directory =
+                Directory('${appDir?.path}/downloads/$audiobookId');
             if (!await directory.exists()) {
               await directory.create(recursive: true);
             }
@@ -217,7 +226,7 @@ class DownloadManager {
             taskId: audiobookId,
             url: url,
             filename: fileName,
-            directory: audiobookId,
+            directory: 'downloads/$audiobookId',
             baseDirectory: BaseDirectory.applicationDocuments,
             updates: Updates.statusAndProgress,
             allowPause: true,
@@ -296,7 +305,14 @@ class DownloadManager {
   Future<void> _cleanupPartialDownload(String audiobookId) async {
     try {
       final appDir = await getExternalStorageDirectory();
-      final downloadDir = Directory('${appDir?.path}/$audiobookId');
+
+      // Create parent downloads directory if it doesn't exist
+      final downloadsDir = Directory('${appDir?.path}/downloads');
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      final downloadDir = Directory('${appDir?.path}/downloads/$audiobookId');
       if (await downloadDir.exists()) {
         await downloadDir.delete(recursive: true);
       }

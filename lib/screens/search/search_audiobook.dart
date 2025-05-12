@@ -83,8 +83,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
     });
 
     try {
-      final results =
-          await yt.search.search(searchText + "complete full audiobook");
+      final results = await yt.search.search(searchText);
 
       setState(() {
         youtubeResults = results.toList();
@@ -167,6 +166,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
           'audiobook': audiobook,
           'isDownload': false,
           'isYoutube': true,
+          'isLocal': false,
         },
       );
     } catch (e) {

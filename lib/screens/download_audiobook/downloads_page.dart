@@ -41,7 +41,14 @@ class DownloadsPage extends StatelessWidget {
     if (confirmed == true) {
       try {
         final appDir = await getExternalStorageDirectory();
-        final downloadDir = Directory('${appDir?.path}/$audiobookId');
+
+        // Create parent downloads directory if it doesn't exist
+        final downloadsDir = Directory('${appDir?.path}/downloads');
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+
+        final downloadDir = Directory('${appDir?.path}/downloads/$audiobookId');
         print('we are deleting $downloadDir');
         if (await downloadDir.exists()) {
           await downloadDir.delete(recursive: true);
@@ -260,8 +267,16 @@ class DownloadsPage extends StatelessWidget {
                     onPressed: () async {
                       try {
                         final appDir = await getExternalStorageDirectory();
+
+                        // Create parent downloads directory if it doesn't exist
+                        final downloadsDir =
+                            Directory('${appDir?.path}/downloads');
+                        if (!await downloadsDir.exists()) {
+                          await downloadsDir.create(recursive: true);
+                        }
+
                         final downloadDir = Directory(
-                            '${appDir?.path}/${status['audiobookId']}');
+                            '${appDir?.path}/downloads/${status['audiobookId']}');
                         final audiobookFile =
                             File('${downloadDir.path}/audiobook.txt');
 

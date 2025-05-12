@@ -20,6 +20,8 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:hive/hive.dart';
+import 'package:aradia/resources/models/history_of_audiobook.dart';
 
 const String _youtubeDirName = 'youtube';
 const String _localDirName = 'local';
@@ -804,6 +806,23 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
     if (!await _requestStoragePermission()) {
       return;
     }
+
+    // Check if the audiobook is currently playing
+    final playingAudiobookDetailsBox =
+        Hive.box('playing_audiobook_details_box');
+    final currentAudiobookId =
+        playingAudiobookDetailsBox.get('audiobook')?['id'];
+    if (currentAudiobookId == audiobook.id) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Cannot delete "${audiobook.title}" while it is playing.')),
+        );
+      }
+      return;
+    }
+
     bool confirmDelete = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
@@ -852,6 +871,11 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       if (await audiobookDir.exists()) {
         await audiobookDir.delete(recursive: true);
       }
+
+      // Remove from history
+      final historyOfAudiobook = HistoryOfAudiobook();
+      historyOfAudiobook.removeAudiobookFromHistory(audiobook.id);
+
       if (mounted) {
         await _loadImportedAudiobooks();
         ScaffoldMessenger.of(context).showSnackBar(
