@@ -52,6 +52,9 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     int position = playingAudiobookDetailsBox.get('position');
     audioHandlerProvider.audioHandler
         .initSongs(audiobookFiles, audiobook, index, position);
+    print('audiobookFiles: ${audiobookFiles.length}');
+    print('audiobookFiles: ${audiobookFiles[0].highQCoverImage}');
+    
   }
 
   Future<void> startTimer(Duration duration) async {
@@ -231,104 +234,102 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
               ),
             ],
           ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Hero(
-                    tag: 'audiobook_cover',
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? Colors.black.withValues(alpha: 0.5)
-                                : Colors.grey.withValues(alpha: 0.5),
-                            spreadRadius: 3,
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: LowAndHighImage(
-                          lowQImage: audiobook.lowQCoverImage,
-                          highQImage: mediaItem.artUri.toString(),
-                          width: 250,
-                          height: 250,
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Hero(
+                  tag: 'audiobook_cover',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.black.withValues(alpha: 0.5)
+                              : Colors.grey.withValues(alpha: 0.5),
+                          spreadRadius: 3,
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
                         ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: LowAndHighImage(
+                        lowQImage: audiobook.lowQCoverImage,
+                        highQImage: mediaItem.artUri.toString(),
+                        width: 250,
+                        height: 250,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    mediaItem.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  mediaItem.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Text(
-                    mediaItem.album ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.grey[800]
-                          : Colors.grey[300],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  mediaItem.album ?? 'Unknown',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[800]
+                        : Colors.grey[300],
                   ),
-                  Text(
-                    mediaItem.artist ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.grey[600]
-                          : Colors.grey[200],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  mediaItem.artist ?? 'Unknown',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[600]
+                        : Colors.grey[200],
                   ),
-                  const SizedBox(height: 20),
-                  ProgressBarWidget(
-                    audioHandler: audioHandlerProvider.audioHandler,
-                  ),
-                  const SizedBox(height: 20),
-                  Controls(
-                    audioHandler: audioHandlerProvider.audioHandler,
-                    onTimerPressed: showTimerOptions,
-                    isTimerActive: _isTimerActive,
-                    activeTimerDuration: _activeTimerDuration,
-                    onCancelTimer: cancelTimer,
-                    onToggleSkipSilence: () {
-                      setState(() {
-                        _skipSilence = !_skipSilence;
-                        audioHandlerProvider.audioHandler
-                            .setSkipSilence(_skipSilence);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(
-                              _skipSilence
-                                  ? 'Skip Silence Enabled'
-                                  : 'Skip Silence Disabled',
-                            ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 20),
+                ProgressBarWidget(
+                  audioHandler: audioHandlerProvider.audioHandler,
+                ),
+                const SizedBox(height: 20),
+                Controls(
+                  audioHandler: audioHandlerProvider.audioHandler,
+                  onTimerPressed: showTimerOptions,
+                  isTimerActive: _isTimerActive,
+                  activeTimerDuration: _activeTimerDuration,
+                  onCancelTimer: cancelTimer,
+                  onToggleSkipSilence: () {
+                    setState(() {
+                      _skipSilence = !_skipSilence;
+                      audioHandlerProvider.audioHandler
+                          .setSkipSilence(_skipSilence);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          duration: const Duration(seconds: 1),
+                          content: Text(
+                            _skipSilence
+                                ? 'Skip Silence Enabled'
+                                : 'Skip Silence Disabled',
                           ),
-                        );
-                      });
-                    },
-                    skipSilence: _skipSilence,
-                  ),
-                ],
-              ),
+                        ),
+                      );
+                    });
+                  },
+                  skipSilence: _skipSilence,
+                ),
+              ],
             ),
           ),
         );

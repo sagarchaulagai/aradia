@@ -22,7 +22,7 @@ class LowAndHighImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String mainImage = highQImage ?? lowQImage;
+    final String mainImage = lowQImage.contains('youtube') ? lowQImage : (highQImage ?? lowQImage);
 
     Widget _buildFallback() {
       if (_isLocalPath(lowQImage)) {
