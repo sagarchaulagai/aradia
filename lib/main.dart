@@ -63,7 +63,9 @@ Future<void> initHive() async {
   await Hive.openBox('theme_mode_box');
   await Hive.openBox('history_of_audiobook_box');
   await Hive.openBox('recommened_audiobooks_box');
+  await Hive.openBox('dual_mode_box'); // o means audiobook home and 1 means podcast home
   Box recommendedAudiobooksBox = Hive.box('recommened_audiobooks_box');
+
   isRecommendScreen = recommendedAudiobooksBox.isEmpty ? 1 : 0;
 }
 
@@ -81,6 +83,8 @@ final GoRouter router = GoRouter(
         return const RecommendationScreen();
       }),
     ),
+
+
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell);

@@ -7,7 +7,7 @@ import 'package:aradia/screens/home/bloc/home_bloc.dart';
 import 'package:aradia/screens/home/widgets/my_audiobooks.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:aradia/utils/permission_helper.dart';
 
 import '../../resources/latest_version_fetch.dart';
 import '../../resources/models/latest_version_fetch_model.dart';
@@ -27,24 +27,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final List<String> genres = [
-    'Adventure',
-    'Biography',
-    'Children',
-    'Comedy',
-    'Crime',
-    'Fantasy',
-    'Horror',
-    'Humor',
-    'Love',
-    'Mystery',
-    'Philosophy',
-    'Poem',
-    'Romance',
-    'Sci-Fi',
-    'War',
-  ];
-
   late RecommendationService recommendationService;
   late List<String> recommendedGenres;
   final LatestVersionFetch _latestVersionFetch = LatestVersionFetch();
@@ -73,44 +55,10 @@ class _HomeState extends State<Home> {
 
   Future<void> _handleUpdateAvailable(
       LatestVersionFetchModel versionModel) async {
-    final permissionStatus = await Permission.requestInstallPackages.status;
-
-    if (permissionStatus.isGranted) {
+    final permissionGranted = await PermissionHelper.handleUpdatePermission(context);
+    
+    if (permissionGranted) {
       proceedWithUpdate(versionModel);
-    } else {
-      final shouldRequestPermission = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) => PermissionDialog(
-          onContinue: () => Navigator.of(context).pop(true),
-          onNotNow: () => Navigator.of(context).pop(false),
-        ),
-      );
-
-      if (shouldRequestPermission == true) {
-        await _requestInstallPermission(versionModel);
-      }
-    }
-  }
-
-  Future<void> _requestInstallPermission(
-      LatestVersionFetchModel versionModel) async {
-    final newPermissionStatus =
-        await Permission.requestInstallPackages.request();
-    if (newPermissionStatus.isGranted) {
-      proceedWithUpdate(versionModel);
-    } else if (newPermissionStatus.isDenied ||
-        newPermissionStatus.isPermanentlyDenied) {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => PermissionDialog(
-          onContinue: () async {
-            Navigator.of(context).pop();
-            await openAppSettings();
-          },
-          onNotNow: () => Navigator.of(context).pop(),
-        ),
-      );
     }
   }
 

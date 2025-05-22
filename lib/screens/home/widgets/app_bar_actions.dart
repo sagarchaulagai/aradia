@@ -16,6 +16,7 @@ class AppBarActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        
         AnimatedIconButton(
           onPressed: themeNotifier.toggleTheme,
           icon: AnimatedSwitcher(
