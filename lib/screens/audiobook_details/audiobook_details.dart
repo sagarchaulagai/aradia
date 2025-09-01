@@ -10,7 +10,7 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
 import 'package:aradia/screens/audiobook_details/widgets/description_text.dart';
 import 'package:aradia/screens/download_audiobook/widget/download_button.dart';
-import 'package:aradia/resources/services/audio_handler_provider.dart';
+import 'package:aradia/services/audio_handler_provider.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:aradia/widgets/rating_widget.dart';
 import 'package:provider/provider.dart';
@@ -212,7 +212,7 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                             Container(
                               height: 40,
                               width: 1,
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: Colors.white.withAlpha(128),
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                             ),
                             // Imporved by Nadia
@@ -399,7 +399,7 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                                           '/genre_audiobooks',
                                           extra: subjectName,
                                         );
-                                        print('Tapped subject: $subjectName');
+                                        debugPrint('Tapped subject: $subjectName');
                                       },
                                       child: Chip(
                                         label: Text(

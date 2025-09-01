@@ -207,7 +207,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

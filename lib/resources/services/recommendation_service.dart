@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 
@@ -48,7 +49,7 @@ class RecommendationService {
         .map((genre) => genre.split('&'))
         .expand((genres) => genres)
         .toList();
-    print('flutter - recommended genres: $recommendedGenres');
+    debugPrint('flutter - recommended genres: $recommendedGenres');
     return recommendedGenres;
   }
 }

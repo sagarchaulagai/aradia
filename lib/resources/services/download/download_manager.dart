@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:aradia/resources/services/stream_client.dart'; 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -91,7 +92,7 @@ class DownloadManager {
       await downloadStatusBox.put('status_$audiobookId', {
         'isDownloading': true, 'progress': 0.0, 'isCompleted': false,
         'audiobookTitle': audiobookTitle, 'audiobookId': audiobookId,
-        'isYouTube': files.any((f) => (f['url'] as String).contains('youtube.com') || (f['url'] as String).contains('youtu.be')), 
+        'isYouTube': files.any((f) => (f['url'] as String).contains('youtube.com') || (f['url'] as String).contains('youtu.be')),
       });
 
       yt = YoutubeExplode();
@@ -183,7 +184,7 @@ class DownloadManager {
               'audiobookTitle': audiobookTitle, 'audiobookId': audiobookId,
               'isYouTube': true,
             });
-            print('YT Download Error: $e\n$s');
+            debugPrint('YT Download Error: $e\n$s');
             await _cleanupPartialDownload(audiobookId);
             onCompleted(false);
             return;
@@ -226,7 +227,7 @@ class DownloadManager {
                 'audiobookTitle': audiobookTitle, 'audiobookId': audiobookId,
                  'isYouTube': false,
             });
-            print('Direct Download Error: $e');
+            debugPrint('Direct Download Error: $e');
             await _cleanupPartialDownload(audiobookId);
             onCompleted(false);
             return;
@@ -269,7 +270,7 @@ class DownloadManager {
              'isYouTube': existingStatus?['isYouTube'] ?? false,
         });
       }
-      print('General Download Error: $e');
+      debugPrint('General Download Error: $e');
       await _cleanupPartialDownload(audiobookId);
       onCompleted(false);
     } finally {
@@ -286,7 +287,7 @@ class DownloadManager {
         await downloadDir.delete(recursive: true);
       }
     } catch (e) {
-      print('Cleanup Error: $e');
+      debugPrint('Cleanup Error: $e');
     }
   }
 
@@ -343,7 +344,7 @@ class DownloadManager {
 
         }
       }
-    } catch (e) { print('Pause Error: $e'); }
+    } catch (e) { debugPrint('Pause Error: $e'); }
   }
 
   Future<void> resumeDownload(String uniqueFileTaskId) async {
@@ -354,7 +355,7 @@ class DownloadManager {
         final task = DownloadTask.fromJson(taskJson as Map<String, dynamic>);
         await _downloader.resume(task);
       }
-    } catch (e) { print('Resume Error: $e'); }
+    } catch (e) { debugPrint('Resume Error: $e'); }
   }
 
   List<String> getTaskIdsForAudiobook(String audiobookId) {

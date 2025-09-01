@@ -1,10 +1,11 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'models/latest_version_fetch_model.dart';
 
 class LatestVersionFetch {
@@ -19,10 +20,10 @@ class LatestVersionFetch {
         final json = jsonDecode(response.body);
         return Right(LatestVersionFetchModel.fromJson(json));
       } else {
-        return Left("Failed to fetch latest version");
+        return const Left("Failed to fetch latest version");
       }
     } catch (e) {
-      return Left("Failed to fetch latest version");
+      return const Left("Failed to fetch latest version");
     }
   }
 
@@ -49,7 +50,7 @@ class LatestVersionFetch {
       }
       return false;
     } catch (e) {
-      print('Error downloading update: $e');
+      debugPrint('Error downloading update: $e');
       return false;
     }
   }
@@ -63,17 +64,17 @@ class LatestVersionFetch {
           await platform.invokeMethod('installApk', {'apkPath': apkPath});
           return;
         } catch (e) {
-          print('Method channel failed, trying OpenFile: $e');
+          debugPrint('Method channel failed, trying OpenFile: $e');
         }
 
         // Fallback to OpenFile
         final result = await OpenFile.open(apkPath);
         if (result.type != ResultType.done) {
-          print('OpenFile error: ${result.message}');
+          debugPrint('OpenFile error: ${result.message}');
         }
       }
     } catch (e) {
-      print('Installation error: $e');
+      debugPrint('Installation error: $e');
     }
   }
 }

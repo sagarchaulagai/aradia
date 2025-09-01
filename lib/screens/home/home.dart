@@ -11,7 +11,7 @@ import 'package:aradia/utils/permission_helper.dart';
 
 import '../../resources/latest_version_fetch.dart';
 import '../../resources/models/latest_version_fetch_model.dart';
-import '../../resources/services/recommendation_service.dart';
+import '../../services/recommendation_service.dart';
 import 'widgets/history_section.dart';
 import 'widgets/update_prompt_dialog.dart';
 import 'widgets/app_bar_actions.dart';
@@ -40,10 +40,18 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> checkForUpdates() async {
+    final permissionGranted = await PermissionHelper.handleUpdatePermission(context);
+    
+    if (permissionGranted) {
+      await proceedWithUpdateCheck();
+    }
+  }
+
+  Future<void> proceedWithUpdateCheck() async {
     final result = await _latestVersionFetch.getLatestVersion();
 
     result.fold(
-      (error) => print(error),
+      (error) => debugPrint(error),
       (latestVersionModel) async {
         if (latestVersionModel.latestVersion != null &&
             latestVersionModel.latestVersion!.compareTo(currentVersion) > 0) {
@@ -67,12 +75,16 @@ class _HomeState extends State<Home> {
         await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
 
     if (existingApk != null) {
-      showUpdatePrompt(versionModel);
+      if (mounted) {
+        showUpdatePrompt(versionModel);
+      }
     } else {
       final success =
           await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
       if (success) {
-        showUpdatePrompt(versionModel);
+        if (mounted) {
+          showUpdatePrompt(versionModel);
+        }
       }
     }
   }
@@ -124,10 +136,10 @@ class _HomeState extends State<Home> {
           SliverToBoxAdapter(
             child: WelcomeSection(theme: theme),
           ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 290),
-              child: const HistorySection(),
+              constraints: BoxConstraints(maxHeight: 290),
+              child: HistorySection(),
             ),
           ),
           SliverToBoxAdapter(

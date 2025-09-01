@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:aradia/resources/services/youtube_audio_service.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:aradia/resources/models/audiobook.dart';
@@ -152,14 +153,14 @@ class MyAudioHandler extends BaseAudioHandler {
   // we can add a option in setting so user can put their own custom time later , TODO
   void _startPositionUpdateTimer(String audiobookId) {
     _positionUpdateTimer?.cancel();
-    _positionUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _positionUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       final currentIndex = _player.currentIndex;
       if (currentIndex != null) {
         historyOfAudiobook.updateAudiobookPosition(
             audiobookId, currentIndex, _player.position.inMilliseconds);
         playingAudiobookDetailsBox.put(
             'position', _player.position.inMilliseconds);
-        print('Position updated: $_player.position.inMilliseconds ms');
+        debugPrint('Position updated: ${_player.position.inMilliseconds} ms');
       }
     });
   }

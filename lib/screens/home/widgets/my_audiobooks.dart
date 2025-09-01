@@ -104,7 +104,7 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
         widget.homeBloc.add(fetchEvent(_currentPage, widget.rowsPerPage));
       }
     } else {
-      print('fetchEvent is not a function');
+      debugPrint('fetchEvent is not a function');
     }
   }
 

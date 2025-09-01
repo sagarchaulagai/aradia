@@ -197,8 +197,12 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   // Save selected genres to Hive
   Future<void> _saveSelectedGenres() async {
-    final box = await Hive.box(_hiveBoxName);
+    final box = await Hive.openBox(_hiveBoxName);
     await box.put('selectedGenres', selectedGenres.toList());
+  }
+
+  void _navigateToHome() {
+    context.go('/home');
   }
 
   @override
@@ -217,7 +221,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withAlpha(12),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -284,8 +288,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                           backgroundColor: Colors.white,
                           selectedColor: categoryColor,
                           side: BorderSide(
-                            color: categoryColor.withValues(
-                                alpha: isExpanded ? 1 : 0.3),
+                            color: categoryColor.withAlpha(isExpanded ? 255 : 77),
                             width: isExpanded ? 2 : 1,
                           ),
                           padding: const EdgeInsets.symmetric(
@@ -321,8 +324,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                               backgroundColor: Colors.white,
                               selectedColor: categoryColor,
                               side: BorderSide(
-                                color: categoryColor.withValues(
-                                    alpha: isSelected ? 1 : 0.3),
+                                color: categoryColor.withAlpha(isSelected ? 255 : 77),
                                 width: isSelected ? 2 : 1,
                               ),
                               padding: const EdgeInsets.symmetric(
@@ -349,7 +351,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withAlpha(12),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),
@@ -417,9 +419,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                       onPressed: selectedGenres.length >= 3
                           ? () async {
                               await _saveSelectedGenres();
-                              if (mounted) {
-                                context.go('/home');
-                              }
+                              _navigateToHome();
                             }
                           : null,
                       style: ElevatedButton.styleFrom(

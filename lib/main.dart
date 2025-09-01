@@ -12,7 +12,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/audiobook_details/audiobook_details.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
-import 'package:aradia/screens/audiobook_player.dart/audiobook_player.dart';
+import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/screens/download_audiobook/downloads_page.dart';
 import 'package:aradia/screens/favourite/favourite.dart';
 import 'package:aradia/screens/genre_audiobooks/genre_audiobooks.dart';
@@ -209,11 +209,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _backButtonInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
-    print('initialized back button interceptor');
+    debugPrint('initialized back button interceptor');
     WeSlideController weSlideController =
         Provider.of<WeSlideController>(context, listen: false);
     if (weSlideController.isOpened) {
-      print('closing');
+      debugPrint('closing');
       weSlideController.hide();
       return true;
     }

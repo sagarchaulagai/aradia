@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -144,7 +145,7 @@ class AudiobookFile {
       files
           .sort((a, b) => a.statSync().changed.compareTo(b.statSync().changed));
 
-      print('Now the files are going to be parsed from the downloaded files');
+      debugPrint('Now the files are going to be parsed from the downloaded files');
 
       List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
 
@@ -172,7 +173,7 @@ class AudiobookFile {
 
       return Right(audiobookFiles);
     } catch (e) {
-      print('Unexpected error: $e');
+      debugPrint('Unexpected error: $e');
       return Left('Unexpected error: $e');
     }
   }

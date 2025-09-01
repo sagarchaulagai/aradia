@@ -40,7 +40,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         return;
       }
 
-      print('Attempting to open downloads folder: $downloadsPath');
+      debugPrint('Attempting to open downloads folder: $downloadsPath');
 
       // Platform-specific ways to open a folder are tricky with just url_launcher for local paths.
       // open_filex or similar packages are better for this.
@@ -58,7 +58,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
       }
       // }
     } catch (e) {
-      print("Error opening download folder: $e");
+      debugPrint("Error opening download folder: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open download folder: $e')),
@@ -109,7 +109,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         false; // crude check
 
     if (!isYouTubeDownload && firstFileTaskId != null) {
-      print('UI: Pausing direct download for $audiobookId, task $firstFileTaskId');
+      debugPrint('UI: Pausing direct download for $audiobookId, task $firstFileTaskId');
       _downloadManager.pauseDownload(firstFileTaskId);
       // Update Hive status to reflect "paused"
       if (status != null) {
@@ -120,7 +120,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         });
       }
     } else {
-      print('UI: Pause not supported for this type or no task ID: $audiobookId');
+      debugPrint('UI: Pause not supported for this type or no task ID: $audiobookId');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pause not yet supported for YouTube downloads.')),
@@ -138,7 +138,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         false;
 
     if (!isYouTubeDownload && firstFileTaskId != null) {
-      print('UI: Resuming direct download for $audiobookId, task $firstFileTaskId');
+      debugPrint('UI: Resuming direct download for $audiobookId, task $firstFileTaskId');
       _downloadManager.resumeDownload(firstFileTaskId);
       if (status != null) {
         Hive.box('download_status_box').put('status_$audiobookId', {
@@ -148,7 +148,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         });
       }
     } else {
-      print('UI: Resume not supported for this type or no task ID: $audiobookId');
+      debugPrint('UI: Resume not supported for this type or no task ID: $audiobookId');
        if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Resume not yet supported for YouTube downloads.')),
@@ -544,7 +544,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                      final content = await oldMetadataFile.readAsString();
                      audiobook = Audiobook.fromMap(jsonDecode(content) as Map<String, dynamic>);
                   } else {
-                     print("Warning: Metadata file not found for $audiobookId. Playing with minimal data.");
+                     debugPrint("Warning: Metadata file not found for $audiobookId. Playing with minimal data.");
                      // Construct a minimal object if all else fails
                      audiobook = Audiobook.fromMap({ // Ensure Audiobook.fromMap handles missing fields gracefully
                         'id': audiobookId,
@@ -556,7 +556,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 }
                 // --- End of Retrieval ---
 
-                print('Playing downloaded audiobook: ${audiobook.title}');
+                debugPrint('Playing downloaded audiobook: ${audiobook.title}');
                 context.push(
                   '/audiobook-details', // Ensure this route exists
                   extra: {
@@ -567,7 +567,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   },
                 );
               } catch (e) {
-                print('Error preparing to play audiobook $audiobookId: $e');
+                debugPrint('Error preparing to play audiobook $audiobookId: $e');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error playing: ${e.toString()}')),

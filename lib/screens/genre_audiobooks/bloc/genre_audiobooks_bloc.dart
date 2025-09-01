@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:aradia/resources/archive_api.dart';
 import 'package:aradia/resources/models/audiobook.dart';
-import 'package:meta/meta.dart';
 
 part 'genre_audiobooks_event.dart';
 part 'genre_audiobooks_state.dart';
@@ -102,7 +102,7 @@ class GenreAudiobooksBloc
 
   Future<Either<String, List<Audiobook>>> _fetchAudiobooks(
       String genre, String listType, int page) async {
-    print(' My genre is $genre');
+    debugPrint(' My genre is $genre');
     switch (listType) {
       case 'popular':
         return await archiveApi.getAudiobooksByGenre(

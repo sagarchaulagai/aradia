@@ -1,12 +1,11 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hive/hive.dart';
 import 'package:aradia/resources/archive_api.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
-import 'package:meta/meta.dart';
 
 part 'audiobook_details_event.dart';
 part 'audiobook_details_state.dart';
@@ -45,23 +44,23 @@ class AudiobookDetailsBloc
     bool isLocal,
   ) async {
     emit(AudiobookDetailsLoading());
-    print('fetching audiobook details for id: $id');
-    print('isDownload: $isDownload');
-    print('isYoutube: $isYoutube');
-    print('isLocal: $isLocal');
+    debugPrint('fetching audiobook details for id: $id');
+    debugPrint('isDownload: $isDownload');
+    debugPrint('isYoutube: $isYoutube');
+    debugPrint('isLocal: $isLocal');
     Either<String, List<AudiobookFile>> audiobookFiles;
     try {
       if (isDownload) {
-        print('fetching audiobook files from downloaded files');
+        debugPrint('fetching audiobook files from downloaded files');
         audiobookFiles = await AudiobookFile.fromDownloadedFiles(id);
       } else if (isYoutube) {
-        print('fetching audiobook files from imported files');
+        debugPrint('fetching audiobook files from imported files');
         audiobookFiles = await AudiobookFile.fromYoutubeFiles(id);
       } else if (isLocal) {
-        print('fetching audiobook files from local files');
+        debugPrint('fetching audiobook files from local files');
         audiobookFiles = await AudiobookFile.fromLocalFiles(id);
       } else {
-        print('fetching audiobook files from api');
+        debugPrint('fetching audiobook files from api');
         audiobookFiles = await ArchiveApi().getAudiobookFiles(id);
       }
 
@@ -71,7 +70,7 @@ class AudiobookDetailsBloc
         emit(AudiobookDetailsLoaded([...r]));
       });
     } catch (e) {
-      print('Error coming from fetchAudiobookDetails bloc: $e');
+      debugPrint('Error coming from fetchAudiobookDetails bloc: $e');
       emit(AudiobookDetailsError());
     }
   }
@@ -91,15 +90,15 @@ class AudiobookDetailsBloc
   ) async {
     var box = Hive.box('favourite_audiobooks_box');
     _currentAudiobookId = event.audiobook.id;
-    print('Favourite icon clicked and id is ${event.audiobook.id}');
+    debugPrint('Favourite icon clicked and id is ${event.audiobook.id}');
 
     if (box.containsKey(event.audiobook.id)) {
       await box.delete(event.audiobook.id);
-      print('Favourite removed for this id ${event.audiobook.id}');
+      debugPrint('Favourite removed for this id ${event.audiobook.id}');
       emit(AudiobookDetailsFavourite(false));
     } else {
       await box.put(event.audiobook.id, event.audiobook.toMap());
-      print('Favourite added for this id ${event.audiobook.id}');
+      debugPrint('Favourite added for this id ${event.audiobook.id}');
       emit(AudiobookDetailsFavourite(true));
     }
   }

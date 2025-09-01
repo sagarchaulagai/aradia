@@ -43,7 +43,7 @@ class _DownloadButtonState extends State<DownloadButton> {
     _isDownloaded = _downloadManager.isDownloaded(widget.audiobook.id);
   }
 
-  Future<void> _handleStoragePermission(BuildContext context) async {
+  Future<void> _handleStoragePermission() async {
     try {
       final hasPermission = await _downloadManager.checkAndRequestPermissions();
       if (!hasPermission) {
@@ -214,7 +214,7 @@ class _DownloadButtonState extends State<DownloadButton> {
     }
 
     return IconButton(
-      onPressed: () => _handleStoragePermission(context),
+      onPressed: _handleStoragePermission,
       icon: const Icon(
         Ionicons.cloud_download,
         size: 50,

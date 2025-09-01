@@ -27,7 +27,7 @@ class GenreAudiobooksScreen extends StatelessWidget {
               labelColor: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black,
-              tabs: [
+              tabs: const [
                 Tab(text: 'Popular'),
                 Tab(text: 'Weekly'),
                 Tab(text: 'Latest'),
@@ -58,7 +58,7 @@ class GenreAudiobooksScreen extends StatelessWidget {
   // Helper method to capitalize first letter
   String _capitalizeFirstLetter(String text) {
     if (text.isEmpty) return text;
-    print(text);
+    debugPrint(text);
     return text[0].toUpperCase() +
         (text.length > 1 ? text.substring(1).toLowerCase() : '');
   }
