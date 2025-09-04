@@ -7,6 +7,7 @@ import 'package:aradia/resources/services/google_books_service.dart';
 import 'package:aradia/screens/import/edit_audiobook_screen.dart';
 import 'package:aradia/screens/import/widgets/cover_preview_widget.dart';
 import 'package:aradia/screens/import/widgets/google_books_selection_dialog.dart';
+import 'package:aradia/utils/app_logger.dart';
 
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
@@ -54,7 +55,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
 
   List<Audiobook> _importedAudiobooks = [];
   late TabController _tabController;
-  List<File> _selectedFiles = [];
+  final List<File> _selectedFiles = [];
   final ImagePicker _imagePicker = ImagePicker();
 
   @override
@@ -69,12 +70,12 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
         });
       }
       if (!_tabController.indexIsChanging &&
-          _tabController.index == 0 && 
+          _tabController.index == 0 &&
           mounted) {
         _loadImportedAudiobooks();
       }
     });
-    _requestPermissionsAndLoad(); 
+    _requestPermissionsAndLoad();
   }
 
   Future<void> _requestPermissionsAndLoad() async {
@@ -84,7 +85,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Storage and media permissions are required.')),
+          const SnackBar(
+              content: Text('Storage and media permissions are required.')),
         );
       }
     }
@@ -102,11 +104,15 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
 
   Future<void> _pickCoverImageFromGallery() async {
     if (!await PermissionHelper.requestStorageAndMediaPermissions()) {
-         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Media permission denied.")));
-         return;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Media permission denied.")));
+      }
+      return;
     }
     try {
-      final XFile? imageXFile = await MediaHelper.pickImageFromGallery(_imagePicker);
+      final XFile? imageXFile =
+          await MediaHelper.pickImageFromGallery(_imagePicker);
       if (imageXFile != null && mounted) {
         setState(() {
           _pickedLocalCoverFile = File(imageXFile.path);
@@ -229,13 +235,14 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                           .startsWith('http') &&
                       (audiobookData['lowQCoverImage'] as String).isNotEmpty) {
                     if (!p.isAbsolute(audiobookData['lowQCoverImage'])) {
-
-                       if (p.basename(audiobookData['lowQCoverImage']) == kCoverFileName) {
-                           audiobookData['lowQCoverImage'] = p.join(entity.path, kCoverFileName);
-                       } else {
-
-                           audiobookData['lowQCoverImage'] = p.join(entity.path, audiobookData['lowQCoverImage']);
-                       }
+                      if (p.basename(audiobookData['lowQCoverImage']) ==
+                          kCoverFileName) {
+                        audiobookData['lowQCoverImage'] =
+                            p.join(entity.path, kCoverFileName);
+                      } else {
+                        audiobookData['lowQCoverImage'] = p.join(
+                            entity.path, audiobookData['lowQCoverImage']);
+                      }
                     }
                   }
 
@@ -243,11 +250,11 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                       audiobookData['title'] != null) {
                     loadedAudiobooks.add(Audiobook.fromMap(audiobookData));
                   } else {
-                    print(
+                    AppLogger.debug(
                         'Skipping corrupted audiobook.txt in ${entity.path}: Missing id or title');
                   }
                 } catch (e) {
-                  print(
+                  AppLogger.debug(
                       'Error decoding audiobook.txt in ${entity.path} ($sourceDirName): $e');
                 }
               }
@@ -268,7 +275,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
         });
       }
     } catch (e) {
-      print('Error loading imported audiobooks: $e');
+      AppLogger.debug('Error loading imported audiobooks: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading library: ${e.toString()}')),
@@ -346,13 +353,15 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
     }
 
     try {
-      final List<GoogleBookResult> results = await GoogleBooksService.fetchBooks(query);
+      final List<GoogleBookResult> results =
+          await GoogleBooksService.fetchBooks(query);
       if (!mounted) return;
 
       if (results.isNotEmpty) {
-        final GoogleBookResult? selectedBook = await showDialog<GoogleBookResult>(
+        final GoogleBookResult? selectedBook =
+            await showDialog<GoogleBookResult>(
           context: context,
-          builder: (context) => GoogleBooksSelectionDialog(results: results), 
+          builder: (context) => GoogleBooksSelectionDialog(results: results),
         );
 
         if (selectedBook != null && mounted) {
@@ -369,7 +378,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
             const SnackBar(content: Text('No results found on Google Books.')));
       }
     } catch (e) {
-      print("Google Books fetch error: $e");
+      AppLogger.debug("Google Books fetch error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error fetching from Google Books: $e')));
@@ -405,19 +414,21 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       if (appDocDir == null) throw Exception("Cannot get app directory");
 
       final audiobookId = StringHelper.generateRandomId();
-      final audiobookSpecificDir = Directory(p.join(appDocDir.path, AppConstants.localDirName, audiobookId));
+      final audiobookSpecificDir = Directory(
+          p.join(appDocDir.path, AppConstants.localDirName, audiobookId));
 
-      final String? localCoverFinalPath = await MediaHelper.saveOrUpdateCoverImage(
-          audiobookSpecificDir: audiobookSpecificDir,
-          newLocalCoverFileToSave: _pickedLocalCoverFile,
-          newNetworkCoverUrlToSave: _selectedGBooksCoverUrl,
-          currentCoverPathInDb: null, 
+      final String? localCoverFinalPath =
+          await MediaHelper.saveOrUpdateCoverImage(
+        audiobookSpecificDir: audiobookSpecificDir,
+        newLocalCoverFileToSave: _pickedLocalCoverFile,
+        newNetworkCoverUrlToSave: _selectedGBooksCoverUrl,
+        currentCoverPathInDb: null,
       );
 
       final files =
           await Future.wait(_selectedFiles.asMap().entries.map((entry) async {
         final file = entry.value;
-        final duration = await MediaHelper.getAudioDuration(file); 
+        final duration = await MediaHelper.getAudioDuration(file);
         return AudiobookFile.fromMap({
           "identifier": "${audiobookId}_${entry.key}",
           "title": p.basenameWithoutExtension(file.path),
@@ -454,9 +465,11 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       if (mounted) {
         await _loadImportedAudiobooks();
         _clearLocalImportFields();
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Audiobook imported successfully!')));
-        _tabController.animateTo(0);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Audiobook imported successfully!')));
+          _tabController.animateTo(0);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -471,14 +484,14 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       Audiobook audiobook,
       List<AudiobookFile> fileMetadata,
       List<File> sourceFiles,
-      Directory appDocDir, 
-      Directory audiobookSpecificDir) async { 
-
+      Directory appDocDir,
+      Directory audiobookSpecificDir) async {
     if (!await audiobookSpecificDir.exists()) {
       await audiobookSpecificDir.create(recursive: true);
     }
 
-    final metadataFile = File(p.join(audiobookSpecificDir.path, 'audiobook.txt'));
+    final metadataFile =
+        File(p.join(audiobookSpecificDir.path, 'audiobook.txt'));
     await metadataFile.writeAsString(jsonEncode(audiobook.toMap()));
 
     final filesFile = File(p.join(audiobookSpecificDir.path, 'files.txt'));
@@ -487,7 +500,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
 
     for (int i = 0; i < sourceFiles.length; i++) {
       final sourceFile = sourceFiles[i];
-      final targetFileName = fileMetadata[i].name; 
+      final targetFileName = fileMetadata[i].name;
       final newFile = File(p.join(audiobookSpecificDir.path, targetFileName));
       await sourceFile.copy(newFile.path);
     }
@@ -553,17 +566,17 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
           files.add(AudiobookFile.fromMap({
             "identifier": video.id.value,
             "title": video.title,
-            "name": "${video.id.value}.mp3", 
+            "name": "${video.id.value}.mp3",
             "track": files.length + 1,
-            "size": 0, 
+            "size": 0,
             "length": video.duration?.inSeconds.toDouble() ?? 0.0,
             "url": video.url,
             "highQCoverImage": video.thumbnails.maxResUrl,
           }));
         }
       } else {
-        final videoId = VideoId(url); 
-        final video = await yt.videos.get(url); 
+        //final videoId = VideoId(url);
+        final video = await yt.videos.get(url);
         entityId = video.id.value;
         entityTitle = video.title;
         entityAuthor = video.author;
@@ -584,22 +597,32 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       }
 
       final audiobook = Audiobook.fromMap({
-        "title": entityTitle, "id": entityId, "description": entityDescription,
-        "author": entityAuthor, "date": DateTime.now().toIso8601String(),
-        "downloads": 0, "subject": tags, "size": 0, "rating": 0.0, "reviews": 0,
-        "lowQCoverImage": coverImage ?? files.firstOrNull?.highQCoverImage ?? "",
-        "language": "en", "origin": AppConstants.youtubeDirName,
+        "title": entityTitle,
+        "id": entityId,
+        "description": entityDescription,
+        "author": entityAuthor,
+        "date": DateTime.now().toIso8601String(),
+        "downloads": 0,
+        "subject": tags,
+        "size": 0,
+        "rating": 0.0,
+        "reviews": 0,
+        "lowQCoverImage": coverImage,
+        "language": "en",
+        "origin": AppConstants.youtubeDirName,
       });
 
       await _saveYouTubeAudiobookMetadata(audiobook, files);
       if (mounted) {
         await _loadImportedAudiobooks();
         _urlController.clear();
-        FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                '${url.contains('playlist') ? 'Playlist' : 'Video'} metadata imported!')));
-        _tabController.animateTo(0);
+        if (mounted) {
+          FocusScope.of(context).unfocus();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  '${url.contains('playlist') ? 'Playlist' : 'Video'} metadata imported!')));
+          _tabController.animateTo(0);
+        }
       }
     } on FormatException catch (e) {
       if (mounted) {
@@ -630,8 +653,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       Audiobook audiobook, List<AudiobookFile> files) async {
     final appDir = await getExternalStorageDirectory();
     if (appDir == null) throw Exception('Could not access storage directory');
-    final audiobookDir =
-        Directory(p.join(appDir.path, AppConstants.youtubeDirName, audiobook.id));
+    final audiobookDir = Directory(
+        p.join(appDir.path, AppConstants.youtubeDirName, audiobook.id));
     await audiobookDir.create(recursive: true);
 
     final metadataFile = File(p.join(audiobookDir.path, 'audiobook.txt'));
@@ -645,13 +668,17 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
   Future<void> _deleteAudiobook(Audiobook audiobook) async {
     if (!mounted) return;
     if (!await PermissionHelper.requestStorageAndMediaPermissions()) {
-
-      if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Storage permission required to delete.")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Storage permission required to delete.")));
+      }
       return;
     }
 
-    final playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
-    final currentAudiobookId = playingAudiobookDetailsBox.get('audiobook')?['id'];
+    final playingAudiobookDetailsBox =
+        Hive.box('playing_audiobook_details_box');
+    final currentAudiobookId =
+        playingAudiobookDetailsBox.get('audiobook')?['id'];
     if (currentAudiobookId == audiobook.id) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -662,6 +689,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
       }
       return;
     }
+
+    if (!mounted) return;
 
     bool confirmDelete = await showDialog<bool>(
           context: context,
@@ -706,8 +735,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
     try {
       final appDir = await getExternalStorageDirectory();
       if (appDir == null) throw Exception('Could not access storage directory');
-      final audiobookDir = Directory(
-          p.join(appDir.path, audiobook.origin ?? AppConstants.localDirName, audiobook.id));
+      final audiobookDir = Directory(p.join(appDir.path,
+          audiobook.origin ?? AppConstants.localDirName, audiobook.id));
       if (await audiobookDir.exists()) {
         await audiobookDir.delete(recursive: true);
       }
@@ -717,8 +746,10 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
 
       if (mounted) {
         await _loadImportedAudiobooks();
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('"${audiobook.title}" deleted.')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('"${audiobook.title}" deleted.')));
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -749,7 +780,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
           indicatorColor: AppColors.primaryColor,
           labelColor: AppColors.primaryColor,
           unselectedLabelColor: isLightMode
-              ? AppColors.iconColorLight.withAlpha(153) 
+              ? AppColors.iconColorLight.withAlpha(153)
               : AppColors.iconColor.withAlpha(153),
           tabs: const [
             Tab(text: 'My Library', icon: Icon(Ionicons.library_outline)),
@@ -781,7 +812,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  CommonTextField( 
+                  CommonTextField(
                     controller: _urlController,
                     labelText: 'YouTube URL (Video or Playlist)',
                     hintText: 'e.g., https://www.youtube.com/watch?v=...',
@@ -809,11 +840,12 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white, 
+                              color: Colors.white,
                             ),
                           )
                         : const Icon(Icons.cloud_download_outlined),
-                    label: Text(_isLoading ? 'Importing...' : 'Import Metadata'),
+                    label:
+                        Text(_isLoading ? 'Importing...' : 'Import Metadata'),
                   ),
                 ],
               ),
@@ -837,7 +869,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Center(
-                    child: CoverPreviewWidget( 
+                    child: CoverPreviewWidget(
                       localCoverFile: _pickedLocalCoverFile,
                       coverPathOrUrl: _selectedGBooksCoverUrl,
                       height: 120,
@@ -857,35 +889,37 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                     onPressed: _isLoading ? null : _pickCoverImageFromGallery,
                   ),
                   const SizedBox(height: 16),
-                  CommonTextField( 
-                      controller: _titleController,
-                      labelText: 'Audiobook Title*',
-                      prefixIcon: Icons.title_outlined,
-                      fillColor: textFieldFillColor,
-                      theme: theme,
+                  CommonTextField(
+                    controller: _titleController,
+                    labelText: 'Audiobook Title*',
+                    prefixIcon: Icons.title_outlined,
+                    fillColor: textFieldFillColor,
+                    theme: theme,
                   ),
                   const SizedBox(height: 12),
-                  CommonTextField( 
-                      controller: _authorController,
-                      labelText: 'Author',
-                      prefixIcon: Icons.person_outline,
-                      fillColor: textFieldFillColor,
-                      theme: theme,
+                  CommonTextField(
+                    controller: _authorController,
+                    labelText: 'Author',
+                    prefixIcon: Icons.person_outline,
+                    fillColor: textFieldFillColor,
+                    theme: theme,
                   ),
                   const SizedBox(height: 12),
-                  CommonTextField( 
-                      controller: _descriptionController,
-                      labelText: 'Description',
-                      prefixIcon: Icons.description_outlined,
-                      maxLines: 3,
-                      fillColor: textFieldFillColor,
-                      theme: theme,
+                  CommonTextField(
+                    controller: _descriptionController,
+                    labelText: 'Description',
+                    prefixIcon: Icons.description_outlined,
+                    maxLines: 3,
+                    fillColor: textFieldFillColor,
+                    theme: theme,
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed:
                         _isLoading ? null : _fetchAndSelectFromGoogleBooks,
-                    icon: _isLoading && (_titleController.text.isNotEmpty || _authorController.text.isNotEmpty)
+                    icon: _isLoading &&
+                            (_titleController.text.isNotEmpty ||
+                                _authorController.text.isNotEmpty)
                         ? SizedBox(
                             width: 20,
                             height: 20,
@@ -958,7 +992,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                                   : AppColors.listTileTitleColor)),
                       trailing: IconButton(
                         icon: Icon(Icons.remove_circle_outline,
-                            color: theme.colorScheme.error.withAlpha(204)), 
+                            color: theme.colorScheme.error.withAlpha(204)),
                         onPressed: () {
                           if (mounted) {
                             setState(() => _selectedFiles.removeAt(index));
@@ -976,14 +1010,18 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(_errorMessageLocal!,
-                  style: TextStyle(color: theme.colorScheme.error, fontSize: 13)),
+                  style:
+                      TextStyle(color: theme.colorScheme.error, fontSize: 13)),
             ),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.buttonColor,
-                foregroundColor: theme.brightness == Brightness.dark ? Colors.white : Colors.black,
+              backgroundColor: AppColors.buttonColor,
+              foregroundColor: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
-            onPressed: _isLoading || _selectedFiles.isEmpty ? null : _importFromLocal,
+            onPressed:
+                _isLoading || _selectedFiles.isEmpty ? null : _importFromLocal,
             icon: _isLoading
                 ? const SizedBox(
                     width: 20,
@@ -1012,7 +1050,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                   style: theme.textTheme.headlineSmall
                       ?.copyWith(fontFamily: GoogleFonts.ubuntu().fontFamily)),
               IconButton(
-                  icon: Icon(Icons.refresh_rounded, color: AppColors.primaryColor),
+                  icon: Icon(Icons.refresh_rounded,
+                      color: AppColors.primaryColor),
                   tooltip: 'Refresh Library',
                   onPressed: _isLoading ? null : _loadImportedAudiobooks),
             ],
@@ -1039,7 +1078,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                         const SizedBox(height: 8),
                         Text('Use the tabs above to import audiobooks.',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant.withAlpha(204)), 
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withAlpha(204)),
                             textAlign: TextAlign.center),
                       ])),
             ),
@@ -1054,12 +1094,12 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                 Widget coverWidget;
 
                 if (audiobook.lowQCoverImage.isNotEmpty) {
-                     coverWidget = CoverPreviewWidget(
-                        coverPathOrUrl: audiobook.lowQCoverImage,
-                        height: 60,
-                        width: 60,
-                        customPlaceholder: _defaultCoverPlaceholder(theme, 60, 60),
-                    );
+                  coverWidget = CoverPreviewWidget(
+                    coverPathOrUrl: audiobook.lowQCoverImage,
+                    height: 60,
+                    width: 60,
+                    customPlaceholder: _defaultCoverPlaceholder(theme, 60, 60),
+                  );
                 } else {
                   coverWidget = _defaultCoverPlaceholder(theme, 60, 60);
                 }
@@ -1068,7 +1108,8 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(
                       vertical: 5.0, horizontal: 8.0),
-                  color: isLight ? AppColors.cardColorLight : AppColors.cardColor,
+                  color:
+                      isLight ? AppColors.cardColorLight : AppColors.cardColor,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                   child: ListTile(
@@ -1092,7 +1133,7 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                             color: (isLight
                                     ? AppColors.subtitleTextColorLight
                                     : AppColors.listTileSubtitleColor)
-                                .withAlpha(230)), 
+                                .withAlpha(230)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
                     onLongPress: () {
@@ -1101,9 +1142,11 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
                     onTap: () {
                       context.push('/audiobook-details', extra: {
                         'audiobook': audiobook,
-                        'isDownload': false, 
-                        'isYoutube': audiobook.origin == AppConstants.youtubeDirName,
-                        'isLocal': audiobook.origin == AppConstants.localDirName,
+                        'isDownload': false,
+                        'isYoutube':
+                            audiobook.origin == AppConstants.youtubeDirName,
+                        'isLocal':
+                            audiobook.origin == AppConstants.localDirName,
                       });
                     },
                   ),
@@ -1115,21 +1158,23 @@ class _ImportAudiobookScreenState extends State<ImportAudiobookScreen>
     );
   }
 
-  Widget _defaultCoverPlaceholder(ThemeData theme, double height, double width) {
+  Widget _defaultCoverPlaceholder(
+      ThemeData theme, double height, double width) {
     final isLightMode = theme.brightness == Brightness.light;
     return Container(
       height: height,
       width: width,
       decoration: BoxDecoration(
-        color: isLightMode ? AppColors.cardColorLight.withOpacity(0.5) : AppColors.cardColor.withOpacity(0.5),
+        color: isLightMode
+            ? AppColors.cardColorLight.withValues(alpha: 0.5)
+            : AppColors.cardColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Icon(Icons.book_outlined,
           color: isLightMode
-              ? AppColors.iconColorLight.withAlpha(128) 
+              ? AppColors.iconColorLight.withAlpha(128)
               : AppColors.iconColor.withAlpha(128),
           size: min(height, width) * 0.6),
     );
   }
 }
-

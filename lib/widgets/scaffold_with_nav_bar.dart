@@ -106,7 +106,7 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
     );
   }
 
-  void _onTap(index) {
+  void _onTap(int index) {
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == widget.navigationShell.currentIndex,

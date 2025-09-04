@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'models/latest_version_fetch_model.dart';
+import '../utils/app_logger.dart';
 
 class LatestVersionFetch {
   final String url =
@@ -49,7 +50,7 @@ class LatestVersionFetch {
       }
       return false;
     } catch (e) {
-      print('Error downloading update: $e');
+      AppLogger.error('Error downloading update: $e', 'LatestVersionFetch');
       return false;
     }
   }
@@ -63,17 +64,17 @@ class LatestVersionFetch {
           await platform.invokeMethod('installApk', {'apkPath': apkPath});
           return;
         } catch (e) {
-          print('Method channel failed, trying OpenFile: $e');
+          AppLogger.warning('Method channel failed, trying OpenFile: $e', 'LatestVersionFetch');
         }
 
         // Fallback to OpenFile
         final result = await OpenFile.open(apkPath);
         if (result.type != ResultType.done) {
-          print('OpenFile error: ${result.message}');
+          AppLogger.error('OpenFile error: ${result.message}', 'LatestVersionFetch');
         }
       }
     } catch (e) {
-      print('Installation error: $e');
+      AppLogger.error('Installation error: $e', 'LatestVersionFetch');
     }
   }
 }

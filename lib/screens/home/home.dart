@@ -1,5 +1,6 @@
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -43,7 +44,7 @@ class _HomeState extends State<Home> {
     final result = await _latestVersionFetch.getLatestVersion();
 
     result.fold(
-      (error) => print(error),
+      (error) => AppLogger.debug(error),
       (latestVersionModel) async {
         if (latestVersionModel.latestVersion != null &&
             latestVersionModel.latestVersion!.compareTo(currentVersion) > 0) {
@@ -55,8 +56,9 @@ class _HomeState extends State<Home> {
 
   Future<void> _handleUpdateAvailable(
       LatestVersionFetchModel versionModel) async {
-    final permissionGranted = await PermissionHelper.handleUpdatePermission(context);
-    
+    final permissionGranted =
+        await PermissionHelper.handleUpdatePermission(context);
+
     if (permissionGranted) {
       proceedWithUpdate(versionModel);
     }

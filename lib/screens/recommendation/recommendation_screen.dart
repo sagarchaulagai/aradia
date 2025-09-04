@@ -197,7 +197,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   // Save selected genres to Hive
   Future<void> _saveSelectedGenres() async {
-    final box = await Hive.box(_hiveBoxName);
+    final box = Hive.box(_hiveBoxName);
     await box.put('selectedGenres', selectedGenres.toList());
   }
 
@@ -417,7 +417,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                       onPressed: selectedGenres.length >= 3
                           ? () async {
                               await _saveSelectedGenres();
-                              if (mounted) {
+                              if (mounted && context.mounted) {
                                 context.go('/home');
                               }
                             }

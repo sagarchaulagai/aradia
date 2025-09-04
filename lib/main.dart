@@ -12,7 +12,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/audiobook_details/audiobook_details.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
-import 'package:aradia/screens/audiobook_player.dart/audiobook_player.dart';
+import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/screens/download_audiobook/downloads_page.dart';
 import 'package:aradia/screens/favourite/favourite.dart';
 import 'package:aradia/screens/genre_audiobooks/genre_audiobooks.dart';
@@ -20,6 +20,7 @@ import 'package:aradia/screens/home/home.dart';
 import 'package:aradia/screens/search/bloc/search_bloc.dart';
 import 'package:aradia/screens/search/search_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
+import 'package:aradia/utils/app_logger.dart';
 
 import 'package:aradia/widgets/scaffold_with_nav_bar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -63,7 +64,8 @@ Future<void> initHive() async {
   await Hive.openBox('theme_mode_box');
   await Hive.openBox('history_of_audiobook_box');
   await Hive.openBox('recommened_audiobooks_box');
-  await Hive.openBox('dual_mode_box'); // o means audiobook home and 1 means podcast home
+  await Hive.openBox(
+      'dual_mode_box'); // o means audiobook home and 1 means podcast home
   Box recommendedAudiobooksBox = Hive.box('recommened_audiobooks_box');
 
   isRecommendScreen = recommendedAudiobooksBox.isEmpty ? 1 : 0;
@@ -83,8 +85,6 @@ final GoRouter router = GoRouter(
         return const RecommendationScreen();
       }),
     ),
-
-
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell);
@@ -209,11 +209,12 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _backButtonInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
-    print('initialized back button interceptor');
+    AppLogger.debug(
+        'initialized back button interceptor', 'BackButtonInterceptor');
     WeSlideController weSlideController =
         Provider.of<WeSlideController>(context, listen: false);
     if (weSlideController.isOpened) {
-      print('closing');
+      AppLogger.debug('closing', 'BackButtonInterceptor');
       weSlideController.hide();
       return true;
     }

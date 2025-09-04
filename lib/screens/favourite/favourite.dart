@@ -31,8 +31,8 @@ class _FavouriteState extends State<Favourite> {
       body: StreamBuilder<BoxEvent>(
         stream: _boxEventStream,
         builder: (context, snapshot) {
-          final width = MediaQuery.of(context).size.width / 2 - 20;
-          const double desiredHeight = 220;
+          final width = MediaQuery.of(context).size.width / 2;
+          double desiredHeight = (250 / 175) * width;
           final double crossAspectRatio = width / desiredHeight;
           if (box.length == 0) {
             return const Center(

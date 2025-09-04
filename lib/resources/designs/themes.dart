@@ -12,7 +12,7 @@ class Themes {
       bodyColor: AppColors.textColor,
       displayColor: AppColors.textColor,
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: AppColors.primaryColor, // Color of the selected tab
       indicatorColor: AppColors.primaryColor,
       unselectedLabelColor: AppColors.iconColorLight
@@ -55,7 +55,7 @@ class Themes {
         elevation: 4,
       ),
     ),
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
       color: AppColors.cardColorLight,
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -126,12 +126,12 @@ class Themes {
       bodyColor: AppColors.darkTextColor,
       displayColor: AppColors.darkTextColor,
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: AppColors.primaryColor, // Color of the selected tab
       indicatorColor: AppColors.primaryColor,
       unselectedLabelColor:
           AppColors.iconColor.withValues(alpha: 0.6), // Unselected tab color
-      indicator: UnderlineTabIndicator(
+      indicator: const UnderlineTabIndicator(
         borderSide: BorderSide(
           color: AppColors.primaryColor,
           width: 2.0,
@@ -168,7 +168,7 @@ class Themes {
         ),
       ),
     ),
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
       color: AppColors.cardColor,
       elevation: 2,
     ),

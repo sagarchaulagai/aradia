@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,7 +10,7 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/services/download/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:aradia/utils/permission_helper.dart';
 
 class DownloadButton extends StatefulWidget {
   final Audiobook audiobook;
@@ -45,40 +46,16 @@ class _DownloadButtonState extends State<DownloadButton> {
 
   Future<void> _handleStoragePermission(BuildContext context) async {
     try {
-      final hasPermission = await _downloadManager.checkAndRequestPermissions();
-      if (!hasPermission) {
-        if (!mounted) return;
-
-        // Show dialog to explain why we need permissions
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Storage Permission Required'),
-            content: const Text(
-                'This app needs storage permission to download audiobooks. Please grant storage permission in app settings.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await openAppSettings();
-                },
-                child: const Text('Open Settings'),
-              ),
-            ],
-          ),
-        );
-      } else {
+      final hasPermission =
+          await PermissionHelper.handleDownloadPermissionWithDialog(context);
+      if (hasPermission) {
         // Permissions granted, start download
         await _startDownload();
       }
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(this.context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
           backgroundColor: Colors.red,
@@ -164,7 +141,7 @@ class _DownloadButtonState extends State<DownloadButton> {
         _isDownloading = false;
       });
 
-      print(e);
+      AppLogger.debug(e.toString());
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

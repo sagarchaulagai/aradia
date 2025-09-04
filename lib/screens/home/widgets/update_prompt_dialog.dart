@@ -10,12 +10,12 @@ class UpdatePromptDialog extends StatelessWidget {
   final VoidCallback onUpdate;
 
   const UpdatePromptDialog({
-    Key? key,
+    super.key,
     required this.currentVersion,
     required this.newVersion,
     required this.changelogs,
     required this.onUpdate,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

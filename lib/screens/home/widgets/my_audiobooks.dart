@@ -1,3 +1,4 @@
+import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -104,7 +105,7 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
         widget.homeBloc.add(fetchEvent(_currentPage, widget.rowsPerPage));
       }
     } else {
-      print('fetchEvent is not a function');
+      AppLogger.debug('fetchEvent is not a function');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aradia/resources/services/youtube_audio_service.dart';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
@@ -56,49 +57,50 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<List<MediaItem>> parseMediaItems(
-    List<AudiobookFile> playlist, Audiobook audiobook) async {
-  final mediaItems = <MediaItem>[];
+      List<AudiobookFile> playlist, Audiobook audiobook) async {
+    final mediaItems = <MediaItem>[];
 
-  for (var song in playlist) {
-    final isYouTube = song.url?.contains('youtube.com') == true ||
-        song.url?.contains('youtu.be') == true;
+    for (var song in playlist) {
+      final isYouTube = song.url?.contains('youtube.com') == true ||
+          song.url?.contains('youtu.be') == true;
 
-    MediaItem item = MediaItem(
-      id: song.track.toString(),
-      album: audiobook.title,
-      title: song.title ?? '',
-      artist: audiobook.author ?? 'Librivox',
-      artUri: Uri.parse(song.highQCoverImage ?? ''),
-      extras: {
-        'url': song.url,
-        'audiobook_id': audiobook.id,
-        'is_youtube': isYouTube,
-      },
-    );
-
-    mediaItems.add(item);
-
-    if (isYouTube) {
-      final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
-      _playlist.add(
-        YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'),
+      MediaItem item = MediaItem(
+        id: song.track.toString(),
+        album: audiobook.title,
+        title: song.title ?? '',
+        artist: audiobook.author ?? 'Librivox',
+        artUri: Uri.parse(audiobook.lowQCoverImage.contains("youtube")
+            ? audiobook.lowQCoverImage
+            : song.highQCoverImage ?? ''),
+        extras: {
+          'url': song.url,
+          'audiobook_id': audiobook.id,
+          'is_youtube': isYouTube,
+        },
       );
-    } else if (song.url != null) {
-      Uri uri;
-      if (song.url!.startsWith('/')) {
-        uri = Uri.file(song.url!);
-      } else {
-        uri = Uri.parse(song.url!);
+
+      mediaItems.add(item);
+
+      if (isYouTube) {
+        final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
+        _playlist.add(
+          YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'),
+        );
+      } else if (song.url != null) {
+        Uri uri;
+        if (song.url!.startsWith('/')) {
+          uri = Uri.file(song.url!);
+        } else {
+          uri = Uri.parse(song.url!);
+        }
+        _playlist.add(
+          AudioSource.uri(uri, tag: item),
+        );
       }
-      _playlist.add(
-        AudioSource.uri(uri, tag: item),
-      );
     }
+
+    return mediaItems;
   }
-
-  return mediaItems;
-}
-
 
   @override
   Future<void> addQueueItems(List<MediaItem> mediaItems) async {
@@ -148,8 +150,6 @@ class MyAudioHandler extends BaseAudioHandler {
     ));
   }
 
-  // Here, in every 10 the position of the audiobook is updated in the history box
-  // we can add a option in setting so user can put their own custom time later , TODO
   void _startPositionUpdateTimer(String audiobookId) {
     _positionUpdateTimer?.cancel();
     _positionUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) {
@@ -159,7 +159,8 @@ class MyAudioHandler extends BaseAudioHandler {
             audiobookId, currentIndex, _player.position.inMilliseconds);
         playingAudiobookDetailsBox.put(
             'position', _player.position.inMilliseconds);
-        print('Position updated: $_player.position.inMilliseconds ms');
+        AppLogger.debug(
+            'Position updated: $_player.position.inMilliseconds ms');
       }
     });
   }

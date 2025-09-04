@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/widgets/rating_widget.dart';
 

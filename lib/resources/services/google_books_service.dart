@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'package:aradia/resources/models/google_book_result.dart'; // Adjust path as needed
+import 'package:aradia/resources/models/google_book_result.dart';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show immutable;
 
@@ -25,10 +26,10 @@ class GoogleBooksService {
               .toList();
         }
       } else {
-        print('Google Books API Error: ${response.statusCode}');
+        AppLogger.debug('Google Books API Error: ${response.statusCode}');
       }
     } catch (e) {
-      print("Google Books API Exception: $e");
+      AppLogger.debug("Google Books API Exception: $e");
     }
     return [];
   }

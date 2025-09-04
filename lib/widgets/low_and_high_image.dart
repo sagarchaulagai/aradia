@@ -22,9 +22,10 @@ class LowAndHighImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String mainImage = lowQImage.contains('youtube') ? lowQImage : (highQImage ?? lowQImage);
+    final String mainImage =
+        lowQImage.contains('youtube') ? lowQImage : (highQImage ?? lowQImage);
 
-    Widget _buildFallback() {
+    Widget buildFallback() {
       if (_isLocalPath(lowQImage)) {
         return Image.file(
           File(lowQImage),
@@ -42,7 +43,7 @@ class LowAndHighImage extends StatelessWidget {
       }
     }
 
-    Widget _buildImage(String path) {
+    Widget buildImage(String path) {
       if (_isLocalPath(path)) {
         return Image.file(
           File(path),
@@ -56,8 +57,8 @@ class LowAndHighImage extends StatelessWidget {
           fit: BoxFit.fill,
           height: height,
           width: width,
-          errorWidget: (context, url, error) => _buildFallback(),
-          placeholder: (context, url) => _buildFallback(),
+          errorWidget: (context, url, error) => buildFallback(),
+          placeholder: (context, url) => buildFallback(),
         );
       }
     }
@@ -65,7 +66,7 @@ class LowAndHighImage extends StatelessWidget {
     return SizedBox(
       height: height,
       width: width,
-      child: _buildImage(mainImage),
+      child: buildImage(mainImage),
     );
   }
 }

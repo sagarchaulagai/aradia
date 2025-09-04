@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:ionicons/ionicons.dart'; // Using Ionicons for some icons
-import 'package:aradia/resources/models/audiobook.dart'; // Your Audiobook model
+import 'package:ionicons/ionicons.dart';
+import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/services/download/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:open_filex/open_filex.dart'; // For opening folder/files
-// import 'package:url_launcher/url_launcher.dart'; // For opening folder URIs
 
 class DownloadsPage extends StatefulWidget {
   const DownloadsPage({super.key});
@@ -26,7 +25,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Future<void> _openDownloadFolder() async {
     try {
-      // Consistently use the directory your DownloadManager saves to
+      // Consistently use the directory our DownloadManager saves to
       final directory = await getExternalStorageDirectory();
       final downloadsPath = '${directory?.path}/downloads';
       final downloadsDir = Directory(downloadsPath);
@@ -34,21 +33,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
       if (!await downloadsDir.exists()) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Downloads folder does not exist yet.')),
+            const SnackBar(
+                content: Text('Downloads folder does not exist yet.')),
           );
         }
         return;
       }
 
-      print('Attempting to open downloads folder: $downloadsPath');
+      AppLogger.debug('Attempting to open downloads folder: $downloadsPath');
 
-      // Platform-specific ways to open a folder are tricky with just url_launcher for local paths.
-      // open_filex or similar packages are better for this.
-      // For now, just show the path.
-      // if (Platform.isAndroid || Platform.isIOS) { // open_filex might work here
-      //   final result = await OpenFilex.open(downloadsPath);
-      //   print("Open folder result: ${result.message}");
-      // } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -56,9 +49,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   'Downloads folder: $downloadsPath (Manual navigation may be required)')),
         );
       }
-      // }
     } catch (e) {
-      print("Error opening download folder: $e");
+      AppLogger.debug("Error opening download folder: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open download folder: $e')),
@@ -82,16 +74,18 @@ class _DownloadsPageState extends State<DownloadsPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            child:
+                const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      _downloadManager.cancelDownload(audiobookId); // This handles cleanup and Hive
+      _downloadManager
+          .cancelDownload(audiobookId); // This handles cleanup and Hive
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(this.context).showSnackBar(
           SnackBar(content: Text('"$title" has been deleted.')),
         );
       }
@@ -109,21 +103,25 @@ class _DownloadsPageState extends State<DownloadsPage> {
         false; // crude check
 
     if (!isYouTubeDownload && firstFileTaskId != null) {
-      print('UI: Pausing direct download for $audiobookId, task $firstFileTaskId');
+      AppLogger.debug(
+          'UI: Pausing direct download for $audiobookId, task $firstFileTaskId');
       _downloadManager.pauseDownload(firstFileTaskId);
       // Update Hive status to reflect "paused"
       if (status != null) {
         Hive.box('download_status_box').put('status_$audiobookId', {
           ...status,
           'isPaused': true,
-          'isDownloading': false, // Explicitly set isDownloading to false when paused
+          'isDownloading':
+              false, // Explicitly set isDownloading to false when paused
         });
       }
     } else {
-      print('UI: Pause not supported for this type or no task ID: $audiobookId');
+      AppLogger.debug(
+          'UI: Pause not supported for this type or no task ID: $audiobookId');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pause not yet supported for YouTube downloads.')),
+          const SnackBar(
+              content: Text('Pause not yet supported for YouTube downloads.')),
         );
       }
     }
@@ -138,7 +136,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
         false;
 
     if (!isYouTubeDownload && firstFileTaskId != null) {
-      print('UI: Resuming direct download for $audiobookId, task $firstFileTaskId');
+      AppLogger.debug(
+          'UI: Resuming direct download for $audiobookId, task $firstFileTaskId');
       _downloadManager.resumeDownload(firstFileTaskId);
       if (status != null) {
         Hive.box('download_status_box').put('status_$audiobookId', {
@@ -148,10 +147,12 @@ class _DownloadsPageState extends State<DownloadsPage> {
         });
       }
     } else {
-      print('UI: Resume not supported for this type or no task ID: $audiobookId');
-       if (mounted) {
+      AppLogger.debug(
+          'UI: Resume not supported for this type or no task ID: $audiobookId');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Resume not yet supported for YouTube downloads.')),
+          const SnackBar(
+              content: Text('Resume not yet supported for YouTube downloads.')),
         );
       }
     }
@@ -159,9 +160,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -189,21 +187,33 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
           // Sort by a timestamp if available, otherwise by title
           allStatuses.sort((a, b) {
-            final DateTime? dateA = a['downloadDate'] != null ? DateTime.tryParse(a['downloadDate']) : null;
-            final DateTime? dateB = b['downloadDate'] != null ? DateTime.tryParse(b['downloadDate']) : null;
-            if (dateA != null && dateB != null) return dateB.compareTo(dateA); // Newest first
-            return (a['audiobookTitle'] as String? ?? "").compareTo(b['audiobookTitle'] as String? ?? "");
+            final DateTime? dateA = a['downloadDate'] != null
+                ? DateTime.tryParse(a['downloadDate'])
+                : null;
+            final DateTime? dateB = b['downloadDate'] != null
+                ? DateTime.tryParse(b['downloadDate'])
+                : null;
+            if (dateA != null && dateB != null) {
+              return dateB.compareTo(dateA); // Newest first
+            }
+            return (a['audiobookTitle'] as String? ?? "")
+                .compareTo(b['audiobookTitle'] as String? ?? "");
           });
 
-
           final activeDownloads = allStatuses
-              .where((status) => (status['isDownloading'] == true || status['isPaused'] == true) && status['isCompleted'] != true && status['error'] == null)
+              .where((status) =>
+                  (status['isDownloading'] == true ||
+                      status['isPaused'] == true) &&
+                  status['isCompleted'] != true &&
+                  status['error'] == null)
               .toList();
           final erroredDownloads = allStatuses
-              .where((status) => status['error'] != null && status['isCompleted'] != true)
+              .where((status) =>
+                  status['error'] != null && status['isCompleted'] != true)
               .toList();
           final completedDownloads = allStatuses
-              .where((status) => status['isCompleted'] == true && status['error'] == null)
+              .where((status) =>
+                  status['isCompleted'] == true && status['error'] == null)
               .toList();
 
           if (allStatuses.isEmpty) {
@@ -235,56 +245,70 @@ class _DownloadsPageState extends State<DownloadsPage> {
             );
           }
 
-          return ListView( // Changed to ListView for simplicity with sections
-            padding: const EdgeInsets.only(bottom: 80), // Space for potential FAB
+          return ListView(
+            // Changed to ListView for simplicity with sections
+            padding:
+                const EdgeInsets.only(bottom: 80), // Space for potential FAB
             children: [
               if (activeDownloads.isNotEmpty) ...[
-                _buildSectionHeader('Active Downloads', activeDownloads.length, context, Ionicons.download_outline),
+                _buildSectionHeader('Active Downloads', activeDownloads.length,
+                    context, Ionicons.download_outline),
                 ...activeDownloads.map((status) {
                   final String audiobookId = status['audiobookId'] as String;
-                  final List<String> taskIds = _downloadManager.getTaskIdsForAudiobook(audiobookId);
-                  final String? firstFileTaskId = taskIds.isNotEmpty ? taskIds.first : null;
-                  bool isYouTubeDownload = status['files']?.any((file) => // A more robust check would be ideal
-                      (file['url'] as String).contains('youtube.com') ||
-                      (file['url'] as String).contains('youtu.be')) ?? false;
+                  final List<String> taskIds =
+                      _downloadManager.getTaskIdsForAudiobook(audiobookId);
+                  final String? firstFileTaskId =
+                      taskIds.isNotEmpty ? taskIds.first : null;
+                  bool isYouTubeDownload = status['files']?.any(
+                          (file) => // A more robust check would be ideal
+                              (file['url'] as String).contains('youtube.com') ||
+                              (file['url'] as String).contains('youtu.be')) ??
+                      false;
 
                   return _buildDownloadItem(
                     context,
                     status,
-                    onCancel: () => _downloadManager.cancelDownload(audiobookId),
-                    onPause: !isYouTubeDownload && firstFileTaskId != null // Conditionally enable
+                    onCancel: () =>
+                        _downloadManager.cancelDownload(audiobookId),
+                    onPause: !isYouTubeDownload &&
+                            firstFileTaskId != null // Conditionally enable
                         ? () => _pauseDownload(audiobookId, firstFileTaskId)
                         : null,
                     onResume: !isYouTubeDownload && firstFileTaskId != null
                         ? () => _resumeDownload(audiobookId, firstFileTaskId)
                         : null,
                   );
-                }).toList(),
+                }),
                 const SizedBox(height: 16),
               ],
               if (erroredDownloads.isNotEmpty) ...[
-                 _buildSectionHeader('Failed Downloads', erroredDownloads.length, context, Ionicons.warning_outline, headerColor: Colors.red.shade300),
+                _buildSectionHeader('Failed Downloads', erroredDownloads.length,
+                    context, Ionicons.warning_outline,
+                    headerColor: Colors.red.shade300),
                 ...erroredDownloads.map((status) => _buildDownloadItem(
-                      context,
-                      status,
-                      onDelete: () => _handleItemDeletion(
-                          context,
-                          status['audiobookId'] as String,
-                          status['audiobookTitle'] as String),
-                      onRetry: () { // Placeholder for retry
-                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Retry for "${status['audiobookTitle']}" not yet implemented.')),
-                        );
-                        // To implement retry:
-                        // 1. Delete existing status: await Hive.box('download_status_box').delete('status_${status['audiobookId']}');
-                        // 2. Call _downloadManager.downloadAudiobook(...) again with original details
-                        //    You'd need to fetch/reconstruct the original Audiobook and files list.
-                      }
-                    )).toList(),
+                    context, status,
+                    onDelete: () => _handleItemDeletion(
+                        context,
+                        status['audiobookId'] as String,
+                        status['audiobookTitle'] as String),
+                    onRetry: () {
+                      // Placeholder for retry
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Retry for "${status['audiobookTitle']}" not yet implemented.')),
+                      );
+                      // TODO: implement retry
+                      // To implement retry:
+                      // 1. Delete existing status: await Hive.box('download_status_box').delete('status_${status['audiobookId']}');
+                      // 2. Call _downloadManager.downloadAudiobook(...) again with original details
+                      //    We'd need to fetch/reconstruct the original Audiobook and files list.
+                    })),
                 const SizedBox(height: 16),
               ],
               if (completedDownloads.isNotEmpty) ...[
-                _buildSectionHeader('Completed', completedDownloads.length, context, Ionicons.checkmark_circle_outline),
+                _buildSectionHeader('Completed', completedDownloads.length,
+                    context, Ionicons.checkmark_circle_outline),
                 ...completedDownloads.map((status) => _buildDownloadItem(
                       context,
                       status,
@@ -292,7 +316,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           context,
                           status['audiobookId'] as String,
                           status['audiobookTitle'] as String),
-                    )).toList(),
+                    )),
               ],
             ],
           );
@@ -301,21 +325,27 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
-  Widget _buildSectionHeader(String title, int count, BuildContext context, IconData icon, {Color? headerColor}) {
+  Widget _buildSectionHeader(
+      String title, int count, BuildContext context, IconData icon,
+      {Color? headerColor}) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Row(
         children: [
-          Icon(icon, color: headerColor ?? (isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700), size: 20),
+          Icon(icon,
+              color: headerColor ??
+                  (isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700),
+              size: 20),
           const SizedBox(width: 10),
           Text(
             title,
             style: GoogleFonts.ubuntu(
               fontSize: 18,
               fontWeight: FontWeight.w600, // Bolder
-              color: headerColor ?? (isDarkMode ? Colors.grey.shade300 : Colors.grey.shade800),
+              color: headerColor ??
+                  (isDarkMode ? Colors.grey.shade300 : Colors.grey.shade800),
             ),
           ),
           const SizedBox(width: 8),
@@ -323,7 +353,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: (headerColor ?? (isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300)).withOpacity(0.5),
+                color: (headerColor ??
+                        (isDarkMode
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300))
+                    .withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -331,7 +365,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.grey.shade200 : Colors.grey.shade800,
+                  color:
+                      isDarkMode ? Colors.grey.shade200 : Colors.grey.shade800,
                 ),
               ),
             ),
@@ -351,9 +386,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }) {
     final String audiobookId = status['audiobookId'] as String;
     final String audiobookTitle = status['audiobookTitle'] as String;
-    final bool isDownloading = status['isDownloading'] == true && status['isCompleted'] != true && status['error'] == null && status['isPaused'] != true;
-    final bool isPaused = status['isPaused'] == true && status['isCompleted'] != true && status['error'] == null;
-    final bool isCompleted = status['isCompleted'] == true && status['error'] == null;
+    final bool isDownloading = status['isDownloading'] == true &&
+        status['isCompleted'] != true &&
+        status['error'] == null &&
+        status['isPaused'] != true;
+    final bool isPaused = status['isPaused'] == true &&
+        status['isCompleted'] != true &&
+        status['error'] == null;
+    final bool isCompleted =
+        status['isCompleted'] == true && status['error'] == null;
     final String? errorMessage = status['error'] as String?;
     final bool hasError = errorMessage != null;
     final double progress = (status['progress'] as num?)?.toDouble() ?? 0.0;
@@ -362,7 +403,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
     String formattedDate = '';
     if (downloadDateStr != null) {
       try {
-        formattedDate = DateFormat('MMM d, yyyy').format(DateTime.parse(downloadDateStr));
+        formattedDate =
+            DateFormat('MMM d, yyyy').format(DateTime.parse(downloadDateStr));
       } catch (_) {}
     }
 
@@ -390,23 +432,27 @@ class _DownloadsPageState extends State<DownloadsPage> {
     }
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), // Reduced margin
+      margin: const EdgeInsets.symmetric(
+          horizontal: 12, vertical: 6), // Reduced margin
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Softer corners
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12)), // Softer corners
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: CircleAvatar( // Using CircleAvatar for a cleaner look
+              leading: CircleAvatar(
+                // Using CircleAvatar for a cleaner look
                 radius: 24,
-                backgroundColor: itemIconColor.withOpacity(0.15),
+                backgroundColor: itemIconColor.withValues(alpha: 0.15),
                 child: Icon(itemIcon, color: itemIconColor, size: 26),
               ),
               title: Text(
                 audiobookTitle,
-                style: GoogleFonts.lato( // Changed font for title
+                style: GoogleFonts.lato(
+                  // Changed font for title
                   fontWeight: FontWeight.w600, // Slightly bolder
                   fontSize: 16,
                 ),
@@ -419,12 +465,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ClipRRect( // Clip progress bar for rounded corners
+                          ClipRRect(
+                            // Clip progress bar for rounded corners
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: progress,
-                              backgroundColor: progressColor.withOpacity(0.2),
-                              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                              backgroundColor:
+                                  progressColor.withValues(alpha: 0.2),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(progressColor),
                               minHeight: 5, // Thicker progress bar
                             ),
                           ),
@@ -444,7 +493,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
                             'Error: $errorMessage',
-                            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                                fontSize: 12),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -526,39 +577,47 @@ class _DownloadsPageState extends State<DownloadsPage> {
           tooltip: 'Play',
           color: Theme.of(context).colorScheme.primary,
           onPressed: () async {
-             try {
-                // --- Robust Audiobook Data Retrieval for Playback ---
-                // Option 1: Read from dedicated metadata file (created by DownloadButton)
-                final appDir = await getExternalStorageDirectory();
-                final metadataFilePath = '${appDir?.path}/downloads/$audiobookId/audiobook_metadata.json'; // Standardize filename
-                final metadataFile = File(metadataFilePath);
-                Audiobook? audiobook;
+            try {
+              // --- Robust Audiobook Data Retrieval for Playback ---
+              // Option 1: Read from dedicated metadata file (created by DownloadButton)
+              final appDir = await getExternalStorageDirectory();
+              final metadataFilePath =
+                  '${appDir?.path}/downloads/$audiobookId/audiobook_metadata.json'; // Standardize filename
+              final metadataFile = File(metadataFilePath);
+              Audiobook? audiobook;
 
-                if (await metadataFile.exists()) {
-                  final content = await metadataFile.readAsString();
-                  audiobook = Audiobook.fromMap(jsonDecode(content) as Map<String, dynamic>);
+              if (await metadataFile.exists()) {
+                final content = await metadataFile.readAsString();
+                audiobook = Audiobook.fromMap(
+                    jsonDecode(content) as Map<String, dynamic>);
+              } else {
+                // Fallback: Try to get from the deprecated audiobook.txt or construct minimally
+                final oldMetadataFile = File(
+                    '${appDir?.path}/downloads/$audiobookId/audiobook.txt');
+                if (await oldMetadataFile.exists()) {
+                  final content = await oldMetadataFile.readAsString();
+                  audiobook = Audiobook.fromMap(
+                      jsonDecode(content) as Map<String, dynamic>);
                 } else {
-                  // Fallback: Try to get from the deprecated audiobook.txt or construct minimally
-                  final oldMetadataFile = File('${appDir?.path}/downloads/$audiobookId/audiobook.txt');
-                  if (await oldMetadataFile.exists()) {
-                     final content = await oldMetadataFile.readAsString();
-                     audiobook = Audiobook.fromMap(jsonDecode(content) as Map<String, dynamic>);
-                  } else {
-                     print("Warning: Metadata file not found for $audiobookId. Playing with minimal data.");
-                     // Construct a minimal object if all else fails
-                     audiobook = Audiobook.fromMap({ // Ensure Audiobook.fromMap handles missing fields gracefully
-                        'id': audiobookId,
-                        'title': audiobookTitle,
-                        'origin': 'download', // Mark as downloaded
-                        // You MUST ensure Audiobook can be constructed with minimal data for details page
-                     });
-                  }
+                  AppLogger.debug(
+                      "Warning: Metadata file not found for $audiobookId. Playing with minimal data.");
+                  // Construct a minimal object if all else fails
+                  audiobook = Audiobook.fromMap({
+                    // Ensure Audiobook.fromMap handles missing fields gracefully
+                    'id': audiobookId,
+                    'title': audiobookTitle,
+                    'origin': 'download', // Mark as downloaded
+                    // We MUST ensure Audiobook can be constructed with minimal data for details page
+                  });
                 }
-                // --- End of Retrieval ---
+              }
+              // --- End of Retrieval ---
 
-                print('Playing downloaded audiobook: ${audiobook.title}');
+              AppLogger.debug(
+                  'Playing downloaded audiobook: ${audiobook.title}');
+              if (context.mounted) {
                 context.push(
-                  '/audiobook-details', // Ensure this route exists
+                  '/audiobook-details',
                   extra: {
                     'audiobook': audiobook,
                     'isDownload': true,
@@ -566,14 +625,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
                     'isLocal': false,
                   },
                 );
-              } catch (e) {
-                print('Error preparing to play audiobook $audiobookId: $e');
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error playing: ${e.toString()}')),
-                  );
-                }
               }
+            } catch (e) {
+              AppLogger.debug(
+                  'Error preparing to play audiobook $audiobookId: $e');
+              if (mounted) {
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  SnackBar(content: Text('Error playing: ${e.toString()}')),
+                );
+              }
+            }
           }));
     }
 
@@ -584,7 +645,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
           onPressed: onDelete,
           color: Theme.of(context).colorScheme.error));
     }
-     if (hasError && onRetry != null) {
+    if (hasError && onRetry != null) {
       actions.add(IconButton(
           icon: const Icon(Ionicons.refresh_outline),
           tooltip: 'Retry',
@@ -592,8 +653,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
           color: Colors.blueAccent));
     }
 
-
-    if (actions.isEmpty) return const SizedBox(width: 48); // Keep layout consistent
+    if (actions.isEmpty) {
+      return const SizedBox(width: 48); // Keep layout consistent
+    }
 
     return Row(mainAxisSize: MainAxisSize.min, children: actions);
   }

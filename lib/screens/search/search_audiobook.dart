@@ -11,7 +11,7 @@ import 'package:aradia/resources/models/audiobook_file.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:aradia/utils/permission_helper.dart';
 
 class SearchAudiobook extends StatefulWidget {
   const SearchAudiobook({super.key});
@@ -90,13 +90,15 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
         isSearchingYoutube = false;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error searching YouTube: $e'),
-          backgroundColor: Colors.red.shade300,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error searching YouTube: $e'),
+            backgroundColor: Colors.red.shade300,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
       setState(() {
         isSearchingYoutube = false;
       });
@@ -113,8 +115,9 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
         isSearchingYoutube = true;
       });
 
-      final status = await Permission.storage.request();
-      if (!status.isGranted) {
+      final hasPermission =
+          await PermissionHelper.requestStorageAndMediaPermissions();
+      if (!hasPermission) {
         throw Exception('Storage permission not granted');
       }
 
@@ -152,31 +155,35 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
 
       await _saveYoutubeAudiobook(audiobook, audioFiles);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('YouTube video imported successfully!'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('YouTube video imported successfully!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
 
-      // Navigate to audiobook details
-      context.push(
-        '/audiobook-details',
-        extra: {
-          'audiobook': audiobook,
-          'isDownload': false,
-          'isYoutube': true,
-          'isLocal': false,
-        },
-      );
+        // Navigate to audiobook details
+        context.push(
+          '/audiobook-details',
+          extra: {
+            'audiobook': audiobook,
+            'isDownload': false,
+            'isYoutube': true,
+            'isLocal': false,
+          },
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error importing YouTube video: $e'),
-          backgroundColor: Colors.red.shade300,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error importing YouTube video: $e'),
+            backgroundColor: Colors.red.shade300,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
       setState(() {
         isSearchingYoutube = false;
@@ -219,7 +226,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                     borderRadius: BorderRadius.circular(25),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.15),
+                        color: Colors.grey.withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -277,7 +284,8 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryColor.withOpacity(0.4),
+                                color: AppColors.primaryColor
+                                    .withValues(alpha: 0.4),
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),

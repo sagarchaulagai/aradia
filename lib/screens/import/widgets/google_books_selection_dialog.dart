@@ -27,7 +27,7 @@ class GoogleBooksSelectionDialog extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: results.length,
                 separatorBuilder: (context, index) =>
-                    Divider(color: theme.dividerColor.withOpacity(0.5)),
+                    Divider(color: theme.dividerColor.withValues(alpha: 0.5)),
                 itemBuilder: (context, index) {
                   final book = results[index];
                   return ListTile(
@@ -62,7 +62,7 @@ class GoogleBooksSelectionDialog extends StatelessWidget {
                             height: 60,
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(4),
-                                color: theme.colorScheme.surfaceVariant),
+                                color: theme.colorScheme.onSurfaceVariant),
                             child: const Icon(Icons.book_outlined, size: 30)),
                     title: Text(book.title,
                         style: GoogleFonts.ubuntu(

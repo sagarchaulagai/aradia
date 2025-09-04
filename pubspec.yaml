@@ -53,6 +53,8 @@ dependencies:
   file_picker: ^10.1.4
   path: ^1.9.1
   image_picker: ^1.1.2
+  logger: ^2.6.1
+  meta: ^1.16.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2
@@ -60,6 +62,7 @@ dev_dependencies:
   build_runner: ^2.4.9
   flutter_test:
     sdk: flutter
+  flutter_lints: ^6.0.0
 
 flutter_launcher_icons:
   android: true

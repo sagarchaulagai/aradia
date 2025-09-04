@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
-import 'package:aradia/screens/audiobook_player.dart/audiobook_player.dart';
+import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:provider/provider.dart';

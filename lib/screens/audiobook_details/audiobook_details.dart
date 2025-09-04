@@ -1,3 +1,4 @@
+import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -178,7 +179,7 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                         ),
                       ),
                     Text(
-                      "${widget.audiobook.origin ?? "librivox"}",
+                      widget.audiobook.origin ?? "librivox",
                       style: GoogleFonts.ubuntu(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -399,7 +400,8 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                                           '/genre_audiobooks',
                                           extra: subjectName,
                                         );
-                                        print('Tapped subject: $subjectName');
+                                        AppLogger.debug(
+                                            'Tapped subject: $subjectName');
                                       },
                                       child: Chip(
                                         label: Text(

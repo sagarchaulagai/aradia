@@ -1,3 +1,4 @@
+import 'package:aradia/utils/app_logger.dart';
 import 'package:bloc/bloc.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:aradia/resources/archive_api.dart';
@@ -102,7 +103,7 @@ class GenreAudiobooksBloc
 
   Future<Either<String, List<Audiobook>>> _fetchAudiobooks(
       String genre, String listType, int page) async {
-    print(' My genre is $genre');
+    AppLogger.debug(' My genre is $genre');
     switch (listType) {
       case 'popular':
         return await archiveApi.getAudiobooksByGenre(

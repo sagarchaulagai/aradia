@@ -30,7 +30,7 @@ class WelcomeSection extends StatelessWidget {
             'Discover your next favorite audiobook',
             style: GoogleFonts.ubuntu(
               fontSize: 16,
-              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),
           ),
         ],

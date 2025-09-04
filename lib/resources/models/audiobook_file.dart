@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:aradia/utils/app_logger.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -45,8 +46,8 @@ class AudiobookFile {
         track = _parseTrack(json["track"]),
         size = _parseIntSafely(json["size"]),
         length = _parseDoubleSafely(json["length"]),
-        url = location + "/" + json["url"]!.toString(),
-        highQCoverImage = location + "/cover.jpg";
+        url = "$location/${json["url"]!}",
+        highQCoverImage = "$location/cover.jpg";
 
   static int _parseTrack(dynamic value) {
     if (value == null) return 0;
@@ -56,7 +57,7 @@ class AudiobookFile {
       final trackStr = value.toString();
       return int.parse(trackStr.split("/")[0]);
     } catch (e) {
-      print('Error parsing track value: $value, error: $e');
+      AppLogger.debug('Error parsing track value: $value, error: $e');
       return 0;
     }
   }
@@ -68,7 +69,7 @@ class AudiobookFile {
     try {
       return int.parse(value.toString());
     } catch (e) {
-      print('Error parsing int value: $value, error: $e');
+      AppLogger.debug('Error parsing int value: $value, error: $e');
       return 0;
     }
   }
@@ -81,7 +82,7 @@ class AudiobookFile {
     try {
       return double.parse(value.toString());
     } catch (e) {
-      print('Error parsing double value: $value, error: $e');
+      AppLogger.debug('Error parsing double value: $value, error: $e');
       return 0.0;
     }
   }
@@ -93,8 +94,8 @@ class AudiobookFile {
         var jsonFile = jsonFiles[i];
         audiobookFiles.add(AudiobookFile.fromJson(jsonFile));
       } catch (e) {
-        print('Error parsing file at index $i: $e');
-        print('Data: ${jsonFiles[i]}');
+        AppLogger.debug('Error parsing file at index $i: $e');
+        AppLogger.debug('Data: ${jsonFiles[i]}');
       }
     }
     return audiobookFiles;
@@ -144,7 +145,8 @@ class AudiobookFile {
       files
           .sort((a, b) => a.statSync().changed.compareTo(b.statSync().changed));
 
-      print('Now the files are going to be parsed from the downloaded files');
+      AppLogger.debug(
+          'Now the files are going to be parsed from the downloaded files');
 
       List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
 
@@ -172,7 +174,7 @@ class AudiobookFile {
 
       return Right(audiobookFiles);
     } catch (e) {
-      print('Unexpected error: $e');
+      AppLogger.debug('Unexpected error: $e');
       return Left('Unexpected error: $e');
     }
   }
@@ -187,13 +189,13 @@ class AudiobookFile {
           await File('${downloadDir.path}/files.txt').readAsString();
       final jsonContent = jsonDecode(stringContent);
       if (jsonContent is List) {
-        print('JSON list length: ${jsonContent.length}');
+        AppLogger.debug('JSON list length: ${jsonContent.length}');
         if (jsonContent.isNotEmpty) {
-          print('First item sample fields:');
+          AppLogger.debug('First item sample fields:');
           final item = jsonContent[0];
           if (item is Map) {
             item.forEach((key, value) {
-              print('  $key: $value (${value.runtimeType})');
+              AppLogger.debug('  $key: $value (${value.runtimeType})');
             });
           }
         }
@@ -203,7 +205,7 @@ class AudiobookFile {
           AudiobookFile.fromLocalJsonArray(jsonContent, downloadDir.path);
       return Right(audiobookFiles);
     } catch (e) {
-      print('Unexpected error: $e');
+      AppLogger.debug('Unexpected error: $e');
       return Left('Unexpected error: $e');
     }
   }
@@ -218,13 +220,13 @@ class AudiobookFile {
           await File('${downloadDir.path}/files.txt').readAsString();
       final jsonContent = jsonDecode(stringContent);
       if (jsonContent is List) {
-        print('JSON list length: ${jsonContent.length}');
+        AppLogger.debug('JSON list length: ${jsonContent.length}');
         if (jsonContent.isNotEmpty) {
-          print('First item sample fields:');
+          AppLogger.debug('First item sample fields:');
           final item = jsonContent[0];
           if (item is Map) {
             item.forEach((key, value) {
-              print('  $key: $value (${value.runtimeType})');
+              AppLogger.debug('  $key: $value (${value.runtimeType})');
             });
           }
         }
@@ -234,7 +236,7 @@ class AudiobookFile {
           AudiobookFile.fromYoutubeJsonArray(jsonContent);
       return Right(audiobookFiles);
     } catch (e) {
-      print('Unexpected error: $e');
+      AppLogger.debug('Unexpected error: $e');
       return Left('Unexpected error: $e');
     }
   }

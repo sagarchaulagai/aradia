@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -13,18 +12,18 @@ class PermissionHelper {
 
   static Future<bool> requestStorageAndMediaPermissions() async {
     PermissionStatus storageStatus;
-    PermissionStatus photoStatus; 
+    PermissionStatus photoStatus;
 
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt >= 33) { 
+      if (androidInfo.version.sdkInt >= 33) {
         photoStatus = await Permission.photos.status;
         if (!photoStatus.isGranted) {
           photoStatus = await Permission.photos.request();
         }
 
         return photoStatus.isGranted;
-      } else { 
+      } else {
         storageStatus = await Permission.storage.status;
         if (!storageStatus.isGranted) {
           storageStatus = await Permission.storage.request();
@@ -32,33 +31,140 @@ class PermissionHelper {
         return storageStatus.isGranted;
       }
     } else if (Platform.isIOS) {
-      photoStatus = await Permission.photos.status; 
+      photoStatus = await Permission.photos.status;
       if (!photoStatus.isGranted) {
         photoStatus = await Permission.photos.request();
       }
 
       return photoStatus.isGranted;
     }
-    return true; 
+    return true;
   }
-    static Future<PermissionStatus> getInstallPackagesPermissionStatus() async {
-    if (Platform.isAndroid) { 
+
+  static Future<PermissionStatus> getInstallPackagesPermissionStatus() async {
+    if (Platform.isAndroid) {
       return await Permission.requestInstallPackages.status;
     }
-    return PermissionStatus.granted; 
+    return PermissionStatus.granted;
   }
 
   static Future<PermissionStatus> requestInstallPackagesPermission() async {
-     if (Platform.isAndroid) { 
+    if (Platform.isAndroid) {
       return await Permission.requestInstallPackages.request();
     }
-    return PermissionStatus.granted; 
+    return PermissionStatus.granted;
   }
 
   static Future<bool> openAppSettingsPage() async {
     return await openAppSettings();
   }
-  
+
+  /// Comprehensive download permission handler for different Android API levels
+  /// Returns true if all required permissions are granted
+  static Future<bool> requestDownloadPermissions() async {
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 33) {
+        // Android 13+ - Request granular media permissions
+        var photos = await Permission.photos.status;
+        var audio = await Permission.audio.status;
+        var videos = await Permission.videos.status;
+
+        if (photos.isDenied || audio.isDenied || videos.isDenied) {
+          final results = await [
+            Permission.photos,
+            Permission.audio,
+            Permission.videos
+          ].request();
+          return results.values.every((status) => status.isGranted);
+        }
+        return photos.isGranted && audio.isGranted && videos.isGranted;
+      } else if (sdkInt >= 30) {
+        // Android 11-12 - Request storage and manage external storage
+        final storage = await Permission.storage.status;
+        final manageStorage = await Permission.manageExternalStorage.status;
+
+        if (storage.isDenied) await Permission.storage.request();
+        if (manageStorage.isDenied) {
+          await Permission.manageExternalStorage.request();
+          if (await Permission.manageExternalStorage.status.isDenied) {
+            await openAppSettings();
+          }
+        }
+        return await Permission.storage.status.isGranted &&
+            await Permission.manageExternalStorage.status.isGranted;
+      } else {
+        // Android 10 and below - Request storage permission
+        final storage = await Permission.storage.status;
+        if (storage.isDenied) {
+          final result = await Permission.storage.request();
+          return result.isGranted;
+        }
+        return storage.isGranted;
+      }
+    }
+    return true; // iOS or other platforms
+  }
+
+  /// Shows a user-friendly permission dialog for download permissions
+  /// Returns true if user grants permission, false otherwise
+  static Future<bool> handleDownloadPermissionWithDialog(
+      BuildContext context) async {
+    final hasPermission = await requestDownloadPermissions();
+
+    if (hasPermission) {
+      return true;
+    }
+
+    // Show dialog to explain why we need permissions
+    if (!context.mounted) return false;
+    
+    final shouldOpenSettings = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.download_rounded,
+              color: AppColors.primaryColor,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            const Text('Storage Permission Required'),
+          ],
+        ),
+        content: const Text(
+          'To download audiobooks, we need access to your device storage. This allows us to save audiobooks for offline listening.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpenSettings == true) {
+      await openAppSettings();
+    }
+
+    return false;
+  }
+
   /// Handles checking and requesting install packages permission with a dialog UI
   /// Returns true if permission is granted and update can proceed
   static Future<bool> handleUpdatePermission(BuildContext context) async {
@@ -67,6 +173,8 @@ class PermissionHelper {
     if (permissionStatus.isGranted) {
       return true;
     } else {
+      if (!context.mounted) return false;
+      
       final shouldRequestPermission = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) => PermissionDialog(
@@ -76,12 +184,16 @@ class PermissionHelper {
       );
 
       if (shouldRequestPermission == true) {
-        final newPermissionStatus = await Permission.requestInstallPackages.request();
-        
+        final newPermissionStatus =
+            await Permission.requestInstallPackages.request();
+
         if (newPermissionStatus.isGranted) {
           return true;
-        } else if (newPermissionStatus.isDenied || newPermissionStatus.isPermanentlyDenied) {
+        } else if (newPermissionStatus.isDenied ||
+            newPermissionStatus.isPermanentlyDenied) {
           // Re-prompt with dialog offering to go to settings
+          if (!context.mounted) return false;
+          
           final shouldOpenSettings = await showDialog<bool>(
             context: context,
             builder: (BuildContext context) => PermissionDialog(
@@ -91,7 +203,7 @@ class PermissionHelper {
               onNotNow: () => Navigator.of(context).pop(false),
             ),
           );
-          
+
           if (shouldOpenSettings == true) {
             await openAppSettings();
           }
@@ -109,10 +221,10 @@ class PermissionDialog extends StatelessWidget {
   final VoidCallback onNotNow;
 
   const PermissionDialog({
-    Key? key,
+    super.key,
     required this.onContinue,
     required this.onNotNow,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:http/http.dart' as http;
 import 'package:aradia/resources/models/audiobook_file.dart';
+import 'package:aradia/utils/app_logger.dart';
 
 const _commonParams =
     "q=collection:(librivoxaudio)&fl=runtime,avg_rating,num_reviews,title,description,identifier,creator,date,downloads,subject,item_size,language";
@@ -230,7 +231,7 @@ class ArchiveApi {
   ) async {
     final url =
         "https://archive.org/advancedsearch.php?q=$searchQuery+AND+collection:(audio_bookspoetry)&fl=runtime,avg_rating,num_reviews,title,description,identifier,creator,date,downloads,subject,item_size,language&sort[]=downloads+desc&output=json&page=$page&rows=$rows";
-
+    AppLogger.debug('Search URL: $url', 'ArchiveApi');
     return _fetchAudiobooks(url);
   }
 

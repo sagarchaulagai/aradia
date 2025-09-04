@@ -1,4 +1,5 @@
 import 'package:aradia/resources/designs/app_colors.dart';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:aradia/resources/archive_api.dart';
@@ -58,7 +59,7 @@ class GenreAudiobooksScreen extends StatelessWidget {
   // Helper method to capitalize first letter
   String _capitalizeFirstLetter(String text) {
     if (text.isEmpty) return text;
-    print(text);
+    AppLogger.debug(text);
     return text[0].toUpperCase() +
         (text.length > 1 ? text.substring(1).toLowerCase() : '');
   }
@@ -183,7 +184,8 @@ class _AudiobookListViewState extends State<_AudiobookListView>
           // Audiobook item
           return AudiobookItem(
             audiobook: audiobooks[index],
-            width: 175,
+            width: MediaQuery.of(context).size.width / 2,
+            height: (200 / 175) * (MediaQuery.of(context).size.width / 2),
           );
         },
       );

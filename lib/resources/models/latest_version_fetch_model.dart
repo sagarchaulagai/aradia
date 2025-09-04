@@ -10,9 +10,9 @@ class LatestVersionFetchModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['latest_version'] = this.latestVersion;
-    data['changelogs'] = this.changelogs;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['latest_version'] = latestVersion;
+    data['changelogs'] = changelogs;
     return data;
   }
 }

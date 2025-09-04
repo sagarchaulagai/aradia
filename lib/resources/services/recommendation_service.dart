@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 
@@ -12,6 +13,7 @@ class RecommendationService {
 
     // Step 2: Collect all genres from history, excluding specified genres
     List<String> allHistoryGenres = history
+        .where((item) => item.audiobook.origin == "librivox")
         .map((item) => (item.audiobook.subject as List<dynamic>).cast<String>())
         .expand((genres) => genres)
         .where((genre) => !excludedGenres.contains(genre.toLowerCase().trim()))
@@ -48,7 +50,7 @@ class RecommendationService {
         .map((genre) => genre.split('&'))
         .expand((genres) => genres)
         .toList();
-    print('flutter - recommended genres: $recommendedGenres');
+    AppLogger.debug('flutter - recommended genres: $recommendedGenres');
     return recommendedGenres;
   }
 }

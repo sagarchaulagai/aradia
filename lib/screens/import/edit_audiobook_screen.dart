@@ -6,6 +6,7 @@ import 'package:aradia/resources/models/google_book_result.dart';
 import 'package:aradia/resources/services/google_books_service.dart';
 import 'package:aradia/screens/import/widgets/cover_preview_widget.dart';
 import 'package:aradia/screens/import/widgets/google_books_selection_dialog.dart';
+import 'package:aradia/utils/app_logger.dart';
 
 import 'package:flutter/material.dart';
 import 'package:aradia/resources/models/audiobook.dart';
@@ -36,12 +37,12 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
   late TextEditingController _authorController;
   late TextEditingController _descriptionController;
 
-  String? _currentCoverDisplayPath; 
-  File? _pickedLocalCoverFileToSave;    
-  String? _selectedGBooksCoverUrlToSave; 
+  String? _currentCoverDisplayPath;
+  File? _pickedLocalCoverFileToSave;
+  String? _selectedGBooksCoverUrlToSave;
 
   List<AudiobookFile> _currentAudioFiles = [];
-  List<File> _newlySelectedAudioFiles = [];
+  final List<File> _newlySelectedAudioFiles = [];
 
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
@@ -89,10 +90,10 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
           });
         }
       } else {
-        print("files.txt not found at $filesFilePath");
+        AppLogger.debug("files.txt not found at $filesFilePath");
       }
     } catch (e) {
-      print("Error loading audio files metadata: $e");
+      AppLogger.debug("Error loading audio files metadata: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error loading file details: $e")));
@@ -123,8 +124,8 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
       if (imageXFile != null && mounted) {
         setState(() {
           _pickedLocalCoverFileToSave = File(imageXFile.path);
-          _currentCoverDisplayPath = imageXFile.path; 
-          _selectedGBooksCoverUrlToSave = null; 
+          _currentCoverDisplayPath = imageXFile.path;
+          _selectedGBooksCoverUrlToSave = null;
         });
       }
     } catch (e) {
@@ -174,7 +175,8 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
     }
 
     try {
-      final List<GoogleBookResult> results = await GoogleBooksService.fetchBooks(query);
+      final List<GoogleBookResult> results =
+          await GoogleBooksService.fetchBooks(query);
       if (!mounted) return;
 
       if (results.isNotEmpty) {
@@ -191,16 +193,16 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
             _descriptionController.text = selectedBook.description ?? '';
 
             _selectedGBooksCoverUrlToSave = selectedBook.thumbnailUrl;
-            _currentCoverDisplayPath = selectedBook.thumbnailUrl; 
-            _pickedLocalCoverFileToSave = null; 
+            _currentCoverDisplayPath = selectedBook.thumbnailUrl;
+            _pickedLocalCoverFileToSave = null;
           });
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('No results found on Google Books.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No results found on Google Books.')));
       }
     } catch (e) {
-      print("Google Books API error: $e");
+      AppLogger.debug("Google Books API error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error fetching from Google Books: $e')));
@@ -221,14 +223,14 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
           p.join(appDir.path, widget.audiobook.origin!, widget.audiobook.id));
 
       if (!await audiobookSpecificDir.exists()) {
-          await audiobookSpecificDir.create(recursive: true);
+        await audiobookSpecificDir.create(recursive: true);
       }
 
       String? finalCoverPathForDb = await MediaHelper.saveOrUpdateCoverImage(
-          audiobookSpecificDir: audiobookSpecificDir,
-          newLocalCoverFileToSave: _pickedLocalCoverFileToSave,
-          newNetworkCoverUrlToSave: _selectedGBooksCoverUrlToSave,
-          currentCoverPathInDb: widget.audiobook.lowQCoverImage,
+        audiobookSpecificDir: audiobookSpecificDir,
+        newLocalCoverFileToSave: _pickedLocalCoverFileToSave,
+        newNetworkCoverUrlToSave: _selectedGBooksCoverUrlToSave,
+        currentCoverPathInDb: widget.audiobook.lowQCoverImage,
       );
 
       Audiobook updatedAudiobook = widget.audiobook.copyWith(
@@ -250,11 +252,13 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
 
         for (var newFileSource in _newlySelectedAudioFiles) {
           final newFileName = p.basename(newFileSource.path);
-          final targetFile = File(p.join(audiobookSpecificDir.path, newFileName));
+          final targetFile =
+              File(p.join(audiobookSpecificDir.path, newFileName));
 
           if (await targetFile.exists()) {
-             print("Skipping already existing file: ${targetFile.path}");
-             continue;
+            AppLogger.debug(
+                "Skipping already existing file: ${targetFile.path}");
+            continue;
           }
           await newFileSource.copy(targetFile.path);
 
@@ -262,20 +266,21 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
           final fileSize = await newFileSource.length();
 
           final newAudiobookFile = AudiobookFile.fromMap({
-            "identifier": "${updatedAudiobook.id}_track${trackNumber}_${DateTime.now().millisecondsSinceEpoch}",
+            "identifier":
+                "${updatedAudiobook.id}_track${trackNumber}_${DateTime.now().millisecondsSinceEpoch}",
             "title": p.basenameWithoutExtension(newFileName),
-            "name": newFileName, 
+            "name": newFileName,
             "track": trackNumber,
             "size": fileSize,
             "length": duration,
-            "url": newFileName, 
-            "highQCoverImage": "", 
+            "url": newFileName,
+            "highQCoverImage": "",
           });
           allFiles.add(newAudiobookFile);
           totalSize += fileSize;
           trackNumber++;
         }
-        _currentAudioFiles = allFiles; 
+        _currentAudioFiles = allFiles;
         updatedAudiobook = updatedAudiobook.copyWith(size: totalSize);
 
         await File(filesFilePath).writeAsString(
@@ -283,16 +288,17 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
         if (mounted) setState(() => _newlySelectedAudioFiles.clear());
       }
 
-      final metadataFile = File(p.join(audiobookSpecificDir.path, 'audiobook.txt'));
+      final metadataFile =
+          File(p.join(audiobookSpecificDir.path, 'audiobook.txt'));
       await metadataFile.writeAsString(jsonEncode(updatedAudiobook.toMap()));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Audiobook updated successfully!')));
-        Navigator.pop(context, true); 
+        Navigator.pop(context, true);
       }
     } catch (e) {
-      print("Error saving changes: $e");
+      AppLogger.debug("Error saving changes: $e");
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Error saving changes: $e')));
@@ -306,7 +312,8 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isLightMode = theme.brightness == Brightness.light;
-    bool isLocalAudiobookType = widget.audiobook.origin == AppConstants.localDirName;
+    bool isLocalAudiobookType =
+        widget.audiobook.origin == AppConstants.localDirName;
 
     final textFieldFillColor = isLightMode
         ? AppColors.lightOrange
@@ -322,7 +329,8 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
                 : const Icon(Icons.save_outlined),
             onPressed: _isLoading ? null : _saveChanges,
             tooltip: 'Save Changes',
@@ -339,10 +347,11 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
               GestureDetector(
                 onTap: _isLoading ? null : _pickCoverImageFromGallery,
                 child: Stack(alignment: Alignment.bottomRight, children: [
-                  CoverPreviewWidget( 
-
+                  CoverPreviewWidget(
                     localCoverFile: _pickedLocalCoverFileToSave,
-                    coverPathOrUrl: _pickedLocalCoverFileToSave == null ? _currentCoverDisplayPath : null,
+                    coverPathOrUrl: _pickedLocalCoverFileToSave == null
+                        ? _currentCoverDisplayPath
+                        : null,
                     height: 150,
                     width: 150,
                   ),
@@ -352,62 +361,74 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
                       color: AppColors.primaryColor,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.edit, size: 20, color: AppColors.iconColor),
+                    child:
+                        Icon(Icons.edit, size: 20, color: AppColors.iconColor),
                   )
                 ]),
               ),
               TextButton.icon(
-                icon: Icon(Icons.photo_library_outlined, color: AppColors.primaryColor),
-                label: Text("Change Cover from Gallery", style: TextStyle(color: AppColors.primaryColor)),
+                icon: Icon(Icons.photo_library_outlined,
+                    color: AppColors.primaryColor),
+                label: Text("Change Cover from Gallery",
+                    style: TextStyle(color: AppColors.primaryColor)),
                 onPressed: _isLoading ? null : _pickCoverImageFromGallery,
               ),
               const SizedBox(height: 16),
             ])),
-
-            CommonTextField( 
-                controller: _titleController,
-                labelText: 'Title',
-                prefixIcon: Icons.title_outlined,
-                fillColor: textFieldFillColor,
-                theme: theme,
+            CommonTextField(
+              controller: _titleController,
+              labelText: 'Title',
+              prefixIcon: Icons.title_outlined,
+              fillColor: textFieldFillColor,
+              theme: theme,
             ),
             const SizedBox(height: 12),
-            CommonTextField( 
-                controller: _authorController,
-                labelText: 'Author',
-                prefixIcon: Icons.person_outline,
-                fillColor: textFieldFillColor,
-                theme: theme,
+            CommonTextField(
+              controller: _authorController,
+              labelText: 'Author',
+              prefixIcon: Icons.person_outline,
+              fillColor: textFieldFillColor,
+              theme: theme,
             ),
             const SizedBox(height: 12),
-            CommonTextField( 
-                controller: _descriptionController,
-                labelText: 'Description',
-                prefixIcon: Icons.description_outlined,
-                maxLines: 5,
-                fillColor: textFieldFillColor,
-                theme: theme,
+            CommonTextField(
+              controller: _descriptionController,
+              labelText: 'Description',
+              prefixIcon: Icons.description_outlined,
+              maxLines: 5,
+              fillColor: textFieldFillColor,
+              theme: theme,
             ),
             const SizedBox(height: 20),
-
             ElevatedButton.icon(
               icon: Icon(Icons.manage_search_outlined,
-                  color: theme.brightness == Brightness.dark ? Colors.white : Colors.black),
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black),
               label: Text('Fetch Info from Google Books',
-                  style: TextStyle(color: theme.brightness == Brightness.dark ? Colors.white : Colors.black)),
+                  style: TextStyle(
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)),
               onPressed: _isLoading ? null : _fetchAndSelectFromGoogleBooks,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.buttonColor),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.buttonColor),
             ),
             const SizedBox(height: 16),
-
             if (isLocalAudiobookType) ...[
               OutlinedButton.icon(
                 icon: Icon(Icons.playlist_add_outlined,
-                    color: theme.brightness == Brightness.light ? Colors.black : Colors.white),
+                    color: theme.brightness == Brightness.light
+                        ? Colors.black
+                        : Colors.white),
                 label: Text('Add More Audio Files',
-                    style: TextStyle(color: theme.brightness == Brightness.light ? Colors.black : Colors.white)),
+                    style: TextStyle(
+                        color: theme.brightness == Brightness.light
+                            ? Colors.black
+                            : Colors.white)),
                 onPressed: _isLoading ? null : _pickAdditionalAudioFiles,
-                style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.primaryColor)),
+                style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColors.primaryColor)),
               ),
               if (_newlySelectedAudioFiles.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -420,24 +441,31 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
                         itemCount: _newlySelectedAudioFiles.length,
                         itemBuilder: (ctx, index) => ListTile(
                             dense: true,
-                            leading: Icon(Icons.audiotrack_outlined, color: theme.colorScheme.primary),
-                            title: Text(p.basename(_newlySelectedAudioFiles[index].path),
-                                style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                            leading: Icon(Icons.audiotrack_outlined,
+                                color: theme.colorScheme.primary),
+                            title: Text(
+                                p.basename(
+                                    _newlySelectedAudioFiles[index].path),
+                                style: TextStyle(
+                                    color: theme.colorScheme.onSurfaceVariant)),
                             trailing: IconButton(
-                              icon: Icon(Icons.remove_circle_outline, size: 20, color: theme.colorScheme.error),
+                              icon: Icon(Icons.remove_circle_outline,
+                                  size: 20, color: theme.colorScheme.error),
                               onPressed: () {
                                 if (mounted) {
-                                  setState(() => _newlySelectedAudioFiles.removeAt(index));
+                                  setState(() =>
+                                      _newlySelectedAudioFiles.removeAt(index));
                                 }
                               },
                             ))))
               ],
               const SizedBox(height: 10),
             ],
-
-            if ((isLocalAudiobookType || widget.audiobook.origin == AppConstants.youtubeDirName) &&
+            if ((isLocalAudiobookType ||
+                    widget.audiobook.origin == AppConstants.youtubeDirName) &&
                 _currentAudioFiles.isNotEmpty) ...[
-              Text("Current Audio Files (${_currentAudioFiles.length}):", style: theme.textTheme.titleSmall),
+              Text("Current Audio Files (${_currentAudioFiles.length}):",
+                  style: theme.textTheme.titleSmall),
               ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 150),
                   child: ListView.builder(
@@ -451,18 +479,25 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
                           title: Text(
                               file.title ?? file.name ?? "Track ${file.track}",
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                              style: TextStyle(
+                                  color: theme.colorScheme.onSurfaceVariant)),
                         );
                       })),
             ],
             const SizedBox(height: 30),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  foregroundColor: theme.brightness == Brightness.dark ? Colors.white : Colors.black,
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: theme.brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
               ),
               icon: _isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.save),
               label: const Text('Save Changes'),
               onPressed: _isLoading ? null : _saveChanges,
@@ -473,6 +508,4 @@ class _EditAudiobookScreenState extends State<EditAudiobookScreen> {
       ),
     );
   }
-
 }
-

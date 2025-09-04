@@ -39,19 +39,21 @@ class Audiobook {
             ? DateTime.parse(jsonAudiobook["date"])
             : null,
         downloads = jsonAudiobook["downloads"] ?? 0,
-        subject = jsonAudiobook["subject"] is String
-            ? [jsonAudiobook["subject"]]
-            : (jsonAudiobook["subject"] as List)
-                .where((s) => !["librivox", "audiobooks", "audiobook"]
-                    .contains(s.toLowerCase()))
-                .toList(),
-        size = jsonAudiobook["item_size"],
+        subject = jsonAudiobook["subject"] == null
+            ? []
+            : jsonAudiobook["subject"] is String
+                ? [jsonAudiobook["subject"]]
+                : (jsonAudiobook["subject"] as List)
+                    .where((s) => !["librivox", "audiobooks", "audiobook"]
+                        .contains(s.toLowerCase()))
+                    .toList(),
+        size = jsonAudiobook["item_size"] ?? 0,
         rating = jsonAudiobook["avg_rating"] != null
             ? double.parse(jsonAudiobook["avg_rating"].toString())
             : null,
-        reviews = jsonAudiobook["num_reviews"],
-        description = jsonAudiobook["description"],
-        language = jsonAudiobook["language"],
+        reviews = jsonAudiobook["num_reviews"] ?? 0,
+        description = jsonAudiobook["description"] ?? '',
+        language = jsonAudiobook["language"] ?? 'en',
         lowQCoverImage =
             "https://archive.org/services/get-item-image.php?identifier=${jsonAudiobook['identifier']}",
         origin = "librivox";

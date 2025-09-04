@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:aradia/utils/app_logger.dart';
 import 'package:bloc/bloc.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hive/hive.dart';
@@ -45,23 +46,23 @@ class AudiobookDetailsBloc
     bool isLocal,
   ) async {
     emit(AudiobookDetailsLoading());
-    print('fetching audiobook details for id: $id');
-    print('isDownload: $isDownload');
-    print('isYoutube: $isYoutube');
-    print('isLocal: $isLocal');
+    AppLogger.debug('fetching audiobook details for id: $id');
+    AppLogger.debug('isDownload: $isDownload');
+    AppLogger.debug('isYoutube: $isYoutube');
+    AppLogger.debug('isLocal: $isLocal');
     Either<String, List<AudiobookFile>> audiobookFiles;
     try {
       if (isDownload) {
-        print('fetching audiobook files from downloaded files');
+        AppLogger.debug('fetching audiobook files from downloaded files');
         audiobookFiles = await AudiobookFile.fromDownloadedFiles(id);
       } else if (isYoutube) {
-        print('fetching audiobook files from imported files');
+        AppLogger.debug('fetching audiobook files from imported files');
         audiobookFiles = await AudiobookFile.fromYoutubeFiles(id);
       } else if (isLocal) {
-        print('fetching audiobook files from local files');
+        AppLogger.debug('fetching audiobook files from local files');
         audiobookFiles = await AudiobookFile.fromLocalFiles(id);
       } else {
-        print('fetching audiobook files from api');
+        AppLogger.debug('fetching audiobook files from api');
         audiobookFiles = await ArchiveApi().getAudiobookFiles(id);
       }
 
@@ -71,7 +72,7 @@ class AudiobookDetailsBloc
         emit(AudiobookDetailsLoaded([...r]));
       });
     } catch (e) {
-      print('Error coming from fetchAudiobookDetails bloc: $e');
+      AppLogger.debug('Error coming from fetchAudiobookDetails bloc: $e');
       emit(AudiobookDetailsError());
     }
   }
@@ -91,15 +92,15 @@ class AudiobookDetailsBloc
   ) async {
     var box = Hive.box('favourite_audiobooks_box');
     _currentAudiobookId = event.audiobook.id;
-    print('Favourite icon clicked and id is ${event.audiobook.id}');
+    AppLogger.debug('Favourite icon clicked and id is ${event.audiobook.id}');
 
     if (box.containsKey(event.audiobook.id)) {
       await box.delete(event.audiobook.id);
-      print('Favourite removed for this id ${event.audiobook.id}');
+      AppLogger.debug('Favourite removed for this id ${event.audiobook.id}');
       emit(AudiobookDetailsFavourite(false));
     } else {
       await box.put(event.audiobook.id, event.audiobook.toMap());
-      print('Favourite added for this id ${event.audiobook.id}');
+      AppLogger.debug('Favourite added for this id ${event.audiobook.id}');
       emit(AudiobookDetailsFavourite(true));
     }
   }
