@@ -8,7 +8,7 @@ description:
 
 publish_to: "none"
 
-version: 2.0.0+1
+version: 3.0.0
 
 environment:
   sdk: ^3.5.4
