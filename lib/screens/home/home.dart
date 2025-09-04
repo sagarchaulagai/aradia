@@ -31,7 +31,7 @@ class _HomeState extends State<Home> {
   late RecommendationService recommendationService;
   late List<String> recommendedGenres;
   final LatestVersionFetch _latestVersionFetch = LatestVersionFetch();
-  final String currentVersion = "2.0.0";
+  final String currentVersion = "3.0.0";
 
   @override
   void initState() {
