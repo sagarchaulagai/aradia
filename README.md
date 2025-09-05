@@ -16,6 +16,9 @@
 **Aradia** is a free, ad-free mobile application offering seamless access to over 20,000 audiobooks from Librivox using Archive.org API. **It can now also play Youtube videos as audiobooks**. Designed for literature enthusiasts and built with passion using **Flutter** and **Dart**. 
 
 ---
+## Join Our Discord Community
+[![Join our Discord Community](https://invidget.switchblade.xyz/QwTxRKC9UF)](https://discord.gg/QwTxRKC9UF)
+
 
 ## 📸 App Preview
 
