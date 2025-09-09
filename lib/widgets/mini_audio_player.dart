@@ -153,42 +153,30 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                                 ],
                               ),
                               StreamBuilder<PlaybackState>(
-                                stream: audioHandlerProvider
-                                    .audioHandler.playbackState,
+                                stream: audioHandlerProvider.audioHandler.playbackState,
                                 builder: (context, snapshot) {
-                                  if (snapshot.data != null) {
-                                    PlaybackState playbackState =
-                                        snapshot.data!;
-                                    final processingState =
-                                        playbackState.processingState;
-                                    if (processingState ==
-                                            AudioProcessingState.loading ||
-                                        processingState ==
-                                            AudioProcessingState.buffering) {
-                                      return const CircularProgressIndicator(
-                                        color: AppColors.primaryColor,
-                                        strokeWidth: 2,
-                                      );
-                                    }
-                                    return IconButton(
-                                      icon: Icon(
-                                        playbackState.playing
-                                            ? Icons.pause
-                                            : Icons.play_arrow,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: () {
-                                        if (playbackState.playing) {
-                                          audioHandlerProvider.audioHandler
-                                              .pause();
-                                        } else {
-                                          audioHandlerProvider.audioHandler
-                                              .play();
-                                        }
-                                      },
+                                  final state = snapshot.data;
+                                  final processing = state?.processingState ?? AudioProcessingState.idle;
+
+                                  if (processing == AudioProcessingState.loading ||
+                                      processing == AudioProcessingState.buffering) {
+                                    return const CircularProgressIndicator(
+                                      color: AppColors.primaryColor,
+                                      strokeWidth: 2,
                                     );
                                   }
-                                  return const SizedBox();
+
+                                  final isPlaying = state?.playing ?? false;
+                                  return IconButton(
+                                    icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
+                                    onPressed: () {
+                                      if (isPlaying) {
+                                        audioHandlerProvider.audioHandler.pause();
+                                      } else {
+                                        audioHandlerProvider.audioHandler.play();
+                                      }
+                                    },
+                                  );
                                 },
                               ),
                             ],

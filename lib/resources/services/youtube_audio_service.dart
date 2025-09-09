@@ -24,31 +24,38 @@ class YouTubeAudioSource extends StreamAudioSource {
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
     try {
-      final manifest = await ytExplode.videos.streams.getManifest(videoId,
-          requireWatchPage: true, ytClients: [YoutubeApiClient.androidVr]);
-      final supportedStreams = manifest.audioOnly.sortByBitrate();
+      final manifest = await ytExplode.videos.streams.getManifest(
+        videoId,
+        requireWatchPage: true,
+        ytClients: [YoutubeApiClient.androidVr],
+      );
 
-      final audioStream = quality == 'high'
-          ? supportedStreams.firstOrNull
-          : supportedStreams.lastOrNull;
+      final supportedStreams = manifest.audioOnly.sortByBitrate();
+      final audioStream =
+      quality == 'high' ? supportedStreams.firstOrNull : supportedStreams.lastOrNull;
 
       if (audioStream == null) {
         throw Exception('No audio stream available for this video.');
       }
 
-      start ??= 0;
-      end ??= (audioStream.isThrottled
-          ? (end ?? (start + 10379935))
-          : audioStream.size.totalBytes);
-      if (end > audioStream.size.totalBytes) {
-        end = audioStream.size.totalBytes;
+      // Coerce to non-null ints that respect total size
+      int s = start ?? 0;
+      int e;
+      if (audioStream.isThrottled) {
+        // cap chunk size to keep Exo happy on throttled streams
+        final cap = 10 * 1024 * 1024; // ~10MB
+        e = (end ?? (s + cap));
+      } else {
+        e = end ?? audioStream.size.totalBytes;
       }
+      if (e > audioStream.size.totalBytes) e = audioStream.size.totalBytes;
 
-      final stream = ytExplode.videos.streams.get(audioStream, start, end);
+      final stream = ytExplode.videos.streams.get(audioStream, s, e);
+
       return StreamAudioResponse(
         sourceLength: audioStream.size.totalBytes,
-        contentLength: end - start,
-        offset: start,
+        contentLength: e - s,
+        offset: s,
         stream: stream,
         contentType: audioStream.codec.mimeType,
       );

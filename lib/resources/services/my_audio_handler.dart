@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:aradia/resources/services/youtube_audio_service.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:aradia/resources/models/audiobook.dart';
@@ -14,64 +15,106 @@ class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
   final _playlist = ConcatenatingAudioSource(children: []);
   Box<dynamic> playingAudiobookDetailsBox =
-      Hive.box('playing_audiobook_details_box');
+  Hive.box('playing_audiobook_details_box');
   ConcatenatingAudioSource get playlist => _playlist;
   final HistoryOfAudiobook historyOfAudiobook = HistoryOfAudiobook();
   Timer? _positionUpdateTimer;
 
-  void initSongs(List<AudiobookFile> playlist, Audiobook audiobook,
-      int initialIndex, int positionInMilliseconds) async {
+  Future<void> _initAudioSession() async {
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
+
+    await _player.setAndroidAudioAttributes(
+      const AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.music,
+        usage: AndroidAudioUsage.media,
+      ),
+    );
+
+    session.becomingNoisyEventStream.listen((_) {
+      if (_player.playing) _player.pause();
+    });
+  }
+
+  void initSongs(
+      List<AudiobookFile> playlist,
+      Audiobook audiobook,
+      int initialIndex,
+      int positionInMilliseconds,
+      ) async {
+    await _initAudioSession();
+
     _playlist.clear();
     queue.add([]);
     mediaItem.add(null);
+
     // clear timer for the previous audiobook so next audiobook can start fresh
     _positionUpdateTimer?.cancel();
-    playbackState.add(playbackState.value.copyWith(
-      controls: [],
-      systemActions: const {},
-      processingState: AudioProcessingState.idle,
-      playing: false,
-      bufferedPosition: Duration.zero,
-      speed: 1.0,
-      queueIndex: null,
-    ));
+
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [],
+        systemActions: const {},
+        processingState: AudioProcessingState.idle,
+        playing: false,
+        bufferedPosition: Duration.zero,
+        speed: 1.0,
+        queueIndex: null,
+      ),
+    );
+
     final mediaItems = await parseMediaItems(playlist, audiobook);
     addQueueItems(mediaItems);
     _listenForCurrentSongIndexChanges();
+
     await _player.setAudioSource(
       _playlist,
       initialIndex: initialIndex,
-      initialPosition: Duration(
-        milliseconds: positionInMilliseconds,
-      ),
+      initialPosition: Duration(milliseconds: positionInMilliseconds),
     );
-    _player.playbackEventStream.listen(_broadcastState);
+
+    _player.playbackEventStream.listen(
+      _broadcastState,
+      onError: (Object e, StackTrace st) {
+        AppLogger.debug('Playback error: $e');
+      },
+    );
+
     _player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
         _player.seekToNext();
       }
     });
+
     historyOfAudiobook.addToHistory(
-        audiobook, playlist, initialIndex, positionInMilliseconds);
+      audiobook,
+      playlist,
+      initialIndex,
+      positionInMilliseconds,
+    );
     _startPositionUpdateTimer(audiobook.id);
   }
 
   Future<List<MediaItem>> parseMediaItems(
-      List<AudiobookFile> playlist, Audiobook audiobook) async {
+      List<AudiobookFile> playlist,
+      Audiobook audiobook,
+      ) async {
     final mediaItems = <MediaItem>[];
 
     for (var song in playlist) {
       final isYouTube = song.url?.contains('youtube.com') == true ||
           song.url?.contains('youtu.be') == true;
 
-      MediaItem item = MediaItem(
+      final item = MediaItem(
         id: song.track.toString(),
         album: audiobook.title,
         title: song.title ?? '',
         artist: audiobook.author ?? 'Librivox',
-        artUri: Uri.parse(audiobook.lowQCoverImage.contains("youtube")
-            ? audiobook.lowQCoverImage
-            : song.highQCoverImage ?? ''),
+        artUri: Uri.parse(
+          audiobook.lowQCoverImage.contains("youtube")
+              ? audiobook.lowQCoverImage
+              : song.highQCoverImage ?? '',
+        ),
         extras: {
           'url': song.url,
           'audiobook_id': audiobook.id,
@@ -84,18 +127,15 @@ class MyAudioHandler extends BaseAudioHandler {
       if (isYouTube) {
         final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
         _playlist.add(
-          YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'),
+          YouTubeAudioSource(
+            videoId: videoId,
+            tag: item,
+            quality: 'high',
+          ),
         );
       } else if (song.url != null) {
-        Uri uri;
-        if (song.url!.startsWith('/')) {
-          uri = Uri.file(song.url!);
-        } else {
-          uri = Uri.parse(song.url!);
-        }
-        _playlist.add(
-          AudioSource.uri(uri, tag: item),
-        );
+        final uri = song.url!.startsWith('/') ? Uri.file(song.url!) : Uri.parse(song.url!);
+        _playlist.add(AudioSource.uri(uri, tag: item));
       }
     }
 
@@ -116,51 +156,56 @@ class MyAudioHandler extends BaseAudioHandler {
         final currentMediaItem = playList[index];
         final audiobookId = currentMediaItem.extras!['audiobook_id'];
         historyOfAudiobook.updateAudiobookPosition(
-            audiobookId, index, _player.position.inMilliseconds);
+          audiobookId,
+          index,
+          _player.position.inMilliseconds,
+        );
       }
     });
   }
 
   void _broadcastState(PlaybackEvent event) {
-    playbackState.add(playbackState.value.copyWith(
-      controls: [
-        MediaControl.skipToPrevious,
-        if (_player.playing) MediaControl.pause else MediaControl.play,
-        MediaControl.stop,
-        MediaControl.skipToNext,
-      ],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[_player.processingState]!,
-      playing: _player.playing,
-      updatePosition: event.updatePosition,
-      bufferedPosition:
-          Duration(milliseconds: event.bufferedPosition.inMilliseconds),
-      speed: _player.speed,
-      queueIndex: event.currentIndex,
-    ));
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [
+          MediaControl.skipToPrevious,
+          if (_player.playing) MediaControl.pause else MediaControl.play,
+          MediaControl.stop,
+          MediaControl.skipToNext,
+        ],
+        systemActions: const {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+        processingState: const {
+          ProcessingState.idle: AudioProcessingState.idle,
+          ProcessingState.loading: AudioProcessingState.loading,
+          ProcessingState.buffering: AudioProcessingState.buffering,
+          ProcessingState.ready: AudioProcessingState.ready,
+          ProcessingState.completed: AudioProcessingState.completed,
+        }[_player.processingState]!,
+        playing: _player.playing,
+        updatePosition: event.updatePosition,
+        bufferedPosition: Duration(milliseconds: event.bufferedPosition.inMilliseconds),
+        speed: _player.speed,
+        queueIndex: event.currentIndex,
+      ),
+    );
   }
 
   void _startPositionUpdateTimer(String audiobookId) {
     _positionUpdateTimer?.cancel();
-    _positionUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _positionUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       final currentIndex = _player.currentIndex;
       if (currentIndex != null) {
         historyOfAudiobook.updateAudiobookPosition(
-            audiobookId, currentIndex, _player.position.inMilliseconds);
-        playingAudiobookDetailsBox.put(
-            'position', _player.position.inMilliseconds);
-        AppLogger.debug(
-            'Position updated: $_player.position.inMilliseconds ms');
+          audiobookId,
+          currentIndex,
+          _player.position.inMilliseconds,
+        );
+        playingAudiobookDetailsBox.put('position', _player.position.inMilliseconds);
+        AppLogger.debug('Position updated: ${_player.position.inMilliseconds} ms');
       }
     });
   }
@@ -170,9 +215,8 @@ class MyAudioHandler extends BaseAudioHandler {
       _player.positionStream,
       _player.bufferedPositionStream,
       _player.durationStream,
-      (position, bufferedPosition, duration) {
-        return PositionData(
-            position, bufferedPosition, duration ?? Duration.zero);
+          (position, bufferedPosition, duration) {
+        return PositionData(position, bufferedPosition, duration ?? Duration.zero);
       },
     );
   }
