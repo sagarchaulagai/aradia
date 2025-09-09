@@ -1,4 +1,6 @@
+import 'dart:async'; // <-- added
 import 'package:aradia/utils/app_logger.dart';
+import 'package:aradia/utils/app_events.dart'; // <-- added
 import 'package:bloc/bloc.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:aradia/resources/archive_api.dart';
@@ -13,16 +15,31 @@ class GenreAudiobooksBloc
     extends Bloc<GenreAudiobooksEvent, GenreAudiobooksState> {
   final ArchiveApi archiveApi;
 
+  String? _lastGenre;
+  StreamSubscription<void>? _langSub;
+
   GenreAudiobooksBloc({required this.archiveApi})
       : super(const GenreAudiobooksState()) {
     on<LoadInitialAudiobooksEvent>(_onLoadInitialAudiobooks);
     on<LoadMoreAudiobooksEvent>(_onLoadMoreAudiobooks);
+
+    // Listen for language changes and refresh lists
+    _langSub = AppEvents.languagesChanged.stream.listen((_) {
+      final g = _lastGenre;
+      if (g != null && g.isNotEmpty) {
+        add(LoadInitialAudiobooksEvent(genre: g, listType: 'popular'));
+        add(LoadInitialAudiobooksEvent(genre: g, listType: 'popularWeekly'));
+        add(LoadInitialAudiobooksEvent(genre: g, listType: 'latest'));
+      }
+    });
   }
 
   Future<void> _onLoadInitialAudiobooks(
-    LoadInitialAudiobooksEvent event,
-    Emitter<GenreAudiobooksState> emit,
-  ) async {
+      LoadInitialAudiobooksEvent event,
+      Emitter<GenreAudiobooksState> emit,
+      ) async {
+    _lastGenre = event.genre; // <-- remember genre
+
     // If audiobooks for this list type already exist, don't reload
     if (state.audiobooks.containsKey(event.listType) &&
         state.audiobooks[event.listType]!.isNotEmpty) {
@@ -38,11 +55,11 @@ class GenreAudiobooksBloc
       final result = await _fetchAudiobooks(event.genre, event.listType, 1);
 
       result.fold(
-        (error) => emit(state.copyWith(
+            (error) => emit(state.copyWith(
           errors: Map.of(state.errors)..[event.listType] = error,
           isLoading: Map.of(state.isLoading)..[event.listType] = false,
         )),
-        (audiobooks) => emit(state.copyWith(
+            (audiobooks) => emit(state.copyWith(
           audiobooks: Map.of(state.audiobooks)..[event.listType] = audiobooks,
           isLoading: Map.of(state.isLoading)..[event.listType] = false,
           hasReachedMax: Map.of(state.hasReachedMax)
@@ -58,9 +75,9 @@ class GenreAudiobooksBloc
   }
 
   Future<void> _onLoadMoreAudiobooks(
-    LoadMoreAudiobooksEvent event,
-    Emitter<GenreAudiobooksState> emit,
-  ) async {
+      LoadMoreAudiobooksEvent event,
+      Emitter<GenreAudiobooksState> emit,
+      ) async {
     // Check if we've reached max for this list type
     if (state.hasReachedMaxForListType(event.listType)) return;
 
@@ -70,17 +87,20 @@ class GenreAudiobooksBloc
     ));
 
     try {
-      final result = await _fetchAudiobooks(event.genre, event.listType,
-          (state.getAudiobooksForListType(event.listType).length ~/ 20) + 1);
+      final result = await _fetchAudiobooks(
+        event.genre,
+        event.listType,
+        (state.getAudiobooksForListType(event.listType).length ~/ 20) + 1,
+      );
 
       result.fold(
-        (error) => emit(state.copyWith(
+            (error) => emit(state.copyWith(
           errors: Map.of(state.errors)..[event.listType] = error,
           isLoading: Map.of(state.isLoading)..[event.listType] = false,
         )),
-        (newAudiobooks) {
+            (newAudiobooks) {
           final currentAudiobooks =
-              state.getAudiobooksForListType(event.listType);
+          state.getAudiobooksForListType(event.listType);
           final updatedAudiobooks = List.of(currentAudiobooks)
             ..addAll(newAudiobooks);
 
@@ -116,5 +136,11 @@ class GenreAudiobooksBloc
       default:
         return const Left('Invalid list type');
     }
+  }
+
+  @override
+  Future<void> close() {
+    _langSub?.cancel(); // <-- cleanup
+    return super.close();
   }
 }

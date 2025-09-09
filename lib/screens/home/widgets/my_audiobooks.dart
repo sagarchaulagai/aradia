@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/home/bloc/home_bloc.dart';
+import 'package:aradia/utils/app_events.dart';
 import 'package:aradia/widgets/audiobook_item.dart';
 
 enum AudiobooksFetchType {
@@ -34,7 +37,7 @@ final fetchTypeMapping = {
     'loadingState': PopularAudiobooksOfWeekFetchingLoadingState,
     'failedState': PopularAudiobooksOfWeekFetchingFailedState,
   },
-  // Add fetchType for genres
+  // Genres
   AudiobooksFetchType.genre: {
     'fetchEvent': (int page, int rows, String genre, String sortBy) =>
         FetchAudiobooksByGenre(page, rows, genre, sortBy),
@@ -109,6 +112,24 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
     }
   }
 
+  bool _isLoadingState(HomeState s) {
+    final loadingType =
+    fetchTypeMapping[widget.fetchType]?['loadingState'] as Type?;
+    return loadingType != null && s.runtimeType == loadingType;
+  }
+
+  bool _isSuccessState(HomeState s) {
+    final successType =
+    fetchTypeMapping[widget.fetchType]?['successState'] as Type?;
+    return successType != null && s.runtimeType == successType;
+  }
+
+  bool _isFailedState(HomeState s) {
+    final failedType =
+    fetchTypeMapping[widget.fetchType]?['failedState'] as Type?;
+    return failedType != null && s.runtimeType == failedType;
+  }
+
   @override
   void dispose() {
     widget.scrollController.dispose();
@@ -131,30 +152,33 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
             child: BlocConsumer<HomeBloc, HomeState>(
               bloc: widget.homeBloc,
               listener: (context, state) {
-                final successState =
-                    fetchTypeMapping[widget.fetchType]?['successState'];
-                if (successState != null && state.runtimeType == successState) {
+                // IMPORTANT: when a page-1 fetch begins, HomeBloc emits a *loading* state.
+                // Clear our local cache so UI fully resets for the new language.
+                if (_isLoadingState(state)) {
+                  setState(() {
+                    _currentPage = widget.initialPage;
+                    audiobooks.clear();
+                  });
+                }
+
+                if (_isSuccessState(state)) {
                   setState(() {
                     audiobooks.addAll((state as dynamic).audiobooks);
                   });
                 }
               },
               buildWhen: (previous, current) =>
-                  current.runtimeType ==
-                      fetchTypeMapping[widget.fetchType]?['successState'] ||
-                  current.runtimeType ==
-                      fetchTypeMapping[widget.fetchType]?['loadingState'] ||
-                  current.runtimeType ==
-                      fetchTypeMapping[widget.fetchType]?['failedState'],
+              _isSuccessState(current) ||
+                  _isLoadingState(current) ||
+                  _isFailedState(current),
               builder: (context, state) {
-                if (state.runtimeType ==
-                    fetchTypeMapping[widget.fetchType]?['loadingState']) {
+                if (_isLoadingState(state)) {
                   return const Center(
                     child: CircularProgressIndicator(
-                        color: AppColors.primaryColor),
+                      color: AppColors.primaryColor,
+                    ),
                   );
-                } else if (state.runtimeType ==
-                    fetchTypeMapping[widget.fetchType]?['failedState']) {
+                } else if (_isFailedState(state)) {
                   return const Center(
                     child: Text("Failed to fetch audiobooks"),
                   );

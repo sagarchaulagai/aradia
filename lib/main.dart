@@ -69,6 +69,7 @@ Future<void> initHive() async {
   await Hive.openBox('history_of_audiobook_box');
   await Hive.openBox('recommened_audiobooks_box');
   await Hive.openBox('dual_mode_box'); // 0 = audiobook home, 1 = podcast home
+  await Hive.openBox('language_prefs_box');
   Box recommendedAudiobooksBox = Hive.box('recommened_audiobooks_box');
 
   isRecommendScreen = recommendedAudiobooksBox.isEmpty ? 1 : 0;

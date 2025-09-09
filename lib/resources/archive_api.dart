@@ -5,18 +5,75 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:http/http.dart' as http;
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/utils/app_logger.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-const _commonParams =
-    "q=collection:(librivoxaudio)&fl=runtime,avg_rating,num_reviews,title,description,identifier,creator,date,downloads,subject,item_size,language";
+/// Fields we want back from Archive.org
+const _fields =
+    "runtime,avg_rating,num_reviews,title,description,identifier,creator,date,downloads,subject,item_size,language";
 
-const _latestAudiobook =
-    "https://archive.org/advancedsearch.php?$_commonParams&sort[]=addeddate+desc&output=json";
+/// Map short UI codes to common Archive.org language tokens (2/3-letter codes + English name).
+const Map<String, List<String>> _langAliases = {
+  'en': ['en', 'eng', 'english'],
+  'de': ['de', 'deu', 'ger', 'german'],
+  'fr': ['fr', 'fra', 'fre', 'french'],
+  'es': ['es', 'spa', 'spanish'],
+  'it': ['it', 'ita', 'italian'],
+  'pt': ['pt', 'por', 'portuguese'],
+  'nl': ['nl', 'nld', 'dut', 'dutch'],
+  'ru': ['ru', 'rus', 'russian'],
+  'zh': ['zh', 'zho', 'chi', 'chinese'],
+  'ja': ['ja', 'jpn', 'japanese'],
+  'ar': ['ar', 'ara', 'arabic'],
+  'hi': ['hi', 'hin', 'hindi'],
+};
 
-const _mostViewedInThisWeek =
-    "https://archive.org/advancedsearch.php?$_commonParams&sort[]=week+desc&output=json";
+/// Build the language clause for Archive.org's `q=` param based on Hive prefs.
+/// Returns an empty string if no languages are selected (no filter).
+String _languageQueryClause() {
+  final box = Hive.box('language_prefs_box');
+  final List<String> selected =
+  List<String>.from(box.get('selectedLanguages', defaultValue: <String>[]));
 
-const _mostDownloadedOfAllTime =
-    "https://archive.org/advancedsearch.php?$_commonParams&sort[]=downloads+desc&output=json";
+  if (selected.isEmpty) return '';
+
+  // language:(eng OR english) OR language:(ger OR deu)
+  final parts = <String>[];
+  for (final code in selected) {
+    final aliases = _langAliases[code.toLowerCase()] ?? [code.toLowerCase()];
+    parts.add('language:(${aliases.join('+OR+')})');
+  }
+  return '+AND+(${parts.join('+OR+')})';
+}
+
+/// Build a full advancedsearch URL with a base collection, optional extra query,
+/// sorting, paging, and injected language clause.
+String _buildAdvancedSearchUrl({
+  required String collection,
+  String extraQuery = '',
+  String sortBy = '',
+  required int page,
+  required int rows,
+}) {
+  final lang = _languageQueryClause();
+  final sort = sortBy.isNotEmpty ? '&sort[]=$sortBy+desc' : '';
+
+  // q=collection:(librivoxaudio)+AND+(language:...)+AND+(<extraQuery>)
+  final qParts = <String>[
+    'collection:($collection)',
+  ];
+  if (lang.isNotEmpty) {
+    // `lang` already starts with "+AND+(...)"
+    qParts[0] = '${qParts[0]}$lang';
+  }
+  if (extraQuery.isNotEmpty) {
+    // Encode the extra query component to be safe with spaces/ORs, then wrap.
+    final enc = Uri.encodeComponent(extraQuery);
+    qParts.add('($enc)');
+  }
+  final q = 'q=${qParts.join('+AND+')}';
+
+  return 'https://archive.org/advancedsearch.php?$q&fl=$_fields$sort&output=json&page=$page&rows=$rows';
+}
 
 const Map<String, List<String>> genresSubjectsJson = {
   "adventure": [
@@ -153,44 +210,67 @@ const Map<String, List<String>> genresSubjectsJson = {
 
 class ArchiveApi {
   Future<Either<String, List<Audiobook>>> getLatestAudiobook(
-    int page,
-    int rows,
-  ) async {
-    return _fetchAudiobooks("$_latestAudiobook&page=$page&rows=$rows");
+      int page,
+      int rows,
+      ) async {
+    final url = _buildAdvancedSearchUrl(
+      collection: 'librivoxaudio',
+      sortBy: 'addeddate',
+      page: page,
+      rows: rows,
+    );
+    return _fetchAudiobooks(url);
   }
 
   Future<Either<String, List<Audiobook>>> getMostViewedWeeklyAudiobook(
-    int page,
-    int rows,
-  ) async {
-    return _fetchAudiobooks("$_mostViewedInThisWeek&page=$page&rows=$rows");
+      int page,
+      int rows,
+      ) async {
+    final url = _buildAdvancedSearchUrl(
+      collection: 'librivoxaudio',
+      sortBy: 'week',
+      page: page,
+      rows: rows,
+    );
+    return _fetchAudiobooks(url);
   }
 
   Future<Either<String, List<Audiobook>>> getMostDownloadedEverAudiobook(
-    int page,
-    int rows,
-  ) async {
-    return _fetchAudiobooks("$_mostDownloadedOfAllTime&page=$page&rows=$rows");
+      int page,
+      int rows,
+      ) async {
+    final url = _buildAdvancedSearchUrl(
+      collection: 'librivoxaudio',
+      sortBy: 'downloads',
+      page: page,
+      rows: rows,
+    );
+    return _fetchAudiobooks(url);
   }
 
   Future<Either<String, List<Audiobook>>> getAudiobooksByGenre(
-    String genre,
-    int page,
-    int rows,
-    String sortBy,
-  ) async {
+      String genre,
+      int page,
+      int rows,
+      String sortBy,
+      ) async {
     final genreQuery = genresSubjectsJson.containsKey(genre.toLowerCase())
         ? genresSubjectsJson[genre.toLowerCase()]!.join(' OR ')
         : genre;
 
-    final url =
-        "https://archive.org/advancedsearch.php?q=collection:(audio_bookspoetry)+AND+subject:($genreQuery)&fl=runtime,avg_rating,num_reviews,title,description,identifier,creator,date,downloads,subject,item_size,language&sort[]=$sortBy+desc&output=json&page=$page&rows=$rows";
+    final url = _buildAdvancedSearchUrl(
+      collection: 'audio_bookspoetry',
+      extraQuery: 'subject:($genreQuery)',
+      sortBy: sortBy,
+      page: page,
+      rows: rows,
+    );
     return _fetchAudiobooks(url);
   }
 
   Future<Either<String, List<AudiobookFile>>> getAudiobookFiles(
-    String identifier,
-  ) async {
+      String identifier,
+      ) async {
     final url = "https://archive.org/metadata/$identifier/files?output=json";
 
     try {
@@ -225,12 +305,19 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> searchAudiobook(
-    String searchQuery,
-    int page,
-    int rows,
-  ) async {
+      String searchQuery,
+      int page,
+      int rows,
+      ) async {
+    // Encode the free-form query to avoid breaking the `q` param.
+    final encoded = Uri.encodeComponent(searchQuery);
+    final lang = _languageQueryClause(); // may be empty
+
+    final q =
+        '$encoded+AND+collection:(audio_bookspoetry)${lang.isNotEmpty ? lang : ''}';
+
     final url =
-        "https://archive.org/advancedsearch.php?q=$searchQuery+AND+collection:(audio_bookspoetry)&fl=runtime,avg_rating,num_reviews,title,description,identifier,creator,date,downloads,subject,item_size,language&sort[]=downloads+desc&output=json&page=$page&rows=$rows";
+        "https://archive.org/advancedsearch.php?q=$q&fl=$_fields&sort[]=downloads+desc&output=json&page=$page&rows=$rows";
     AppLogger.debug('Search URL: $url', 'ArchiveApi');
     return _fetchAudiobooks(url);
   }
