@@ -33,10 +33,9 @@ void main() async {
   await initHive();
 
   final audioHandlerProvider = AudioHandlerProvider();
-  await audioHandlerProvider.initialize();
+  final weSlideController = WeSlideController();
+  final themeNotifier = ThemeNotifier();
 
-  WeSlideController weSlideController = WeSlideController();
-  ThemeNotifier themeNotifier = ThemeNotifier();
   runApp(
     MultiProvider(
       providers: [
@@ -47,6 +46,11 @@ void main() async {
       child: const MyApp(),
     ),
   );
+
+  // Initialize AFTER the first frame so UI shows immediately.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    audioHandlerProvider.initialize();
+  });
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -64,8 +68,7 @@ Future<void> initHive() async {
   await Hive.openBox('theme_mode_box');
   await Hive.openBox('history_of_audiobook_box');
   await Hive.openBox('recommened_audiobooks_box');
-  await Hive.openBox(
-      'dual_mode_box'); // o means audiobook home and 1 means podcast home
+  await Hive.openBox('dual_mode_box'); // 0 = audiobook home, 1 = podcast home
   Box recommendedAudiobooksBox = Hive.box('recommened_audiobooks_box');
 
   isRecommendScreen = recommendedAudiobooksBox.isEmpty ? 1 : 0;
@@ -73,132 +76,6 @@ Future<void> initHive() async {
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
-
-final GoRouter router = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  initialLocation: isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
-  routes: [
-    GoRoute(
-      path: '/recommendation_screen',
-      name: 'recommendation_screen',
-      builder: ((context, state) {
-        return const RecommendationScreen();
-      }),
-    ),
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        return ScaffoldWithNavBar(navigationShell);
-      },
-      branches: [
-        StatefulShellBranch(
-          navigatorKey: _sectionNavigatorKey,
-          routes: [
-            GoRoute(
-              path: '/home',
-              name: 'home',
-              builder: ((context, state) {
-                return const Home();
-              }),
-            ),
-            // for the settings page
-            GoRoute(
-              path: '/settings',
-              name: 'settings',
-              builder: (context, state) {
-                return const Settings();
-              },
-            ),
-
-            GoRoute(
-              path: '/genre_audiobooks',
-              name: 'genre_audiobooks',
-              builder: ((context, state) {
-                return GenreAudiobooksScreen(
-                  genre: state.extra as String,
-                );
-              }),
-            ),
-
-            // for the audiobook details
-            GoRoute(
-              path: '/audiobook-details',
-              builder: (context, state) {
-                final extras = state.extra as Map<String, dynamic>;
-                final audiobook = extras['audiobook'] as Audiobook;
-                final isDownload = extras['isDownload'] as bool;
-                final isYoutube = extras['isYoutube'] as bool;
-                final isLocal = extras['isLocal'] as bool;
-
-                return AudiobookDetails(
-                  audiobook: audiobook,
-                  isDownload: isDownload,
-                  isYoutube: isYoutube,
-                  isLocal: isLocal,
-                );
-              },
-            ),
-            // for the audiobook player
-            GoRoute(
-              path: '/player',
-              name: 'player',
-              builder: ((context, state) {
-                return const AudiobookPlayer();
-              }),
-            ),
-          ],
-        ),
-        // for the favourite tab
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/favourite',
-              name: 'favourite',
-              builder: ((context, state) {
-                return const Favourite();
-              }),
-            ),
-          ],
-        ),
-        // for the search tab
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/search',
-              name: 'search',
-              builder: ((context, state) {
-                return const SearchAudiobook();
-              }),
-            ),
-          ],
-        ),
-        // for the download tab
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/download',
-              name: 'download',
-              builder: ((context, state) {
-                return const DownloadsPage();
-              }),
-            ),
-          ],
-        ),
-        //for import tab
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/import',
-              name: 'import',
-              builder: (context, state) {
-                return const ImportAudiobookScreen();
-              },
-            )
-          ],
-        )
-      ],
-    ),
-  ],
-);
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -208,11 +85,115 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // Create router once per app, using isRecommendScreen set by initHive().
+  late final GoRouter _router = _buildRouter();
+
+  GoRouter _buildRouter() {
+    return GoRouter(
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
+      routes: [
+        GoRoute(
+          path: '/recommendation_screen',
+          name: 'recommendation_screen',
+          builder: (context, state) => const RecommendationScreen(),
+        ),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) =>
+              ScaffoldWithNavBar(navigationShell),
+          branches: [
+            StatefulShellBranch(
+              navigatorKey: _sectionNavigatorKey,
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  name: 'home',
+                  builder: (context, state) => const Home(),
+                ),
+                GoRoute(
+                  path: '/settings',
+                  name: 'settings',
+                  builder: (context, state) => const Settings(),
+                ),
+                GoRoute(
+                  path: '/genre_audiobooks',
+                  name: 'genre_audiobooks',
+                  builder: (context, state) {
+                    return GenreAudiobooksScreen(
+                      genre: state.extra as String,
+                    );
+                  },
+                ),
+                GoRoute(
+                  path: '/audiobook-details',
+                  builder: (context, state) {
+                    final extras = state.extra as Map<String, dynamic>;
+                    final audiobook = extras['audiobook'] as Audiobook;
+                    final isDownload = extras['isDownload'] as bool;
+                    final isYoutube = extras['isYoutube'] as bool;
+                    final isLocal = extras['isLocal'] as bool;
+                    return AudiobookDetails(
+                      audiobook: audiobook,
+                      isDownload: isDownload,
+                      isYoutube: isYoutube,
+                      isLocal: isLocal,
+                    );
+                  },
+                ),
+                GoRoute(
+                  path: '/player',
+                  name: 'player',
+                  builder: (context, state) => const AudiobookPlayer(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/favourite',
+                  name: 'favourite',
+                  builder: (context, state) => const Favourite(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/search',
+                  name: 'search',
+                  builder: (context, state) => const SearchAudiobook(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/download',
+                  name: 'download',
+                  builder: (context, state) => const DownloadsPage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/import',
+                  name: 'import',
+                  builder: (context, state) => const ImportAudiobookScreen(),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   bool _backButtonInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
     AppLogger.debug(
         'initialized back button interceptor', 'BackButtonInterceptor');
     WeSlideController weSlideController =
-        Provider.of<WeSlideController>(context, listen: false);
+    Provider.of<WeSlideController>(context, listen: false);
     if (weSlideController.isOpened) {
       AppLogger.debug('closing', 'BackButtonInterceptor');
       weSlideController.hide();
@@ -240,9 +221,9 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp.router(
         theme: Themes().lightTheme,
-        darkTheme: ThemeData.dark(),
+        darkTheme: ThemeData.dark(), // Themes().darkTheme is another dark theme
         themeMode: Provider.of<ThemeNotifier>(context).themeMode,
-        routerConfig: router,
+        routerConfig: _router,
         debugShowCheckedModeBanner: false,
       ),
     );

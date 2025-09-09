@@ -6,11 +6,14 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
     project.evaluationDependsOn(":app")
+    // Suppress "[options] source/target value 8 is obsolete" warnings
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs += ['-Xlint:-options']
+    }
 }
 
 tasks.register("clean", Delete) {
