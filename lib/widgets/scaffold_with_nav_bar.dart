@@ -38,26 +38,11 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
               unselectedItemColor: Colors.grey,
               selectedItemColor: const Color.fromRGBO(204, 119, 34, 1),
               items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.favorite),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.search),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Ionicons.download),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Ionicons.caret_down_circle_outline),
-                  label: '',
-                ),
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+                BottomNavigationBarItem(icon: Icon(Icons.favorite), label: ''),
+                BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+                BottomNavigationBarItem(icon: Icon(Ionicons.download), label: ''),
+                BottomNavigationBarItem(icon: Icon(Ionicons.caret_down_circle_outline), label: ''),
               ],
               currentIndex: widget.navigationShell.currentIndex,
               onTap: _onTap,
@@ -72,6 +57,8 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
               showSelectedLabels: false,
               showUnselectedLabels: false,
               type: BottomNavigationBarType.fixed,
+              selectedFontSize: 0,
+              unselectedFontSize: 0,
               unselectedItemColor: Colors.grey,
               selectedItemColor: const Color.fromRGBO(204, 119, 34, 1),
               items: const <BottomNavigationBarItem>[

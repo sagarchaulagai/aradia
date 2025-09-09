@@ -202,8 +202,8 @@ class _ControlsState extends State<Controls> {
               stream: widget.audioHandler.playbackState,
               builder: (context, snapshot) {
                 final isPlaying = snapshot.data?.playing ?? false;
-                PlaybackState playbackState = snapshot.data!;
-                final processingState = playbackState.processingState;
+                final playbackState = snapshot.data;
+                final processingState = (playbackState?.processingState ?? AudioProcessingState.idle);
                 if (processingState == AudioProcessingState.loading ||
                     processingState == AudioProcessingState.buffering) {
                   return const CircularProgressIndicator(
