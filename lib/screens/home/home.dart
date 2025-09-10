@@ -1,3 +1,4 @@
+// lib/screens/home/home.dart
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/utils/app_logger.dart';
@@ -17,8 +18,8 @@ import 'widgets/history_section.dart';
 import 'widgets/update_prompt_dialog.dart';
 import 'widgets/app_bar_actions.dart';
 import 'widgets/welcome_section.dart';
-import 'widgets/genre_grid.dart';
 import 'constants/home_constants.dart';
+import 'widgets/genre_grid.dart'; // keep Option A
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -28,24 +29,64 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late RecommendationService recommendationService;
-  late List<String> recommendedGenres;
+  // Update & version
   final LatestVersionFetch _latestVersionFetch = LatestVersionFetch();
   final String currentVersion = "3.0.0";
+
+  // Recommendation machinery
+  late final RecommendationService _recommendationService;
+  Future<String>? _recommendedGenresFuture;
+
+  // Keep blocs/controllers stable across theme rebuilds
+  late final HomeBloc _popularBloc;
+  late final HomeBloc _trendingBloc;
+  late final HomeBloc _recommendedBloc;
+
+  late final ScrollController _popularCtrl;
+  late final ScrollController _trendingCtrl;
+  late final ScrollController _recommendedCtrl;
+
+  // NEW: prevent repeated page-1 fetches caused by visibility changes while scrolling
+  bool _didRequestRecommended = false;
 
   @override
   void initState() {
     super.initState();
-    initRecommendedGenres();
-    checkForUpdates();
+
+    _recommendationService = RecommendationService();
+    _recommendedGenresFuture = _recommendationService
+        .getRecommendedGenres()
+        .then((genres) => genres.map((g) => '"$g"').join(' OR '));
+
+    _popularBloc = HomeBloc();
+    _trendingBloc = HomeBloc();
+    _recommendedBloc = HomeBloc();
+
+    _popularCtrl = ScrollController();
+    _trendingCtrl = ScrollController();
+    _recommendedCtrl = ScrollController();
+
+    _checkForUpdates();
   }
 
-  Future<void> checkForUpdates() async {
+  @override
+  void dispose() {
+    _popularBloc.close();
+    _trendingBloc.close();
+    _recommendedBloc.close();
+
+    _popularCtrl.dispose();
+    _trendingCtrl.dispose();
+    _recommendedCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkForUpdates() async {
     final result = await _latestVersionFetch.getLatestVersion();
 
     result.fold(
-      (error) => AppLogger.debug(error),
-      (latestVersionModel) async {
+          (error) => AppLogger.debug(error),
+          (latestVersionModel) async {
         if (latestVersionModel.latestVersion != null &&
             latestVersionModel.latestVersion!.compareTo(currentVersion) > 0) {
           await _handleUpdateAvailable(latestVersionModel);
@@ -55,31 +96,34 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _handleUpdateAvailable(
-      LatestVersionFetchModel versionModel) async {
+      LatestVersionFetchModel versionModel,
+      ) async {
     final permissionGranted =
-        await PermissionHelper.handleUpdatePermission(context);
+    await PermissionHelper.handleUpdatePermission(context);
 
     if (permissionGranted) {
-      proceedWithUpdate(versionModel);
+      _proceedWithUpdate(versionModel);
     }
   }
 
-  Future<void> proceedWithUpdate(LatestVersionFetchModel versionModel) async {
+  Future<void> _proceedWithUpdate(
+      LatestVersionFetchModel versionModel,
+      ) async {
     final existingApk =
-        await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
+    await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
 
     if (existingApk != null) {
-      showUpdatePrompt(versionModel);
+      _showUpdatePrompt(versionModel);
     } else {
       final success =
-          await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
+      await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
       if (success) {
-        showUpdatePrompt(versionModel);
+        _showUpdatePrompt(versionModel);
       }
     }
   }
 
-  void showUpdatePrompt(LatestVersionFetchModel versionModel) {
+  void _showUpdatePrompt(LatestVersionFetchModel versionModel) {
     showDialog(
       context: context,
       builder: (BuildContext context) => UpdatePromptDialog(
@@ -90,11 +134,6 @@ class _HomeState extends State<Home> {
             _latestVersionFetch.installUpdate(versionModel.latestVersion!),
       ),
     );
-  }
-
-  void initRecommendedGenres() async {
-    recommendationService = RecommendationService();
-    recommendedGenres = await recommendationService.getRecommendedGenres();
   }
 
   @override
@@ -132,25 +171,40 @@ class _HomeState extends State<Home> {
               child: const HistorySection(),
             ),
           ),
+
+          // --- Recommended for you (memoized future) ---
           SliverToBoxAdapter(
             child: FutureBuilder<String>(
-              future: RecommendationService().getRecommendedGenres().then(
-                  (genres) => genres.map((genre) => '"$genre"').join(' OR ')),
+              future: _recommendedGenresFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done &&
-                    snapshot.hasData) {
+                    snapshot.hasData &&
+                    snapshot.data != null &&
+                    snapshot.data!.isNotEmpty) {
                   return _buildLazyLoadSection(
-                      context, 'Recommended for you', snapshot.data!);
+                    context,
+                    'Recommended for you',
+                    snapshot.data!,
+                  );
                 }
-                return const CircularProgressIndicator(
-                  color: AppColors.primaryColor,
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
                 );
               },
             ),
           ),
+
+          // --- Featured sections (stable blocs/controllers) ---
           SliverToBoxAdapter(
             child: _buildFeaturedSections(),
           ),
+
+          // --- Genres ---
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -167,6 +221,8 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: GenreGrid(genres: HomeConstants.genres),
           ),
+
+          // --- Footer / guidance ---
           SliverToBoxAdapter(
             child: FutureBuilder<Widget>(
               future: _buildGenreSections(),
@@ -175,8 +231,13 @@ class _HomeState extends State<Home> {
                     snapshot.hasData) {
                   return snapshot.data!;
                 }
-                return const CircularProgressIndicator(
-                  color: AppColors.primaryColor,
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
                 );
               },
             ),
@@ -191,15 +252,15 @@ class _HomeState extends State<Home> {
       children: [
         MyAudiobooks(
           title: 'Popular All Time',
-          homeBloc: HomeBloc(),
+          homeBloc: _popularBloc,
           fetchType: AudiobooksFetchType.popular,
-          scrollController: ScrollController(),
+          scrollController: _popularCtrl,
         ),
         MyAudiobooks(
           title: 'Trending This Week',
-          homeBloc: HomeBloc(),
+          homeBloc: _trendingBloc,
           fetchType: AudiobooksFetchType.popularOfWeek,
-          scrollController: ScrollController(),
+          scrollController: _trendingCtrl,
         ),
       ],
     );
@@ -223,21 +284,22 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildLazyLoadSection(
-      BuildContext context, String title, String genre) {
+  Widget _buildLazyLoadSection(BuildContext context, String title, String genre) {
     return VisibilityDetector(
-      key: Key(genre),
+      key: Key('rec-$genre'),
       onVisibilityChanged: (VisibilityInfo info) {
-        if (info.visibleFraction > 0.5) {
-          HomeBloc().add(FetchAudiobooksByGenre(1, 15, genre, 'week'));
+        // Fire ONCE: prevents reloading/clearing while scrolling
+        if (info.visibleFraction > 0.5 && !_didRequestRecommended) {
+          _didRequestRecommended = true;
+          _recommendedBloc.add(FetchAudiobooksByGenre(1, 15, genre, 'week'));
         }
       },
       child: MyAudiobooks(
         title: title,
-        homeBloc: HomeBloc(),
+        homeBloc: _recommendedBloc,
         fetchType: AudiobooksFetchType.genre,
         genre: genre,
-        scrollController: ScrollController(),
+        scrollController: _recommendedCtrl,
       ),
     );
   }
