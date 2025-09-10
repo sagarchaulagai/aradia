@@ -1,14 +1,16 @@
 import 'dart:async';
+import 'dart:io';
+
+import 'package:aradia/resources/models/audiobook.dart';
+import 'package:aradia/resources/models/audiobook_file.dart';
+import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/services/youtube_audio_service.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:aradia/resources/models/audiobook.dart';
-import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:rxdart_ext/utils.dart';
-import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class MyAudioHandler extends BaseAudioHandler {
@@ -20,20 +22,30 @@ class MyAudioHandler extends BaseAudioHandler {
   final HistoryOfAudiobook historyOfAudiobook = HistoryOfAudiobook();
   Timer? _positionUpdateTimer;
 
-  Future<void> _initAudioSession() async {
+  bool _sessionConfigured = false;
+
+  Future<void> _ensureAudioSession() async {
+    if (_sessionConfigured) return;
+
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
 
-    await _player.setAndroidAudioAttributes(
-      const AndroidAudioAttributes(
-        contentType: AndroidAudioContentType.music,
-        usage: AndroidAudioUsage.media,
-      ),
-    );
+    if (Platform.isAndroid) {
+      // For just_audio 0.9.46 use the Android-specific API
+      await _player.setAndroidAudioAttributes(
+        const AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+      );
+    }
 
+    // Pause on headphones unplugged
     session.becomingNoisyEventStream.listen((_) {
       if (_player.playing) _player.pause();
     });
+
+    _sessionConfigured = true;
   }
 
   void initSongs(
@@ -42,7 +54,7 @@ class MyAudioHandler extends BaseAudioHandler {
       int initialIndex,
       int positionInMilliseconds,
       ) async {
-    await _initAudioSession();
+    await _ensureAudioSession();
 
     _playlist.clear();
     queue.add([]);
@@ -73,13 +85,7 @@ class MyAudioHandler extends BaseAudioHandler {
       initialPosition: Duration(milliseconds: positionInMilliseconds),
     );
 
-    _player.playbackEventStream.listen(
-      _broadcastState,
-      onError: (Object e, StackTrace st) {
-        AppLogger.debug('Playback error: $e');
-      },
-    );
-
+    _player.playbackEventStream.listen(_broadcastState);
     _player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
         _player.seekToNext();
@@ -113,7 +119,7 @@ class MyAudioHandler extends BaseAudioHandler {
         artUri: Uri.parse(
           audiobook.lowQCoverImage.contains("youtube")
               ? audiobook.lowQCoverImage
-              : song.highQCoverImage ?? '',
+              : (song.highQCoverImage ?? ''),
         ),
         extras: {
           'url': song.url,
@@ -127,14 +133,15 @@ class MyAudioHandler extends BaseAudioHandler {
       if (isYouTube) {
         final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
         _playlist.add(
-          YouTubeAudioSource(
-            videoId: videoId,
-            tag: item,
-            quality: 'high',
-          ),
+          YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'),
         );
       } else if (song.url != null) {
-        final uri = song.url!.startsWith('/') ? Uri.file(song.url!) : Uri.parse(song.url!);
+        Uri uri;
+        if (song.url!.startsWith('/')) {
+          uri = Uri.file(song.url!);
+        } else {
+          uri = Uri.parse(song.url!);
+        }
         _playlist.add(AudioSource.uri(uri, tag: item));
       }
     }
@@ -187,7 +194,8 @@ class MyAudioHandler extends BaseAudioHandler {
         }[_player.processingState]!,
         playing: _player.playing,
         updatePosition: event.updatePosition,
-        bufferedPosition: Duration(milliseconds: event.bufferedPosition.inMilliseconds),
+        bufferedPosition:
+        Duration(milliseconds: event.bufferedPosition.inMilliseconds),
         speed: _player.speed,
         queueIndex: event.currentIndex,
       ),
@@ -205,7 +213,9 @@ class MyAudioHandler extends BaseAudioHandler {
           _player.position.inMilliseconds,
         );
         playingAudiobookDetailsBox.put('position', _player.position.inMilliseconds);
-        AppLogger.debug('Position updated: ${_player.position.inMilliseconds} ms');
+        AppLogger.debug(
+          'Position updated: ${_player.position.inMilliseconds} ms',
+        );
       }
     });
   }

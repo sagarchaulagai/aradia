@@ -26,7 +26,8 @@ class MediaHelper {
     try {
       final player = AudioPlayer();
       await player.setFilePath(file.path);
-      final duration = await player.durationFuture; // Use durationFuture
+      final duration = player.duration
+          ?? await player.durationStream.firstWhere((d) => d != null);
       await player.dispose();
       return duration?.inSeconds.toDouble() ?? 0.0;
     } catch (e) {
