@@ -30,14 +30,12 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
       builder: (context, snapshot) {
         final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
-        // define the nav bar once
+        // one BottomNavigationBar instance to reuse
         final navBar = BottomNavigationBar(
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          // 👇 prevents the tiny reserved label height that causes the 2–4px overflow
           selectedFontSize: 0,
           unselectedFontSize: 0,
-
           type: BottomNavigationBarType.fixed,
           unselectedItemColor: Colors.grey,
           selectedItemColor: const Color.fromRGBO(204, 119, 34, 1),
@@ -53,21 +51,21 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
         );
 
         if (playingAudiobookDetailsBox.isEmpty) {
+          // No mini-player at all → just hide the navbar while typing
           return Scaffold(
             body: widget.navigationShell,
-            bottomNavigationBar: navBar,
+            bottomNavigationBar: keyboardOpen ? null : navBar,
           );
         }
 
+        // With mini-player → always mount MiniAudioPlayer and pass keyboard state
         return Scaffold(
-          // While typing → don't render MiniAudioPlayer at all
-          body: keyboardOpen
-              ? widget.navigationShell
-              : MiniAudioPlayer(
+          body: MiniAudioPlayer(
             playingAudiobookDetailsBox: playingAudiobookDetailsBox,
             navigationShell: widget.navigationShell,
             bottomNavigationBar: navBar,
             bottomNavBarSize: const NavigationBarThemeData().height ?? 70,
+            isKeyboardOpen: keyboardOpen, // 👈 NEW
           ),
         );
       },

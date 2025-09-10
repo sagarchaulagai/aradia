@@ -1,12 +1,12 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
-import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/widgets/low_and_high_image.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
@@ -16,6 +16,7 @@ class MiniAudioPlayer extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
   final BottomNavigationBar bottomNavigationBar;
   final double bottomNavBarSize;
+  final bool isKeyboardOpen; // ← NEW
 
   const MiniAudioPlayer({
     super.key,
@@ -23,6 +24,7 @@ class MiniAudioPlayer extends StatefulWidget {
     required this.navigationShell,
     required this.bottomNavigationBar,
     required this.bottomNavBarSize,
+    required this.isKeyboardOpen, // ← NEW
   });
 
   @override
@@ -30,9 +32,8 @@ class MiniAudioPlayer extends StatefulWidget {
 }
 
 class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
-  late AudioHandlerProvider audioHandlerProvider;
-  late WeSlideController weSlideController;
-  static int idk = 0;
+  late final WeSlideController weSlideController;
+  String? _initializedAudiobookId; // avoid re-init
 
   @override
   void initState() {
@@ -43,20 +44,24 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (idk == 0) {
-      audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
 
-      List<AudiobookFile> audiobookFiles = [];
-      for (int i = 0; i < widget.playingAudiobookDetailsBox.get('audiobookFiles').length; i++) {
-        audiobookFiles.add(AudiobookFile.fromMap(widget.playingAudiobookDetailsBox.get('audiobookFiles')[i]));
-      }
-      int index = widget.playingAudiobookDetailsBox.get('index');
-      Audiobook audiobook = Audiobook.fromMap(widget.playingAudiobookDetailsBox.get('audiobook'));
+    final provider = Provider.of<AudioHandlerProvider>(context, listen: false);
+    final box = widget.playingAudiobookDetailsBox;
 
-      int position = widget.playingAudiobookDetailsBox.get('position');
-      audioHandlerProvider.audioHandler.initSongs(audiobookFiles, audiobook, index, position);
-      idk++;
-    }
+    final audiobookMap = box.get('audiobook');
+    if (audiobookMap == null) return;
+
+    final audiobook = Audiobook.fromMap(audiobookMap);
+    if (_initializedAudiobookId == audiobook.id) return;
+
+    final files = (box.get('audiobookFiles') as List)
+        .map((e) => AudiobookFile.fromMap(e))
+        .toList();
+    final index = box.get('index') as int;
+    final position = box.get('position') as int;
+
+    provider.audioHandler.initSongs(files, audiobook, index, position);
+    _initializedAudiobookId = audiobook.id;
   }
 
   Widget _buildSliderIndicator() {
@@ -73,124 +78,113 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final keyboardOpen = widget.isKeyboardOpen;
 
-    // Detect keyboard open/closed
-    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
-
-    // 👉 While typing, hide the entire mini player + footer and just show the page body
-    if (keyboardOpen) {
-      return widget.navigationShell;
+    // If the panel is open when the keyboard shows, close it on next frame.
+    if (keyboardOpen && weSlideController.isOpened) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) weSlideController.hide();
+      });
     }
 
-    // Normal (keyboard closed) layout
-    final double panelMaxSize = MediaQuery.of(context).size.height;
-    final double panelMinSize = 80 + widget.bottomNavBarSize;
+    final handler = context.read<AudioHandlerProvider>().audioHandler;
+
+    final panelMaxSize = MediaQuery.of(context).size.height;
+    final footerHeight = keyboardOpen ? 0.0 : widget.bottomNavBarSize;
+    final footer = keyboardOpen ? const SizedBox.shrink() : widget.bottomNavigationBar;
+    final panelMin = keyboardOpen ? 0.0 : (80 + widget.bottomNavBarSize);
 
     return WeSlide(
       controller: weSlideController,
-      panelMinSize: panelMinSize,
+      panelMinSize: panelMin,          // 0 while typing → no header strip
       panelMaxSize: panelMaxSize,
-      footerHeight: widget.bottomNavBarSize,
-      footer: widget.bottomNavigationBar,
+      footerHeight: footerHeight,      // 0 while typing → navbar hidden
+      footer: footer,                  // hidden while typing
       body: widget.navigationShell,
       panel: const AudiobookPlayer(),
-      panelHeader: GestureDetector(
-        onTap: () {
-          weSlideController.show();
-        },
+      panelHeader: Offstage(
+        offstage: keyboardOpen,        // hide mini header while typing
         child: Container(
           height: 80,
-          color: colorScheme.secondary,
-          child: Container(
-            color: Colors.grey[850],
-            child: Column(
-              children: [
-                Center(child: _buildSliderIndicator()),
-                Expanded(
-                  child: StreamBuilder<MediaItem?>(
-                    stream: audioHandlerProvider.audioHandler.mediaItem,
-                    builder: (context, snapshot) {
-                      if (snapshot.data != null) {
-                        final mediaItem = snapshot.data!;
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+          color: Colors.grey[850],
+          child: Column(
+            children: [
+              Center(child: _buildSliderIndicator()),
+              Expanded(
+                child: StreamBuilder<MediaItem?>(
+                  stream: handler.mediaItem,
+                  builder: (context, snapshot) {
+                    final mediaItem = snapshot.data;
+                    if (mediaItem == null) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  LowAndHighImage(
-                                    lowQImage: mediaItem.artUri.toString(),
-                                    highQImage: mediaItem.artUri.toString(),
-                                    width: 50,
-                                    height: 50,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width * 0.5,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          mediaItem.album ?? "",
-                                          style: const TextStyle(color: Colors.white),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                        Text(
-                                          mediaItem.title,
-                                          style: const TextStyle(color: Colors.white),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                              LowAndHighImage(
+                                lowQImage: mediaItem.artUri.toString(),
+                                highQImage: mediaItem.artUri.toString(),
+                                width: 50,
+                                height: 50,
                               ),
-                              StreamBuilder<PlaybackState>(
-                                stream: audioHandlerProvider.audioHandler.playbackState,
-                                builder: (context, snapshot) {
-                                  final state = snapshot.data;
-                                  final processing = state?.processingState ?? AudioProcessingState.idle;
-
-                                  if (processing == AudioProcessingState.loading ||
-                                      processing == AudioProcessingState.buffering) {
-                                    return const CircularProgressIndicator(
-                                      color: AppColors.primaryColor,
-                                      strokeWidth: 2,
-                                    );
-                                  }
-
-                                  final isPlaying = state?.playing ?? false;
-                                  return IconButton(
-                                    icon: Icon(
-                                      isPlaying ? Icons.pause : Icons.play_arrow,
-                                      color: Colors.white,
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      mediaItem.album ?? "",
+                                      style: const TextStyle(color: Colors.white),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
-                                    onPressed: () {
-                                      if (isPlaying) {
-                                        audioHandlerProvider.audioHandler.pause();
-                                      } else {
-                                        audioHandlerProvider.audioHandler.play();
-                                      }
-                                    },
-                                  );
-                                },
+                                    Text(
+                                      mediaItem.title,
+                                      style: const TextStyle(color: Colors.white),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                        );
-                      }
-                      return const SizedBox();
-                    },
-                  ),
+                          StreamBuilder<PlaybackState>(
+                            stream: handler.playbackState,
+                            builder: (context, s) {
+                              final st = s.data;
+                              final loading =
+                                  st?.processingState == AudioProcessingState.loading ||
+                                      st?.processingState == AudioProcessingState.buffering;
+                              if (loading) {
+                                return const CircularProgressIndicator(
+                                  color: AppColors.primaryColor,
+                                  strokeWidth: 2,
+                                );
+                              }
+                              final playing = st?.playing ?? false;
+                              return IconButton(
+                                icon: Icon(
+                                  playing ? Icons.pause : Icons.play_arrow,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () =>
+                                playing ? handler.pause() : handler.play(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
