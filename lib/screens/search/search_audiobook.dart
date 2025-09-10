@@ -24,8 +24,11 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late SearchBloc searchBloc;
-  String searchFilter = 'title'; // Default to search by title
+
+  String searchFilter = 'title'; // 'title' | 'author' | 'subject' | 'youtube'
   bool isLoadingMore = false;
+
+  // YouTube
   bool isSearchingYoutube = false;
   List<Video> youtubeResults = [];
 
@@ -36,15 +39,13 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent &&
+          _scrollController.position.maxScrollExtent &&
           !isLoadingMore) {
         final state = searchBloc.state;
         if (state is SearchSuccess && state.audiobooks.isNotEmpty) {
-          setState(() {
-            isLoadingMore = true;
-          });
-          searchBloc.add(
-              EventLoadMoreResults(_buildSearchQuery(_searchController.text)));
+          setState(() => isLoadingMore = true);
+          // We no longer pass the current text; paging sticks to the last submitted query
+          searchBloc.add(EventLoadMoreResults(searchBloc.lastQuery ?? ''));
         }
       }
     });
@@ -57,26 +58,35 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
     super.dispose();
   }
 
+  // Build raw Archive.org advancedsearch "q=" fragments, WITHOUT URL-encoding.
+  // ArchiveApi will handle encoding.
   String _buildSearchQuery(String searchText) {
     if (searchFilter == 'youtube') {
-      return searchText;
+      // YouTube uses its own path
+      return searchText.trim();
     }
 
-    final terms = searchText.split(',').map((term) => term.trim()).toList();
-    final joinedTerms = terms.join(' OR ');
+    final terms = searchText
+        .split(',')
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty)
+        .toList();
+
+    // If multiple terms, OR them. Keep it raw (no %3A)
+    final joined = terms.length > 1 ? terms.join(' OR ') : (terms.isEmpty ? '' : terms.first);
 
     switch (searchFilter) {
       case 'author':
-        return 'creator%3A($joinedTerms)';
+        return joined.isEmpty ? '' : 'creator:($joined)';
       case 'subject':
-        return 'subject%3A($joinedTerms)';
+        return joined.isEmpty ? '' : 'subject:($joined)';
       default:
-        return 'title%3A($joinedTerms)';
+        return joined.isEmpty ? '' : 'title:($joined)';
     }
   }
 
   Future<void> _searchYoutube(String searchText) async {
-    YoutubeExplode yt = YoutubeExplode();
+    final yt = YoutubeExplode();
     setState(() {
       isSearchingYoutube = true;
       youtubeResults = [];
@@ -84,7 +94,6 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
 
     try {
       final results = await yt.search.search(searchText);
-
       setState(() {
         youtubeResults = results.toList();
         isSearchingYoutube = false;
@@ -99,9 +108,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
           ),
         );
       }
-      setState(() {
-        isSearchingYoutube = false;
-      });
+      setState(() => isSearchingYoutube = false);
     } finally {
       yt.close();
     }
@@ -111,17 +118,14 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
     final yt = YoutubeExplode();
 
     try {
-      setState(() {
-        isSearchingYoutube = true;
-      });
+      setState(() => isSearchingYoutube = true);
 
       final hasPermission =
-          await PermissionHelper.requestStorageAndMediaPermissions();
+      await PermissionHelper.requestStorageAndMediaPermissions();
       if (!hasPermission) {
         throw Exception('Storage permission not granted');
       }
 
-      // Get full video details
       final videoDetails = await yt.videos.get(video.id);
 
       final audiobook = Audiobook.fromMap({
@@ -157,13 +161,12 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('YouTube video imported successfully!'),
             behavior: SnackBarBehavior.floating,
           ),
         );
 
-        // Navigate to audiobook details
         context.push(
           '/audiobook-details',
           extra: {
@@ -185,9 +188,8 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
         );
       }
     } finally {
-      setState(() {
-        isSearchingYoutube = false;
-      });
+      setState(() => isSearchingYoutube = false);
+      yt.close();
     }
   }
 
@@ -208,19 +210,17 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Audiobooks'),
-      ),
+      appBar: AppBar(title: const Text('Search Audiobooks')),
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Search bar
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(25),
@@ -231,10 +231,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                         offset: const Offset(0, 4),
                       ),
                     ],
-                    border: Border.all(
-                      color: Colors.grey.shade300,
-                      width: 1,
-                    ),
+                    border: Border.all(color: Colors.grey.shade300, width: 1),
                   ),
                   child: Row(
                     children: [
@@ -248,19 +245,18 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                           ),
                           decoration: InputDecoration(
                             hintText: _getHintText(),
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 14,
-                            ),
+                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                             border: InputBorder.none,
                           ),
                           onSubmitted: (value) {
                             FocusScope.of(context).unfocus();
                             if (searchFilter == 'youtube') {
-                              _searchYoutube(value);
+                              _searchYoutube(value.trim());
                             } else {
-                              final query = _buildSearchQuery(value);
-                              searchBloc.add(EventSearchIconClicked(query));
+                              final q = _buildSearchQuery(value);
+                              if (q.isNotEmpty) {
+                                searchBloc.add(EventSearchIconClicked(q));
+                              }
                             }
                           },
                         ),
@@ -270,11 +266,12 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                         onTap: () {
                           FocusScope.of(context).unfocus();
                           if (searchFilter == 'youtube') {
-                            _searchYoutube(_searchController.text);
+                            _searchYoutube(_searchController.text.trim());
                           } else {
-                            final query =
-                                _buildSearchQuery(_searchController.text);
-                            searchBloc.add(EventSearchIconClicked(query));
+                            final q = _buildSearchQuery(_searchController.text);
+                            if (q.isNotEmpty) {
+                              searchBloc.add(EventSearchIconClicked(q));
+                            }
                           }
                         },
                         child: Container(
@@ -284,31 +281,28 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryColor
-                                    .withValues(alpha: 0.4),
+                                color: AppColors.primaryColor.withValues(alpha: 0.4),
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.search,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                          child: const Icon(Icons.search, color: Colors.white, size: 24),
                         ),
                       ),
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
+                // Filters
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // LibriVox Section
+                    // LibriVox filters
                     Padding(
-                      padding:
-                          const EdgeInsets.only(left: 8, top: 8, bottom: 4),
+                      padding: const EdgeInsets.only(left: 8, top: 8, bottom: 4),
                       child: Text(
                         'LibriVox',
                         style: TextStyle(
@@ -328,34 +322,30 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                               icon: Icons.book,
                               label: 'Title',
                               selected: searchFilter == 'title',
-                              onSelected: (selected) =>
-                                  setState(() => searchFilter = 'title'),
+                              onSelected: (_) => setState(() => searchFilter = 'title'),
                             ),
                             const SizedBox(width: 8),
                             _buildFilterChip(
                               icon: Icons.person,
                               label: 'Author',
                               selected: searchFilter == 'author',
-                              onSelected: (selected) =>
-                                  setState(() => searchFilter = 'author'),
+                              onSelected: (_) => setState(() => searchFilter = 'author'),
                             ),
                             const SizedBox(width: 8),
                             _buildFilterChip(
                               icon: Icons.category,
                               label: 'Subjects',
                               selected: searchFilter == 'subject',
-                              onSelected: (selected) =>
-                                  setState(() => searchFilter = 'subject'),
+                              onSelected: (_) => setState(() => searchFilter = 'subject'),
                             ),
                           ],
                         ),
                       ),
                     ),
 
-                    // YouTube Section
+                    // YouTube filter
                     Padding(
-                      padding:
-                          const EdgeInsets.only(left: 8, top: 12, bottom: 4),
+                      padding: const EdgeInsets.only(left: 8, top: 12, bottom: 4),
                       child: Text(
                         'YouTube',
                         style: TextStyle(
@@ -377,11 +367,8 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
                               selected: searchFilter == 'youtube',
                               onSelected: (selected) {
                                 setState(() => searchFilter = 'youtube');
-                                // Clear results when switching to YouTube
                                 if (selected) {
-                                  setState(() {
-                                    youtubeResults = [];
-                                  });
+                                  setState(() => youtubeResults = []);
                                 }
                               },
                             ),
@@ -394,99 +381,93 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
               ],
             ),
           ),
+
+          // Results
           Expanded(
             child: searchFilter == 'youtube'
                 ? _buildYoutubeResultsList()
                 : BlocConsumer<SearchBloc, SearchState>(
-                    listener: (context, state) {
-                      if (state is SearchFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.errorMessage),
-                            backgroundColor: Colors.red.shade300,
-                            behavior: SnackBarBehavior.floating,
+              listener: (context, state) {
+                if (state is SearchFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage),
+                      backgroundColor: Colors.red.shade300,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                } else if (state is SearchSuccess) {
+                  setState(() => isLoadingMore = false);
+                }
+              },
+              builder: (context, state) {
+                if (state is SearchLoading && !isLoadingMore) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primaryColor),
+                  );
+                } else if (state is SearchSuccess) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: state.audiobooks.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == state.audiobooks.length) {
+                        return isLoadingMore
+                            ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryColor,
+                            ),
                           ),
-                        );
-                      } else if (state is SearchSuccess) {
-                        setState(() {
-                          isLoadingMore = false;
-                        });
+                        )
+                            : const SizedBox();
                       }
-                    },
-                    builder: (context, state) {
-                      if (state is SearchLoading && !isLoadingMore) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryColor,
+                      final audiobook = state.audiobooks[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(8),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LowAndHighImage(
+                              lowQImage: audiobook.lowQCoverImage,
+                              highQImage: audiobook.lowQCoverImage,
+                              width: 60,
+                              height: 60,
+                            ),
                           ),
-                        );
-                      } else if (state is SearchSuccess) {
-                        return ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(8),
-                          itemCount: state.audiobooks.length + 1,
-                          itemBuilder: (context, index) {
-                            if (index == state.audiobooks.length) {
-                              return isLoadingMore
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(16),
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          color: AppColors.primaryColor,
-                                        ),
-                                      ),
-                                    )
-                                  : const SizedBox();
-                            }
-                            final audiobook = state.audiobooks[index];
-                            return Card(
-                              elevation: 2,
-                              margin: const EdgeInsets.symmetric(
-                                vertical: 4,
-                                horizontal: 8,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.all(8),
-                                leading: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: LowAndHighImage(
-                                    lowQImage: audiobook.lowQCoverImage,
-                                    highQImage: audiobook.lowQCoverImage,
-                                    width: 60,
-                                    height: 60,
-                                  ),
-                                ),
-                                title: Text(
-                                  audiobook.title,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(
-                                  audiobook.author ?? 'Unknown Author',
-                                  style: TextStyle(color: Colors.grey.shade600),
-                                ),
-                                onTap: () {
-                                  context.push(
-                                    '/audiobook-details', // Use this format consistently
-                                    extra: {
-                                      'audiobook': audiobook,
-                                      'isDownload': false,
-                                      'isYoutube': false,
-                                      'isLocal': false,
-                                    },
-                                  );
-                                },
-                              ),
+                          title: Text(
+                            audiobook.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            audiobook.author ?? 'Unknown Author',
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                          onTap: () {
+                            context.push(
+                              '/audiobook-details',
+                              extra: {
+                                'audiobook': audiobook,
+                                'isDownload': false,
+                                'isYoutube': false,
+                                'isLocal': false,
+                              },
                             );
                           },
-                        );
-                      }
-                      return const SizedBox();
+                        ),
+                      );
                     },
-                  ),
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
           ),
         ],
       ),
@@ -496,29 +477,19 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
   Widget _buildYoutubeResultsList() {
     if (isSearchingYoutube) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primaryColor,
-        ),
+        child: CircularProgressIndicator(color: AppColors.primaryColor),
       );
     }
-
     if (youtubeResults.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Ionicons.logo_youtube,
-              size: 48,
-              color: Colors.red.shade400,
-            ),
+            Icon(Ionicons.logo_youtube, size: 48, color: Colors.red.shade400),
             const SizedBox(height: 16),
             Text(
               'Search for YouTube videos',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -532,10 +503,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
         final video = youtubeResults[index];
         return Card(
           elevation: 2,
-          margin: const EdgeInsets.symmetric(
-            vertical: 4,
-            horizontal: 8,
-          ),
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -570,10 +538,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
             ),
             trailing: Text(
               video.duration?.toString().split('.')[0] ?? 'Unknown',
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
             ),
             onTap: () => _importYoutubeVideo(video),
           ),
@@ -605,11 +570,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: selected ? Colors.white : Colors.grey,
-          ),
+          Icon(icon, size: 16, color: selected ? Colors.white : Colors.grey),
           const SizedBox(width: 4),
           Text(label),
         ],
@@ -618,9 +579,7 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
       onSelected: onSelected,
       selectedColor: AppColors.primaryColor,
       checkmarkColor: Colors.white,
-      labelStyle: TextStyle(
-        color: selected ? Colors.white : Colors.grey,
-      ),
+      labelStyle: TextStyle(color: selected ? Colors.white : Colors.grey),
     );
   }
 }
