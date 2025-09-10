@@ -63,7 +63,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
     // Optimize list building
     final audiobookFilesData =
-        playingAudiobookDetailsBox.get('audiobookFiles') as List;
+    playingAudiobookDetailsBox.get('audiobookFiles') as List;
     audiobookFiles = audiobookFilesData
         .map((fileData) => AudiobookFile.fromMap(fileData))
         .toList();
@@ -100,7 +100,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     );
 
     final result =
-        await FlutterBackground.initialize(androidConfig: androidConfig);
+    await FlutterBackground.initialize(androidConfig: androidConfig);
     if (result) {
       await FlutterBackground.enableBackgroundExecution();
 
@@ -295,14 +295,14 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                     height: 50,
                     width: 50,
                     errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
+                    const Icon(Icons.error),
                     placeholder: (context, url) => CachedNetworkImage(
                       imageUrl: audiobook.lowQCoverImage,
                       fit: BoxFit.cover,
                       height: 50,
                       width: 50,
                       errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
+                      const Icon(Icons.error),
                     ),
                   ),
                 const SizedBox(
@@ -346,138 +346,148 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Hero(
-                  tag: 'audiobook_cover',
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.black.withValues(alpha: 0.5)
-                              : Colors.grey.withValues(alpha: 0.5),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: mediaItem.artUri
-                              .toString()
-                              .contains('storage/emulated')
-                          ? Image.file(
-                              File(mediaItem.artUri.toString()),
-                              fit: BoxFit.cover,
-                              height: 250,
-                              width: 250,
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: mediaItem.artUri.toString(),
-                              fit: BoxFit.cover,
-                              height: 250,
-                              width: 250,
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                              placeholder: (context, url) => CachedNetworkImage(
-                                imageUrl: audiobook.lowQCoverImage,
-                                fit: BoxFit.cover,
-                                height: 250,
-                                width: 250,
-                                errorWidget: (context, url, error) =>
-                                    const Icon(
-                                  Icons.error,
-                                ),
-                              ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                16 + MediaQuery.viewInsetsOf(context).bottom, // make room for keyboard
+              ),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min, // let it shrink when space is tight
+                children: [
+                  const SizedBox(height: 20),
+                  Hero(
+                    tag: 'audiobook_cover',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.black.withValues(alpha: 0.5)
+                                : Colors.grey.withValues(alpha: 0.5),
+                            spreadRadius: 3,
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: mediaItem.artUri
+                            .toString()
+                            .contains('storage/emulated')
+                            ? Image.file(
+                          File(mediaItem.artUri.toString()),
+                          fit: BoxFit.cover,
+                          height: 250,
+                          width: 250,
+                        )
+                            : CachedNetworkImage(
+                          imageUrl: mediaItem.artUri.toString(),
+                          fit: BoxFit.cover,
+                          height: 250,
+                          width: 250,
+                          errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                          placeholder: (context, url) => CachedNetworkImage(
+                            imageUrl: audiobook.lowQCoverImage,
+                            fit: BoxFit.cover,
+                            height: 250,
+                            width: 250,
+                            errorWidget: (context, url, error) =>
+                            const Icon(
+                              Icons.error,
                             ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  mediaItem.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+                  Text(
+                    mediaItem.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  mediaItem.album ?? 'Unknown',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.grey[800]
-                        : Colors.grey[300],
+                  Text(
+                    mediaItem.album ?? 'Unknown',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.grey[800]
+                          : Colors.grey[300],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  mediaItem.artist ?? 'Unknown',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.grey[600]
-                        : Colors.grey[200],
+                  Text(
+                    mediaItem.artist ?? 'Unknown',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.grey[600]
+                          : Colors.grey[200],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 20),
-                ProgressBarWidget(
-                  audioHandler: audioHandlerProvider.audioHandler,
-                ),
-                const SizedBox(height: 20),
-                // Highly optimized Controls with nested ValueListenableBuilders
-                ValueListenableBuilder<bool>(
-                  valueListenable: _sleepTimer.isActive,
-                  builder: (context, isTimerActive, child) {
-                    return ValueListenableBuilder<Duration?>(
-                      valueListenable: _sleepTimer.remainingTime,
-                      builder: (context, activeTimerDuration, child) {
-                        return ValueListenableBuilder<bool>(
-                          valueListenable: _skipSilenceNotifier,
-                          builder: (context, skipSilence, child) {
-                            return Controls(
-                              audioHandler: audioHandlerProvider.audioHandler,
-                              onTimerPressed: showTimerOptions,
-                              isTimerActive: isTimerActive,
-                              activeTimerDuration: activeTimerDuration,
-                              onCancelTimer: cancelTimer,
-                              onToggleSkipSilence: () {
-                                final newValue = !_skipSilenceNotifier.value;
-                                _skipSilenceNotifier.value = newValue;
-                                audioHandlerProvider.audioHandler
-                                    .setSkipSilence(newValue);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    duration: const Duration(seconds: 1),
-                                    content: Text(
-                                      newValue
-                                          ? 'Skip Silence Enabled'
-                                          : 'Skip Silence Disabled',
+                  const SizedBox(height: 20),
+                  ProgressBarWidget(
+                    audioHandler: audioHandlerProvider.audioHandler,
+                  ),
+                  const SizedBox(height: 20),
+                  // Highly optimized Controls with nested ValueListenableBuilders
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _sleepTimer.isActive,
+                    builder: (context, isTimerActive, child) {
+                      return ValueListenableBuilder<Duration?>(
+                        valueListenable: _sleepTimer.remainingTime,
+                        builder: (context, activeTimerDuration, child) {
+                          return ValueListenableBuilder<bool>(
+                            valueListenable: _skipSilenceNotifier,
+                            builder: (context, skipSilence, child) {
+                              return Controls(
+                                audioHandler: audioHandlerProvider.audioHandler,
+                                onTimerPressed: showTimerOptions,
+                                isTimerActive: isTimerActive,
+                                activeTimerDuration: activeTimerDuration,
+                                onCancelTimer: cancelTimer,
+                                onToggleSkipSilence: () {
+                                  final newValue = !_skipSilenceNotifier.value;
+                                  _skipSilenceNotifier.value = newValue;
+                                  audioHandlerProvider.audioHandler
+                                      .setSkipSilence(newValue);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      duration: const Duration(seconds: 1),
+                                      content: Text(
+                                        newValue
+                                            ? 'Skip Silence Enabled'
+                                            : 'Skip Silence Disabled',
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              skipSilence: skipSilence,
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
+                                  );
+                                },
+                                skipSilence: skipSilence,
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         );

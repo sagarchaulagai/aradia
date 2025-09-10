@@ -47,19 +47,14 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
       audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
 
       List<AudiobookFile> audiobookFiles = [];
-      for (int i = 0;
-          i < widget.playingAudiobookDetailsBox.get('audiobookFiles').length;
-          i++) {
-        audiobookFiles.add(AudiobookFile.fromMap(
-            widget.playingAudiobookDetailsBox.get('audiobookFiles')[i]));
+      for (int i = 0; i < widget.playingAudiobookDetailsBox.get('audiobookFiles').length; i++) {
+        audiobookFiles.add(AudiobookFile.fromMap(widget.playingAudiobookDetailsBox.get('audiobookFiles')[i]));
       }
       int index = widget.playingAudiobookDetailsBox.get('index');
-      Audiobook audiobook =
-          Audiobook.fromMap(widget.playingAudiobookDetailsBox.get('audiobook'));
+      Audiobook audiobook = Audiobook.fromMap(widget.playingAudiobookDetailsBox.get('audiobook'));
 
       int position = widget.playingAudiobookDetailsBox.get('position');
-      audioHandlerProvider.audioHandler
-          .initSongs(audiobookFiles, audiobook, index, position);
+      audioHandlerProvider.audioHandler.initSongs(audiobookFiles, audiobook, index, position);
       idk++;
     }
   }
@@ -80,6 +75,15 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Detect keyboard open/closed
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+
+    // 👉 While typing, hide the entire mini player + footer and just show the page body
+    if (keyboardOpen) {
+      return widget.navigationShell;
+    }
+
+    // Normal (keyboard closed) layout
     final double panelMaxSize = MediaQuery.of(context).size.height;
     final double panelMinSize = 80 + widget.bottomNavBarSize;
 
@@ -108,7 +112,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                     stream: audioHandlerProvider.audioHandler.mediaItem,
                     builder: (context, snapshot) {
                       if (snapshot.data != null) {
-                        MediaItem mediaItem = snapshot.data!;
+                        final mediaItem = snapshot.data!;
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
@@ -125,25 +129,20 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                                   ),
                                   const SizedBox(width: 10),
                                   SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.5,
+                                    width: MediaQuery.of(context).size.width * 0.5,
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           mediaItem.album ?? "",
-                                          style: const TextStyle(
-                                              color: Colors.white),
+                                          style: const TextStyle(color: Colors.white),
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                         ),
                                         Text(
                                           mediaItem.title,
-                                          style: const TextStyle(
-                                              color: Colors.white),
+                                          style: const TextStyle(color: Colors.white),
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                         ),
@@ -168,7 +167,10 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
 
                                   final isPlaying = state?.playing ?? false;
                                   return IconButton(
-                                    icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
+                                    icon: Icon(
+                                      isPlaying ? Icons.pause : Icons.play_arrow,
+                                      color: Colors.white,
+                                    ),
                                     onPressed: () {
                                       if (isPlaying) {
                                         audioHandlerProvider.audioHandler.pause();
