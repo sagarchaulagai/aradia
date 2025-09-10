@@ -36,11 +36,23 @@ class _HistorySectionState extends State<HistorySection> {
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
   }
 
-  // This method is used to fomat the progress of the audiobook
+  // This method is used to format the progress of the audiobook
   String formatProgress(int position, double total, double completedTime) {
     double totalTimeCompleted = position + completedTime * 1000;
     Duration duration = Duration(milliseconds: totalTimeCompleted.toInt());
-    return '${duration.inMinutes.toString()} m / ${(total / 60).toInt()}m';
+
+    double totalMinutes = total / 60;
+    double completedMinutes = duration.inMinutes.toDouble();
+
+    if (totalMinutes >= 1000) {
+      // Show hours with 1 decimal
+      double completedHours = completedMinutes / 60.0;
+      double totalHours = totalMinutes / 60.0;
+      return '${completedHours.toStringAsFixed(1)}h / ${totalHours.toStringAsFixed(1)}h';
+    } else {
+      // Show minutes
+      return '${completedMinutes.toStringAsFixed(0)}m / ${totalMinutes.toStringAsFixed(0)}m';
+    }
   }
 
   Widget _buildEmptyState() {

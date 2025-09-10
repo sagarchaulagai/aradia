@@ -24,6 +24,9 @@ class MyAudioHandler extends BaseAudioHandler {
 
   bool _sessionConfigured = false;
 
+  // Prevents cold-restore from clobbering a live re-init.
+  bool _isReinitializing = false;
+
   Future<void> _ensureAudioSession() async {
     if (_sessionConfigured) return;
 
@@ -31,7 +34,6 @@ class MyAudioHandler extends BaseAudioHandler {
     await session.configure(const AudioSessionConfiguration.music());
 
     if (Platform.isAndroid) {
-      // For just_audio 0.9.46 use the Android-specific API
       await _player.setAndroidAudioAttributes(
         const AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
@@ -40,7 +42,7 @@ class MyAudioHandler extends BaseAudioHandler {
       );
     }
 
-    // Pause on headphones unplugged
+    // Pause if headphones unplugged
     session.becomingNoisyEventStream.listen((_) {
       if (_player.playing) _player.pause();
     });
@@ -48,57 +50,71 @@ class MyAudioHandler extends BaseAudioHandler {
     _sessionConfigured = true;
   }
 
-  void initSongs(
+  Future<void> initSongs(
       List<AudiobookFile> playlist,
       Audiobook audiobook,
       int initialIndex,
       int positionInMilliseconds,
       ) async {
-    await _ensureAudioSession();
+    _isReinitializing = true;
+    try {
+      await _ensureAudioSession();
 
-    _playlist.clear();
-    queue.add([]);
-    mediaItem.add(null);
+      // Keep the "now playing" box in sync with the queue we're about to build.
+      await playingAudiobookDetailsBox.put('audiobook', audiobook.toMap());
+      await playingAudiobookDetailsBox.put(
+        'audiobookFiles',
+        playlist.map((f) => f.toMap()).toList(),
+      );
+      await playingAudiobookDetailsBox.put('index', initialIndex);
+      await playingAudiobookDetailsBox.put('position', positionInMilliseconds);
 
-    // clear timer for the previous audiobook so next audiobook can start fresh
-    _positionUpdateTimer?.cancel();
+      _playlist.clear();
+      queue.add([]);
+      mediaItem.add(null);
 
-    playbackState.add(
-      playbackState.value.copyWith(
-        controls: [],
-        systemActions: const {},
-        processingState: AudioProcessingState.idle,
-        playing: false,
-        bufferedPosition: Duration.zero,
-        speed: 1.0,
-        queueIndex: null,
-      ),
-    );
+      // clear timer for previous audiobook
+      _positionUpdateTimer?.cancel();
 
-    final mediaItems = await parseMediaItems(playlist, audiobook);
-    addQueueItems(mediaItems);
-    _listenForCurrentSongIndexChanges();
+      playbackState.add(
+        playbackState.value.copyWith(
+          controls: [],
+          systemActions: const {},
+          processingState: AudioProcessingState.idle,
+          playing: false,
+          bufferedPosition: Duration.zero,
+          speed: 1.0,
+          queueIndex: null,
+        ),
+      );
 
-    await _player.setAudioSource(
-      _playlist,
-      initialIndex: initialIndex,
-      initialPosition: Duration(milliseconds: positionInMilliseconds),
-    );
+      final mediaItems = await parseMediaItems(playlist, audiobook);
+      addQueueItems(mediaItems);
+      _listenForCurrentSongIndexChanges();
 
-    _player.playbackEventStream.listen(_broadcastState);
-    _player.processingStateStream.listen((state) {
-      if (state == ProcessingState.completed) {
-        _player.seekToNext();
-      }
-    });
+      await _player.setAudioSource(
+        _playlist,
+        initialIndex: initialIndex,
+        initialPosition: Duration(milliseconds: positionInMilliseconds),
+      );
 
-    historyOfAudiobook.addToHistory(
-      audiobook,
-      playlist,
-      initialIndex,
-      positionInMilliseconds,
-    );
-    _startPositionUpdateTimer(audiobook.id);
+      _player.playbackEventStream.listen(_broadcastState);
+      _player.processingStateStream.listen((state) {
+        if (state == ProcessingState.completed) {
+          _player.seekToNext();
+        }
+      });
+
+      historyOfAudiobook.addToHistory(
+        audiobook,
+        playlist,
+        initialIndex,
+        positionInMilliseconds,
+      );
+      _startPositionUpdateTimer(audiobook.id);
+    } finally {
+      _isReinitializing = false;
+    }
   }
 
   Future<List<MediaItem>> parseMediaItems(
@@ -212,7 +228,8 @@ class MyAudioHandler extends BaseAudioHandler {
           currentIndex,
           _player.position.inMilliseconds,
         );
-        playingAudiobookDetailsBox.put('position', _player.position.inMilliseconds);
+        playingAudiobookDetailsBox.put(
+            'position', _player.position.inMilliseconds);
         AppLogger.debug(
           'Position updated: ${_player.position.inMilliseconds} ms',
         );
@@ -226,9 +243,36 @@ class MyAudioHandler extends BaseAudioHandler {
       _player.bufferedPositionStream,
       _player.durationStream,
           (position, bufferedPosition, duration) {
-        return PositionData(position, bufferedPosition, duration ?? Duration.zero);
+        return PositionData(
+            position, bufferedPosition, duration ?? Duration.zero);
       },
     );
+  }
+
+  // Cold-restore only: rebuild queue from Hive if we have nothing loaded.
+  Future<void> _restoreQueueFromBoxIfEmpty() async {
+    if (_isReinitializing) return;
+    if (_playlist.children.isNotEmpty) return;
+
+    try {
+      final box = playingAudiobookDetailsBox;
+      final storedAudiobookMap = box.get('audiobook');
+      final storedFiles = box.get('audiobookFiles');
+      if (storedAudiobookMap == null || storedFiles == null) return;
+
+      final audiobook =
+      Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
+      final files = (storedFiles as List)
+          .map((e) => AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList();
+
+      final index = (box.get('index') as int?) ?? 0;
+      final position = (box.get('position') as int?) ?? 0;
+
+      await initSongs(files, audiobook, index, position);
+    } catch (_) {
+      // best-effort only
+    }
   }
 
   String getCurrentAudiobookId() {
@@ -242,6 +286,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> play() async {
+    await _restoreQueueFromBoxIfEmpty(); // only at cold start
     _player.play();
   }
 
