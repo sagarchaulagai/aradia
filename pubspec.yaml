@@ -50,7 +50,7 @@ dependencies:
   youtube_explode_dart:
     git:
       url: https://github.com/sheikhhaziq/youtube_explode_dart.git
-  file_picker: ^10.1.4
+  file_picker: ^10.3.3
   path: ^1.9.1
   image_picker: ^1.1.2
   logger: ^2.6.1
