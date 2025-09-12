@@ -1,6 +1,6 @@
-// lib/screens/home/home.dart
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:aradia/screens/home/widgets/local_imports_section.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +19,7 @@ import 'widgets/update_prompt_dialog.dart';
 import 'widgets/app_bar_actions.dart';
 import 'widgets/welcome_section.dart';
 import 'constants/home_constants.dart';
-import 'widgets/genre_grid.dart'; // keep Option A
+import 'widgets/genre_grid.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
   late final ScrollController _trendingCtrl;
   late final ScrollController _recommendedCtrl;
 
-  // NEW: prevent repeated page-1 fetches caused by visibility changes while scrolling
+  // prevent repeated page-1 fetches caused by visibility changes while scrolling
   bool _didRequestRecommended = false;
 
   @override
@@ -85,8 +85,8 @@ class _HomeState extends State<Home> {
     final result = await _latestVersionFetch.getLatestVersion();
 
     result.fold(
-          (error) => AppLogger.debug(error),
-          (latestVersionModel) async {
+      (error) => AppLogger.debug(error),
+      (latestVersionModel) async {
         if (latestVersionModel.latestVersion != null &&
             latestVersionModel.latestVersion!.compareTo(currentVersion) > 0) {
           await _handleUpdateAvailable(latestVersionModel);
@@ -96,10 +96,10 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _handleUpdateAvailable(
-      LatestVersionFetchModel versionModel,
-      ) async {
+    LatestVersionFetchModel versionModel,
+  ) async {
     final permissionGranted =
-    await PermissionHelper.handleUpdatePermission(context);
+        await PermissionHelper.handleUpdatePermission(context);
 
     if (permissionGranted) {
       _proceedWithUpdate(versionModel);
@@ -107,16 +107,16 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _proceedWithUpdate(
-      LatestVersionFetchModel versionModel,
-      ) async {
+    LatestVersionFetchModel versionModel,
+  ) async {
     final existingApk =
-    await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
+        await _latestVersionFetch.getApkPath(versionModel.latestVersion!);
 
     if (existingApk != null) {
       _showUpdatePrompt(versionModel);
     } else {
       final success =
-      await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
+          await _latestVersionFetch.downloadUpdate(versionModel.latestVersion!);
       if (success) {
         _showUpdatePrompt(versionModel);
       }
@@ -171,8 +171,9 @@ class _HomeState extends State<Home> {
               child: const HistorySection(),
             ),
           ),
-
-          // --- Recommended for you (memoized future) ---
+          SliverToBoxAdapter(
+            child: LocalImportsSection(),
+          ),
           SliverToBoxAdapter(
             child: FutureBuilder<String>(
               future: _recommendedGenresFuture,
@@ -284,7 +285,8 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildLazyLoadSection(BuildContext context, String title, String genre) {
+  Widget _buildLazyLoadSection(
+      BuildContext context, String title, String genre) {
     return VisibilityDetector(
       key: Key('rec-$genre'),
       onVisibilityChanged: (VisibilityInfo info) {
