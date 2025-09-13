@@ -1,3 +1,4 @@
+// lib/resources/services/my_audio_handler.dart
 import 'dart:async';
 import 'dart:io';
 
@@ -10,6 +11,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:rxdart_ext/utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -19,8 +21,7 @@ class MyAudioHandler extends BaseAudioHandler {
   ConcatenatingAudioSource? _playlist;
   ConcatenatingAudioSource? get playlist => _playlist;
 
-  Box<dynamic> playingAudiobookDetailsBox =
-  Hive.box('playing_audiobook_details_box');
+  Box<dynamic> playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
 
   final HistoryOfAudiobook historyOfAudiobook = HistoryOfAudiobook();
   Timer? _positionUpdateTimer;
@@ -38,6 +39,11 @@ class MyAudioHandler extends BaseAudioHandler {
   // Debounce MRU/position writes so UIs don’t “flap”
   DateTime _lastPersistAt = DateTime.fromMillisecondsSinceEpoch(0);
   static const _persistInterval = Duration(seconds: 12);
+
+  // Subscriptions to keep PlaybackState in sync
+  StreamSubscription<PlaybackEvent>? _eventSub;
+  StreamSubscription<PlayerState>? _playerStateSub;
+  StreamSubscription<bool>? _playingSub;
 
   Future<void> _ensureAudioSession() async {
     if (_sessionConfigured) return;
@@ -60,6 +66,28 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _sessionConfigured = true;
+
+    // Keep notification/media session state in lock-step with the real player
+    _bindStatePipelines();
+  }
+
+  void _bindStatePipelines() {
+    _eventSub?.cancel();
+    _playerStateSub?.cancel();
+    _playingSub?.cancel();
+
+    // 1) Playback events (buffering, ready, completed, index, position updates)
+    _eventSub = _player.playbackEventStream.listen(_broadcastState);
+
+    // 2) PlayerState (processing + playing bool changes)
+    _playerStateSub = _player.playerStateStream.listen((_) {
+      _broadcastState(_player.playbackEvent);
+    });
+
+    // 3) Explicit playing changes (extra belt-and-suspenders for Android)
+    _playingSub = _player.playingStream.listen((_) {
+      _broadcastState(_player.playbackEvent);
+    });
   }
 
   Future<void> initSongs(
@@ -108,7 +136,7 @@ class MyAudioHandler extends BaseAudioHandler {
         ),
       );
 
-      // Build MediaItems
+      // Build MediaItems & Sources
       final mediaItems = <MediaItem>[];
       final sources = <AudioSource>[];
 
@@ -136,9 +164,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
         if (isYouTube && song.url != null) {
           final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
-          sources.add(
-            YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'),
-          );
+          sources.add(YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
         } else if (song.url != null) {
           final uri = song.url!.startsWith('/') ? Uri.file(song.url!) : Uri.parse(song.url!);
           sources.add(AudioSource.uri(uri, tag: item));
@@ -147,8 +173,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
       if (myGen != _initGen) return;
 
-      final safeIndex =
-      sources.isEmpty ? 0 : initialIndex.clamp(0, sources.length - 1);
+      final safeIndex = sources.isEmpty ? 0 : initialIndex.clamp(0, sources.length - 1);
 
       addQueueItems(mediaItems);
       if (mediaItems.isNotEmpty) {
@@ -163,23 +188,19 @@ class MyAudioHandler extends BaseAudioHandler {
       await _player.setAudioSource(
         _playlist!,
         initialIndex: sources.isEmpty ? 0 : safeIndex,
-        // Pass 0 here for YT; we will seek after READY
-        initialPosition:
-        currentIsYT ? Duration.zero : Duration(milliseconds: positionInMilliseconds),
+        initialPosition: currentIsYT ? Duration.zero : Duration(milliseconds: positionInMilliseconds),
       );
 
       if (myGen != _initGen) return;
 
       if (currentIsYT && positionInMilliseconds > 0) {
-        // Wait for READY so seek is honored
         await _waitForProcessingReady(timeout: const Duration(seconds: 5));
         await _player.seek(Duration(milliseconds: positionInMilliseconds), index: safeIndex);
       } else {
-        // Idempotent final seek to pin exact start
         await _player.seek(Duration(milliseconds: positionInMilliseconds), index: safeIndex);
       }
 
-      _player.playbackEventStream.listen(_broadcastState);
+      // Auto-advance on completed
       _player.processingStateStream.listen((state) {
         if (state == ProcessingState.completed) {
           _player.seekToNext();
@@ -210,6 +231,9 @@ class MyAudioHandler extends BaseAudioHandler {
 
       _canPersistProgress = true; // lift the barrier
       _lastPersistAt = DateTime.now().subtract(_persistInterval);
+
+      // Broadcast once after init settles (ensures controls show immediately)
+      _broadcastState(_player.playbackEvent);
     } finally {
       _isReinitializing = false;
     }
@@ -242,8 +266,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     while (DateTime.now().isBefore(deadline)) {
       final idxOk = _player.currentIndex == index;
-      final posOk =
-          (_player.position.inMilliseconds - positionMs).abs() <= posEpsMs;
+      final posOk = (_player.position.inMilliseconds - positionMs).abs() <= posEpsMs;
 
       if (idxOk && posOk) return;
       await Future.delayed(const Duration(milliseconds: 60));
@@ -263,9 +286,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
       final playList = queue.value;
       if (index >= playList.length) return;
-
-      final seqState = _player.sequenceState;
-      if (seqState == null) return;
 
       final item = playList[index];
       mediaItem.add(item);
@@ -287,7 +307,6 @@ class MyAudioHandler extends BaseAudioHandler {
     if (now.difference(_lastPersistAt) < _persistInterval) return;
 
     final liveMs = _player.position.inMilliseconds;
-    // Only persist if we have a meaningful timestamp
     if (liveMs >= 0) {
       historyOfAudiobook.updateAudiobookPosition(audiobookId, index, liveMs);
       playingAudiobookDetailsBox.put('position', liveMs);
@@ -297,30 +316,37 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void _broadcastState(PlaybackEvent event) {
+    final playing = _player.playing;
+    final processing = _player.processingState;
+    final audioProcessing = const {
+      ProcessingState.idle: AudioProcessingState.idle,
+      ProcessingState.loading: AudioProcessingState.loading,
+      ProcessingState.buffering: AudioProcessingState.buffering,
+      ProcessingState.ready: AudioProcessingState.ready,
+      ProcessingState.completed: AudioProcessingState.completed,
+    }[processing]!;
+
+    // Controls shown in quick settings / notification
+    final controls = <MediaControl>[
+      MediaControl.skipToPrevious,
+      if (playing) MediaControl.pause else MediaControl.play,
+      MediaControl.stop,
+      MediaControl.skipToNext,
+    ];
+
     playbackState.add(
       playbackState.value.copyWith(
-        controls: [
-          MediaControl.skipToPrevious,
-          if (_player.playing) MediaControl.pause else MediaControl.play,
-          MediaControl.stop,
-          MediaControl.skipToNext,
-        ],
+        controls: controls,
         systemActions: const {
           MediaAction.seek,
           MediaAction.seekForward,
           MediaAction.seekBackward,
+          MediaAction.setSpeed,
         },
-        processingState: const {
-          ProcessingState.idle: AudioProcessingState.idle,
-          ProcessingState.loading: AudioProcessingState.loading,
-          ProcessingState.buffering: AudioProcessingState.buffering,
-          ProcessingState.ready: AudioProcessingState.ready,
-          ProcessingState.completed: AudioProcessingState.completed,
-        }[_player.processingState]!,
-        playing: _player.playing,
-        updatePosition: event.updatePosition,
-        bufferedPosition:
-        Duration(milliseconds: event.bufferedPosition.inMilliseconds),
+        processingState: audioProcessing,
+        playing: playing,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
         speed: _player.speed,
         queueIndex: event.currentIndex,
       ),
@@ -330,10 +356,9 @@ class MyAudioHandler extends BaseAudioHandler {
   void _startPositionUpdateTimer(String audiobookId) {
     _positionUpdateTimer?.cancel();
     _positionUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      // Don’t persist during re-init or before barrier lift
       if (_isReinitializing || !_canPersistProgress) return;
       if (audiobookId != _activeAudiobookId) return;
-      if (!_player.playing) return; // only update MRU while playing
+      if (!_player.playing) return;
 
       final currentIndex = _player.currentIndex;
       if (currentIndex != null) {
@@ -368,11 +393,9 @@ class MyAudioHandler extends BaseAudioHandler {
       final storedFiles = box.get('audiobookFiles');
       if (storedAudiobookMap == null || storedFiles == null) return;
 
-      final audiobook =
-      Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
+      final audiobook = Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
       final files = (storedFiles as List)
-          .map((e) =>
-          AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
+          .map((e) => AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList();
 
       final index = (box.get('index') as int?) ?? 0;
@@ -393,55 +416,87 @@ class MyAudioHandler extends BaseAudioHandler {
     return _playlist?.children ?? const [];
   }
 
+  // ── AudioHandler overrides ────────────────────────────────────────────────
   @override
   Future<void> play() async {
     await _restoreQueueFromBoxIfEmpty(); // only at cold start
-    _player.play();
+    await _player.play();
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> pause() async {
-    _player.pause();
+    await _player.pause();
     // Opportunistic persist when pausing the active item
     final id = _activeAudiobookId;
     final idx = _player.currentIndex;
     if (_canPersistProgress && !_isReinitializing && id != null && idx != null) {
       _persistNow(id, idx);
     }
+    _broadcastState(_player.playbackEvent);
+  }
+
+  @override
+  Future<void> stop() async {
+    _positionUpdateTimer?.cancel();
+    await _player.stop();
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> seek(Duration position) async {
-    _player.seek(position);
+    await _player.seek(position);
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> skipToQueueItem(int index) async {
-    _player.seek(Duration.zero, index: index);
-    play();
+    await _player.seek(Duration.zero, index: index);
+    await play();
   }
 
   @override
   Future<void> skipToNext() async {
-    _player.seekToNext();
+    await _player.seekToNext();
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> skipToPrevious() async {
-    _player.seekToPrevious();
+    await _player.seekToPrevious();
+    _broadcastState(_player.playbackEvent);
+  }
+
+  // Map Android's seekForward/seekBackward to fast-forward/rewind
+  static const _ffAmount = Duration(seconds: 15);
+  static const _rwAmount = Duration(seconds: 10);
+
+  @override
+  Future<void> fastForward() async {
+    final newPos = _player.position + _ffAmount;
+    await _player.seek(newPos);
+    _broadcastState(_player.playbackEvent);
+  }
+
+  @override
+  Future<void> rewind() async {
+    final newPos = _player.position - _rwAmount;
+    await _player.seek(newPos < Duration.zero ? Duration.zero : newPos);
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> setSpeed(double speed) async {
-    _player.setSpeed(speed);
+    await _player.setSpeed(speed);
+    _broadcastState(_player.playbackEvent);
   }
 
   Future<void> setVolume(double volume) async {
-    _player.setVolume(volume);
+    await _player.setVolume(volume);
   }
 
   Future<void> setSkipSilence(bool skipSilence) async {
-    _player.setSkipSilenceEnabled(skipSilence);
+    await _player.setSkipSilenceEnabled(skipSilence);
   }
 
   Duration get position => _player.position;
@@ -457,9 +512,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
   void playNext() {
     final length = _playlist?.children.length ?? 0;
-    if (_player.currentIndex != null &&
-        length > 0 &&
-        _player.currentIndex! < length - 1) {
+    if (_player.currentIndex != null && length > 0 && _player.currentIndex! < length - 1) {
       _player.seekToNext();
     }
   }
