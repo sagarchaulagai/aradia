@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:path/path.dart' as path;
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/utils/app_logger.dart';
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:path_provider/path_provider.dart';
 
 class LocalAudiobookService {
   static const String _rootFolderKey = 'local_audiobooks_root_folder';
@@ -17,7 +20,7 @@ class LocalAudiobookService {
     '.wav',
     '.flac',
     '.ogg',
-    '.opus'
+    '.opus',
   ];
 
   // Supported image file extensions for cover images
@@ -26,32 +29,33 @@ class LocalAudiobookService {
     '.jpeg',
     '.png',
     '.webp',
-    '.bmp'
+    '.bmp',
   ];
 
-  // Get the root folder path from Hive
+  // ────────────────────────────────────────────────────────────────────────────
+  // Settings (root path)
+  // ────────────────────────────────────────────────────────────────────────────
   static Future<String?> getRootFolderPath() async {
     final box = await Hive.openBox('settings');
     return box.get(_rootFolderKey);
   }
 
-  // Set the root folder path in Hive
-  static Future<void> setRootFolderPath(String path) async {
+  static Future<void> setRootFolderPath(String p) async {
     final box = await Hive.openBox('settings');
-    await box.put(_rootFolderKey, path);
+    await box.put(_rootFolderKey, p);
   }
 
-  // Get all local audiobooks from Hive
+  // ────────────────────────────────────────────────────────────────────────────
+  // CRUD in Hive
+  // ────────────────────────────────────────────────────────────────────────────
   static Future<List<LocalAudiobook>> getAllAudiobooks() async {
     try {
       final box = await Hive.openBox(_audiobooksBoxName);
       final List<LocalAudiobook> audiobooks = [];
-
       for (final key in box.keys) {
         final map = Map<String, dynamic>.from(box.get(key));
         audiobooks.add(LocalAudiobook.fromMap(map));
       }
-
       return audiobooks;
     } catch (e) {
       AppLogger.error('Error getting audiobooks from Hive: $e');
@@ -59,7 +63,6 @@ class LocalAudiobookService {
     }
   }
 
-  // Save audiobook to Hive
   static Future<void> saveAudiobook(LocalAudiobook audiobook) async {
     try {
       final box = await Hive.openBox(_audiobooksBoxName);
@@ -69,7 +72,6 @@ class LocalAudiobookService {
     }
   }
 
-  // Update audiobook in Hive
   static Future<void> updateAudiobook(LocalAudiobook audiobook) async {
     try {
       final box = await Hive.openBox(_audiobooksBoxName);
@@ -79,7 +81,6 @@ class LocalAudiobookService {
     }
   }
 
-  // Delete audiobook from Hive
   static Future<void> deleteAudiobook(LocalAudiobook audiobook) async {
     try {
       final box = await Hive.openBox(_audiobooksBoxName);
@@ -89,7 +90,17 @@ class LocalAudiobookService {
     }
   }
 
-  // Scan the root folder for audiobooks
+  // ────────────────────────────────────────────────────────────────────────────
+  // SCANNER: Implements your rules + metadata extraction
+  // ────────────────────────────────────────────────────────────────────────────
+
+  /// Public: scan the entire tree according to the rules and return all books.
+  ///
+  /// Rules:
+  /// • Root (level 0): each audio file directly in root is a standalone book.
+  /// • Any subfolder (level ≥ 1):
+  ///    - If NO subfolders and HAS audio → the folder is a book; its files are tracks.
+  ///    - If HAS subfolders → direct audio files are standalone books; recurse into subfolders.
   static Future<List<LocalAudiobook>> scanForAudiobooks() async {
     final rootPath = await getRootFolderPath();
     if (rootPath == null) return [];
@@ -97,152 +108,215 @@ class LocalAudiobookService {
     final rootDir = Directory(rootPath);
     if (!await rootDir.exists()) return [];
 
-    final List<LocalAudiobook> audiobooks = [];
+    final List<LocalAudiobook> results = [];
 
     try {
-      await for (final entity in rootDir.list()) {
-        if (entity is Directory) {
-          final audiobook = await _scanAudiobookFolder(entity);
-          if (audiobook != null) {
-            audiobooks.add(audiobook);
-          }
+      // 1) ROOT LEVEL: every audio file directly under root is a standalone book
+      final rootChildren = await _listEntries(rootDir);
+      final rootFiles = rootChildren.whereType<File>().toList();
+      final rootAudios = rootFiles.where((f) => _isAudio(f.path)).toList();
+      final rootImages = rootFiles.where((f) => _isImage(f.path)).toList();
+
+      for (final audio in rootAudios) {
+        final audioPath = audio.path;
+
+        // Extract embedded tags/cover
+        final meta = await _readFileMeta(audio);
+
+        // Prefer embedded title/artist; fall back sensibly
+        final derivedTitle =
+        (meta.title?.isNotEmpty == true) ? meta.title! : _stem(audioPath);
+        final derivedAuthor =
+        (meta.artist?.isNotEmpty == true) ? meta.artist! : 'Unknown';
+
+        // Prefer same-stem/priority image in folder; else embedded album art
+        String? cover = _pickCoverForSingleFile(audio, rootImages);
+        if (cover == null && meta.albumArt != null) {
+          cover = await _saveAlbumArt(meta.albumArt!,
+              stemHint: _stem(audioPath));
         }
+
+        results.add(
+          LocalAudiobook(
+            id: 'root_${derivedTitle}_${DateTime.now().millisecondsSinceEpoch}',
+            title: derivedTitle,
+            author: derivedAuthor,
+            folderPath: rootDir.path,
+            coverImagePath: cover,
+            audioFiles: [audioPath], // single-file book
+            dateAdded: DateTime.now(),
+            lastModified: DateTime.now(),
+          ),
+        );
+      }
+
+      // 2) Recurse into each subdirectory using the folder rules
+      final rootDirs = rootChildren.whereType<Directory>().toList();
+      for (final d in rootDirs) {
+        results.addAll(await _scanFolder(d));
       }
     } catch (e) {
       AppLogger.error('Error scanning for audiobooks: $e');
     }
 
-    return audiobooks;
+    return results;
   }
 
-  // Scan a single folder for audiobook content
-  static Future<LocalAudiobook?> _scanAudiobookFolder(Directory folder) async {
+  /// Internal: recursively scan a folder with the level ≥ 1 rules.
+  ///
+  /// If folder has NO subfolders and HAS audio -> folder is a book; files = tracks.
+  /// If folder HAS subfolders -> direct audio files are standalone books; subfolders are recursed.
+  static Future<List<LocalAudiobook>> _scanFolder(Directory folder) async {
+    final List<LocalAudiobook> found = [];
+
     try {
-      final List<String> audioFiles = [];
-      String? coverImagePath;
+      final children = await _listEntries(folder);
+      final subDirs = children.whereType<Directory>().toList();
+      final files = children.whereType<File>().toList();
+      final audioFiles = files.where((f) => _isAudio(f.path)).toList();
+      final imageFiles = files.where((f) => _isImage(f.path)).toList();
 
-      // Check if folder has subfolders (Author/Title structure)
-      final List<Directory> subDirs = [];
-      await for (final entity in folder.list()) {
-        if (entity is Directory) {
-          subDirs.add(entity);
-        }
-      }
+      final folderName = path.basename(folder.path);
+      final parentName = path.basename(folder.parent.path);
+      final now = DateTime.now();
 
-      Directory targetDir = folder;
-      String folderName = path.basename(folder.path);
-      String author = 'Unknown';
-      String title = folderName;
+      if (subDirs.isEmpty) {
+        // FOLDER = BOOK; audio inside = tracks
+        if (audioFiles.isNotEmpty) {
+          audioFiles.sort((a, b) => a.path.compareTo(b.path));
 
-      // If there are subdirectories, check if it follows Author/Title structure
-      if (subDirs.isNotEmpty) {
-        // Assume first subdirectory contains the audiobook
-        targetDir = subDirs.first;
-        author = folderName;
-        title = path.basename(targetDir.path);
-      }
+          // Try to infer author & cover from embedded tags across tracks
+          String? inferredAuthor;
+          String? cover = _pickCoverForFolderBook(imageFiles); // folder images first
 
-      // Scan the target directory for audio files and cover image
-      await for (final entity in targetDir.list()) {
-        if (entity is File) {
-          final extension = path.extension(entity.path).toLowerCase();
-
-          if (_supportedAudioExtensions.contains(extension)) {
-            audioFiles.add(entity.path);
-          } else if (_supportedImageExtensions.contains(extension)) {
-            final fileName =
-                path.basenameWithoutExtension(entity.path).toLowerCase();
-            // Look for common cover image names
-            if (fileName.contains('cover') ||
-                fileName.contains('folder') ||
-                fileName.contains('front') ||
-                fileName == 'artwork' ||
-                coverImagePath == null) {
-              coverImagePath = entity.path;
+          // Look into the first track(s) that have useful metadata
+          for (final f in audioFiles) {
+            final meta = await _readFileMeta(f);
+            if (inferredAuthor == null && (meta.artist?.isNotEmpty == true)) {
+              inferredAuthor = meta.artist;
             }
+            if (cover == null && meta.albumArt != null) {
+              final saved = await _saveAlbumArt(meta.albumArt!,
+                  stemHint: _stem(f.path));
+              cover = saved ?? cover;
+            }
+            if (inferredAuthor != null && cover != null) break;
           }
+
+          final finalAuthor = (inferredAuthor?.isNotEmpty == true)
+              ? inferredAuthor!
+              : (parentName.isEmpty ? 'Unknown' : parentName);
+
+          found.add(
+            LocalAudiobook(
+              id: 'folder_${parentName}_${folderName}_${now.millisecondsSinceEpoch}',
+              title: folderName, // folder remains the book title
+              author: finalAuthor,
+              folderPath: folder.path,
+              coverImagePath: cover,
+              audioFiles: audioFiles.map((f) => f.path).toList(), // tracks
+              dateAdded: now,
+              lastModified: now,
+            ),
+          );
         }
-      }
+      } else {
+        // HAS SUBFOLDERS:
+        //  • direct audio files here are standalone books
+        //  • each subfolder is processed recursively
+        for (final audio in audioFiles) {
+          final meta = await _readFileMeta(audio);
 
-      // Only create audiobook if we found audio files
-      if (audioFiles.isNotEmpty) {
-        audioFiles.sort(); // Sort audio files alphabetically
+          final title = (meta.title?.isNotEmpty == true)
+              ? meta.title!
+              : _stem(audio.path);
+          final author = (meta.artist?.isNotEmpty == true)
+              ? meta.artist!
+              : (folderName.isEmpty ? 'Unknown' : folderName);
 
-        return LocalAudiobook(
-          id: '${author}_${title}_${DateTime.now().millisecondsSinceEpoch}',
-          title: title,
-          author: author,
-          folderPath: targetDir.path,
-          coverImagePath: coverImagePath,
-          audioFiles: audioFiles,
-          dateAdded: DateTime.now(),
-          lastModified: DateTime.now(),
-        );
+          String? cover = _pickCoverForSingleFile(audio, imageFiles);
+          if (cover == null && meta.albumArt != null) {
+            cover = await _saveAlbumArt(meta.albumArt!,
+                stemHint: _stem(audio.path));
+          }
+
+          found.add(
+            LocalAudiobook(
+              id: 'file_${folderName}_${title}_${now.millisecondsSinceEpoch}',
+              title: title,
+              author: author,
+              folderPath: folder.path,
+              coverImagePath: cover,
+              audioFiles: [audio.path], // single-file book
+              dateAdded: now,
+              lastModified: now,
+            ),
+          );
+        }
+
+        for (final sub in subDirs) {
+          found.addAll(await _scanFolder(sub));
+        }
       }
     } catch (e) {
       AppLogger.error('Error scanning audiobook folder ${folder.path}: $e');
     }
 
-    return null;
+    return found;
   }
 
-  // Refresh audiobooks by scanning and updating the database
+  // ────────────────────────────────────────────────────────────────────────────
+  // Refresh: rescans and replaces the Hive box contents
+  // ────────────────────────────────────────────────────────────────────────────
   static Future<List<LocalAudiobook>> refreshAudiobooks() async {
     try {
-      // Scan for new audiobooks
-      final scannedAudiobooks = await scanForAudiobooks();
-
-      // Clear existing audiobooks from database
-
-      // Clear existing audiobooks and add scanned ones
+      final scanned = await scanForAudiobooks();
       final box = await Hive.openBox(_audiobooksBoxName);
       await box.clear();
-
-      for (final audiobook in scannedAudiobooks) {
-        await box.put(audiobook.id, audiobook.toMap());
+      for (final a in scanned) {
+        await box.put(a.id, a.toMap());
       }
-
-      return scannedAudiobooks;
+      return scanned;
     } catch (e) {
       AppLogger.error('Error refreshing audiobooks: $e');
       return [];
     }
   }
 
-  // Move audiobook folder when metadata changes
+  // ────────────────────────────────────────────────────────────────────────────
+  // Move support (unchanged)
+  // ────────────────────────────────────────────────────────────────────────────
   static Future<bool> moveAudiobookFolder(
-      LocalAudiobook audiobook, String newAuthor, String newTitle) async {
+      LocalAudiobook audiobook,
+      String newAuthor,
+      String newTitle,
+      ) async {
     try {
       final rootPath = await getRootFolderPath();
       if (rootPath == null) return false;
 
       final currentDir = Directory(audiobook.folderPath);
       if (!await currentDir.exists()) {
-        AppLogger.error(
-            'Source directory does not exist: ${audiobook.folderPath}');
+        AppLogger.error('Source directory does not exist: ${audiobook.folderPath}');
         return false;
       }
 
       final newPath = path.join(rootPath, newAuthor, newTitle);
       final newDir = Directory(newPath);
 
-      // If the new path is the same as current path, no need to move
       if (currentDir.path == newDir.path) {
         return true;
       }
 
-      // Create new directory structure
       await newDir.create(recursive: true);
 
-      // Move all files from old directory to new directory
       final List<File> filesToMove = [];
-      await for (final entity in currentDir.list()) {
+      await for (final entity in currentDir.list(followLinks: false)) {
         if (entity is File && await entity.exists()) {
           filesToMove.add(entity);
         }
       }
 
-      // Copy files to new location using read/write to avoid permission issues
       for (final file in filesToMove) {
         try {
           final newFilePath = path.join(newPath, path.basename(file.path));
@@ -252,12 +326,10 @@ class LocalAudiobookService {
           AppLogger.debug('Copied ${file.path} to $newFilePath');
         } catch (e) {
           AppLogger.error('Error copying file ${file.path}: $e');
-          // Continue with other files instead of failing completely
           continue;
         }
       }
 
-      // Delete original files only after successful copy
       for (final file in filesToMove) {
         try {
           if (await file.exists()) {
@@ -266,22 +338,17 @@ class LocalAudiobookService {
           }
         } catch (e) {
           AppLogger.error('Error deleting original file ${file.path}: $e');
-          // Continue with other files even if one fails
         }
       }
 
-      // Remove old directory if empty
       try {
         if (await currentDir.exists() && await _isDirectoryEmpty(currentDir)) {
           await currentDir.delete();
           AppLogger.debug('Deleted empty directory: ${currentDir.path}');
-
-          // Also try to remove parent directory if it's empty
           final parentDir = currentDir.parent;
           if (await parentDir.exists() && await _isDirectoryEmpty(parentDir)) {
             await parentDir.delete();
-            AppLogger.debug(
-                'Deleted empty parent directory: ${parentDir.path}');
+            AppLogger.debug('Deleted empty parent directory: ${parentDir.path}');
           }
         }
       } catch (e) {
@@ -295,20 +362,174 @@ class LocalAudiobookService {
     }
   }
 
-  // Check if directory is empty
+  // ────────────────────────────────────────────────────────────────────────────
+  // Helpers
+  // ────────────────────────────────────────────────────────────────────────────
+
+  static Future<List<FileSystemEntity>> _listEntries(Directory d) async {
+    final items = <FileSystemEntity>[];
+    await for (final e in d.list(followLinks: false)) {
+      items.add(e);
+    }
+    return items;
+  }
+
+  static bool _isAudio(String p) {
+    final ext = path.extension(p).toLowerCase();
+    return _supportedAudioExtensions.contains(ext);
+  }
+
+  static bool _isImage(String p) {
+    final ext = path.extension(p).toLowerCase();
+    return _supportedImageExtensions.contains(ext);
+  }
+
+  static String _joinArtists(List<String> names) {
+    // De-dupe & tidy
+    final seen = <String>{};
+    final cleaned = <String>[];
+    for (final n in names) {
+      final c = _clean(n);
+      if (c != null && !seen.contains(c)) {
+        seen.add(c);
+        cleaned.add(c);
+      }
+    }
+    return cleaned.join(', ');
+  }
+
+  static String _stem(String p) {
+    final base = path.basename(p);
+    final i = base.lastIndexOf('.');
+    return i > 0 ? base.substring(0, i) : base;
+  }
+
+  /// Folder-book cover: prefer cover/folder/front/artwork.* then first image
+  static String? _pickCoverForFolderBook(List<File> images) {
+    if (images.isEmpty) return null;
+
+    // Priority names
+    final priorities = ['cover', 'folder', 'front', 'artwork'];
+    for (final key in priorities) {
+      final m = images.firstWhere(
+            (f) => path.basenameWithoutExtension(f.path).toLowerCase().contains(key),
+        orElse: () => File(''),
+      );
+      if (m.path.isNotEmpty) return m.path;
+    }
+
+    // Else first image
+    return images.first.path;
+  }
+
+  /// File-book cover: prefer same-stem image, else cover/folder/front/artwork, else first image
+  static String? _pickCoverForSingleFile(File audio, List<File> imagesInFolder) {
+    if (imagesInFolder.isEmpty) return null;
+
+    final stem = _stem(audio.path).toLowerCase();
+
+    // 1) same stem (MyBook.m4b -> MyBook.jpg/png/…)
+    final sameStem = imagesInFolder.firstWhere(
+          (f) => _stem(f.path).toLowerCase() == stem,
+      orElse: () => File(''),
+    );
+    if (sameStem.path.isNotEmpty) return sameStem.path;
+
+    // 2) priority names
+    final priorities = ['cover', 'folder', 'front', 'artwork'];
+    for (final key in priorities) {
+      final m = imagesInFolder.firstWhere(
+            (f) => path.basenameWithoutExtension(f.path).toLowerCase().contains(key),
+        orElse: () => File(''),
+      );
+      if (m.path.isNotEmpty) return m.path;
+    }
+
+    // 3) first image
+    return imagesInFolder.first.path;
+  }
+
   static Future<bool> _isDirectoryEmpty(Directory dir) async {
     try {
-      return await dir.list().isEmpty;
-    } catch (e) {
+      return await dir.list(followLinks: false).isEmpty;
+    } catch (_) {
       return false;
     }
   }
 
-  // Get total duration of all audio files in an audiobook
-  static Future<Duration?> calculateTotalDuration(
-      List<String> audioFiles) async {
-    // This would require a media metadata library to get actual durations
-    // For now, return null and implement later if needed
+  // Read tags/cover for a single audio file
+  static Future<_FileMeta> _readFileMeta(File audioFile) async {
+    try {
+      // NOTE: flutter_media_metadata API is static: MetadataRetriever.fromFile(File)
+      final m = await MetadataRetriever.fromFile(audioFile);
+
+      // Title
+      final title = _clean(m.trackName);
+
+      // Artist preference: trackArtistNames (list) -> albumArtistName -> authorName
+      String? artist;
+      if (m.trackArtistNames != null && m.trackArtistNames!.isNotEmpty) {
+        artist = _joinArtists(m.trackArtistNames!);
+      } else {
+        artist = _clean(m.albumArtistName) ?? _clean(m.authorName);
+      }
+
+      return _FileMeta(
+        title: title,
+        artist: artist,
+        trackNumber: m.trackNumber,
+        albumArt: m.albumArt,
+      );
+    } catch (e) {
+      AppLogger.debug('Meta extract failed for ${audioFile.path}: $e');
+      return const _FileMeta();
+    }
+  }
+
+  static String? _clean(String? s) {
+    if (s == null) return null;
+    final t = s.trim();
+    return t.isEmpty ? null : t;
+  }
+
+  // Persist embedded album art to an accessible file (so UI can load it)
+  static Future<String?> _saveAlbumArt(Uint8List artBytes, {String stemHint = 'cover'}) async {
+    try {
+      final extDir = await getExternalStorageDirectory();
+      if (extDir == null) return null;
+
+      final coverDir = Directory(path.join(extDir.path, 'localCoverImages'));
+      if (!await coverDir.exists()) {
+        await coverDir.create(recursive: true);
+      }
+
+      final safeName = stemHint.isEmpty ? 'cover' : stemHint;
+      final outPath = path.join(
+        coverDir.path,
+        '${safeName}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      final f = File(outPath);
+      await f.writeAsBytes(artBytes, flush: true);
+      return outPath;
+    } catch (e) {
+      AppLogger.debug('Saving album art failed: $e');
+      return null;
+    }
+  }
+
+  // Duration calc placeholder (unchanged for now)
+  static Future<Duration?> calculateTotalDuration(List<String> audioFiles) async {
     return null;
   }
+}
+
+// Internal helper container for metadata
+class _FileMeta {
+  final String? title;
+  final String? artist;
+  final int? trackNumber;
+  final Uint8List? albumArt;
+
+  const _FileMeta({this.title, this.artist, this.trackNumber, this.albumArt});
 }
