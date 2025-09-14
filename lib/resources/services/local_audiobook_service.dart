@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:path/path.dart' as path;
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/utils/app_logger.dart';
+import 'package:aradia/utils/media_helper.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -408,44 +409,72 @@ class LocalAudiobookService {
   static String? _pickCoverForFolderBook(List<File> images) {
     if (images.isEmpty) return null;
 
-    // Priority names
-    final priorities = ['cover', 'folder', 'front', 'artwork'];
+    // 1) Priority basenames in this exact order (Voice)
+    final priorities = [
+      'cover',
+      'folder',
+      'audiobook',
+      'front',
+      'album',
+      'art',
+      'artwork',
+      'book',
+    ];
+
+    // Exact match on basename (no extension)
     for (final key in priorities) {
-      final m = images.firstWhere(
+      final hit = images.firstWhere(
+            (f) => path.basenameWithoutExtension(f.path).toLowerCase() == key,
+        orElse: () => File(''),
+      );
+      if (hit.path.isNotEmpty) return hit.path;
+    }
+
+    // Loose contains (handles cover (1).jpg etc.)
+    for (final key in priorities) {
+      final hit = images.firstWhere(
             (f) => path.basenameWithoutExtension(f.path).toLowerCase().contains(key),
         orElse: () => File(''),
       );
-      if (m.path.isNotEmpty) return m.path;
+      if (hit.path.isNotEmpty) return hit.path;
     }
 
-    // Else first image
+    // Fallback: first image
     return images.first.path;
   }
 
-  /// File-book cover: prefer same-stem image, else cover/folder/front/artwork, else first image
   static String? _pickCoverForSingleFile(File audio, List<File> imagesInFolder) {
     if (imagesInFolder.isEmpty) return null;
 
+    // 1) Same-stem first (Voice does this)
     final stem = _stem(audio.path).toLowerCase();
-
-    // 1) same stem (MyBook.m4b -> MyBook.jpg/png/…)
     final sameStem = imagesInFolder.firstWhere(
           (f) => _stem(f.path).toLowerCase() == stem,
       orElse: () => File(''),
     );
     if (sameStem.path.isNotEmpty) return sameStem.path;
 
-    // 2) priority names
-    final priorities = ['cover', 'folder', 'front', 'artwork'];
+    // 2) Priority list (exact -> contains)
+    final priorities = [
+      'cover','folder','audiobook','front','album','art','artwork','book'
+    ];
+
     for (final key in priorities) {
-      final m = imagesInFolder.firstWhere(
+      final exact = imagesInFolder.firstWhere(
+            (f) => path.basenameWithoutExtension(f.path).toLowerCase() == key,
+        orElse: () => File(''),
+      );
+      if (exact.path.isNotEmpty) return exact.path;
+    }
+    for (final key in priorities) {
+      final loose = imagesInFolder.firstWhere(
             (f) => path.basenameWithoutExtension(f.path).toLowerCase().contains(key),
         orElse: () => File(''),
       );
-      if (m.path.isNotEmpty) return m.path;
+      if (loose.path.isNotEmpty) return loose.path;
     }
 
-    // 3) first image
+    // 3) First image
     return imagesInFolder.first.path;
   }
 
@@ -474,11 +503,14 @@ class LocalAudiobookService {
         artist = _clean(m.albumArtistName) ?? _clean(m.authorName);
       }
 
+      // in _readFileMeta
       return _FileMeta(
         title: title,
         artist: artist,
         trackNumber: m.trackNumber,
         albumArt: m.albumArt,
+        // OPTIONAL: If you want to propagate genre up into LocalAudiobook:
+        // add: genre: _clean(m.genre),
       );
     } catch (e) {
       AppLogger.debug('Meta extract failed for ${audioFile.path}: $e');
@@ -503,10 +535,22 @@ class LocalAudiobookService {
         await coverDir.create(recursive: true);
       }
 
+      // Try to infer extension (very small check like Voice does through frame mime)
+      String ext = '.jpg';
+      if (artBytes.length > 8) {
+        // PNG signature
+        const pngSig = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        bool isPng = true;
+        for (int i = 0; i < pngSig.length; i++) {
+          if (artBytes[i] != pngSig[i]) { isPng = false; break; }
+        }
+        if (isPng) ext = '.png';
+      }
+
       final safeName = stemHint.isEmpty ? 'cover' : stemHint;
       final outPath = path.join(
         coverDir.path,
-        '${safeName}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        '${safeName}_${DateTime.now().millisecondsSinceEpoch}$ext',
       );
 
       final f = File(outPath);
@@ -518,9 +562,23 @@ class LocalAudiobookService {
     }
   }
 
+
   // Duration calc placeholder (unchanged for now)
   static Future<Duration?> calculateTotalDuration(List<String> audioFiles) async {
-    return null;
+    try {
+      double totalSeconds = 0.0;
+      for (final p in audioFiles) {
+        final f = File(p);
+        if (!await f.exists()) continue;
+        final seconds = await MediaHelper.getAudioDuration(
+            f); // you already use this elsewhere
+        if (seconds != null) totalSeconds += seconds;
+      }
+      if (totalSeconds <= 0) return null;
+      return Duration(milliseconds: (totalSeconds * 1000).round());
+    } catch (_) {
+      return null;
+    }
   }
 }
 
