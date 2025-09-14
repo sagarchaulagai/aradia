@@ -158,6 +158,9 @@ class MyAudioHandler extends BaseAudioHandler {
             'url': song.url,
             'audiobook_id': audiobook.id,
             'is_youtube': isYouTube,
+            // Helpful for debugging
+            'startMs': song.startMs,
+            'durationMs': song.durationMs,
           },
         );
         mediaItems.add(item);
@@ -167,7 +170,23 @@ class MyAudioHandler extends BaseAudioHandler {
           sources.add(YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
         } else if (song.url != null) {
           final uri = song.url!.startsWith('/') ? Uri.file(song.url!) : Uri.parse(song.url!);
-          sources.add(AudioSource.uri(uri, tag: item));
+
+          // If this "file" is actually a chapter slice, clip it
+          if ((song.startMs ?? 0) > 0 || (song.durationMs ?? 0) > 0) {
+            final start = Duration(milliseconds: song.startMs ?? 0);
+            final end = (song.durationMs != null)
+                ? start + Duration(milliseconds: song.durationMs!)
+                : null; // last chapter to EOF
+            sources.add(
+              ClippingAudioSource(
+                start: start,
+                end: end,
+                child: AudioSource.uri(uri, tag: item),
+              ),
+            );
+          } else {
+            sources.add(AudioSource.uri(uri, tag: item));
+          }
         }
       }
 

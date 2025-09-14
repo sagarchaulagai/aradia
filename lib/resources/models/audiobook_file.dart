@@ -13,10 +13,18 @@ class AudiobookFile {
   final String? title;
   final String? name;
   final String? url;
-  final double? length; // second unit
+  final double? length; // seconds
   final int? track;
   final int? size;
   final String? highQCoverImage;
+
+  /// NEW: optional chapter slicing for a single physical file
+  final int? startMs;    // chapter start (ms from file start)
+  final int? durationMs; // chapter duration (ms); null => to EOF
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Constructors for existing sources
+  // ────────────────────────────────────────────────────────────────────────────
 
   AudiobookFile.fromJson(Map json)
       : identifier = json["identifier"]?.toString(),
@@ -27,7 +35,9 @@ class AudiobookFile {
         length = _parseDoubleSafely(json["length"]),
         url = "$_base/${json['identifier']}/${json['name']}",
         highQCoverImage =
-            "$_base/${json['identifier']}/${json["highQCoverImage"]}";
+        "$_base/${json['identifier']}/${json["highQCoverImage"]}",
+        startMs = null,
+        durationMs = null;
 
   AudiobookFile.fromYoutubeJson(Map json)
       : identifier = json["identifier"]?.toString(),
@@ -37,7 +47,9 @@ class AudiobookFile {
         size = _parseIntSafely(json["size"]),
         length = _parseDoubleSafely(json["length"]),
         url = json["url"]?.toString(),
-        highQCoverImage = json["highQCoverImage"]?.toString();
+        highQCoverImage = json["highQCoverImage"]?.toString(),
+        startMs = null,
+        durationMs = null;
 
   AudiobookFile.fromLocalJson(Map json, String location)
       : identifier = json["identifier"]?.toString(),
@@ -47,7 +59,38 @@ class AudiobookFile {
         size = _parseIntSafely(json["size"]),
         length = _parseDoubleSafely(json["length"]),
         url = "$location/${json["url"]!}",
-        highQCoverImage = "$location/cover.jpg";
+        highQCoverImage = "$location/cover.jpg",
+        startMs = null,
+        durationMs = null;
+
+  /// NEW: convenient factory for a chapter slice of a single-file book
+  static AudiobookFile chapterSlice({
+    required String identifier,
+    required String url,
+    required String parentTitle,
+    required int track,
+    required String chapterTitle,
+    required int startMs,
+    int? durationMs,
+    String? highQCoverImage,
+  }) {
+    return AudiobookFile.fromMap({
+      "identifier": identifier,
+      "title": chapterTitle.isNotEmpty ? chapterTitle : "$parentTitle — Chapter $track",
+      "name": parentTitle,
+      "track": track,
+      "size": 0,
+      "length": null, // player derives effective length via ClippingAudioSource
+      "url": url,
+      "highQCoverImage": highQCoverImage,
+      "startMs": startMs,
+      "durationMs": durationMs,
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Parsing helpers
+  // ────────────────────────────────────────────────────────────────────────────
 
   static int _parseTrack(dynamic value) {
     if (value == null) return 0;
@@ -118,18 +161,9 @@ class AudiobookFile {
     return audiobookFiles;
   }
 
-  Map<dynamic, dynamic> toMap() {
-    return {
-      "identifier": identifier,
-      "title": title,
-      "name": name,
-      "track": track,
-      "size": size,
-      "length": length,
-      "url": url,
-      "highQCoverImage": highQCoverImage,
-    };
-  }
+  // ────────────────────────────────────────────────────────────────────────────
+  // Disk discovery helpers (unchanged behavior)
+  // ────────────────────────────────────────────────────────────────────────────
 
   static Future<Either<String, List<AudiobookFile>>> fromDownloadedFiles(
       String audiobookId) async {
@@ -142,8 +176,9 @@ class AudiobookFile {
           .listSync()
           .where((file) => file.path.endsWith('.mp3'))
           .toList();
-      files
-          .sort((a, b) => a.statSync().changed.compareTo(b.statSync().changed));
+      files.sort(
+            (a, b) => a.statSync().changed.compareTo(b.statSync().changed),
+      );
 
       AppLogger.debug(
           'Now the files are going to be parsed from the downloaded files');
@@ -162,10 +197,10 @@ class AudiobookFile {
             "name": files[i].path.split('/').last,
             "track": i + 1,
             "size": files[i].statSync().size,
-            "length": duration, // Use the actual audio file length
+            "length": duration,
             "url": files[i].path,
             "highQCoverImage":
-                'https://archive.org/services/get-item-image.php?identifier=$audiobookId',
+            'https://archive.org/services/get-item-image.php?identifier=$audiobookId',
           }));
         } finally {
           await player.dispose();
@@ -186,7 +221,7 @@ class AudiobookFile {
       final downloadDir = Directory('${appDir?.path}/local/$audiobookId');
 
       final stringContent =
-          await File('${downloadDir.path}/files.txt').readAsString();
+      await File('${downloadDir.path}/files.txt').readAsString();
       final jsonContent = jsonDecode(stringContent);
       if (jsonContent is List) {
         AppLogger.debug('JSON list length: ${jsonContent.length}');
@@ -202,7 +237,7 @@ class AudiobookFile {
       }
 
       final List<AudiobookFile> audiobookFiles =
-          AudiobookFile.fromLocalJsonArray(jsonContent, downloadDir.path);
+      AudiobookFile.fromLocalJsonArray(jsonContent, downloadDir.path);
       return Right(audiobookFiles);
     } catch (e) {
       AppLogger.debug('Unexpected error: $e');
@@ -217,7 +252,7 @@ class AudiobookFile {
       final downloadDir = Directory('${appDir?.path}/youtube/$audiobookId');
 
       final stringContent =
-          await File('${downloadDir.path}/files.txt').readAsString();
+      await File('${downloadDir.path}/files.txt').readAsString();
       final jsonContent = jsonDecode(stringContent);
       if (jsonContent is List) {
         AppLogger.debug('JSON list length: ${jsonContent.length}');
@@ -233,7 +268,7 @@ class AudiobookFile {
       }
 
       final List<AudiobookFile> audiobookFiles =
-          AudiobookFile.fromYoutubeJsonArray(jsonContent);
+      AudiobookFile.fromYoutubeJsonArray(jsonContent);
       return Right(audiobookFiles);
     } catch (e) {
       AppLogger.debug('Unexpected error: $e');
@@ -250,7 +285,24 @@ class AudiobookFile {
         size = map["size"],
         length = map["length"],
         url = map["url"],
-        highQCoverImage = map["highQCoverImage"];
+        highQCoverImage = map["highQCoverImage"],
+        startMs = map["startMs"],
+        durationMs = map["durationMs"];
+
+  Map<dynamic, dynamic> toMap() {
+    return {
+      "identifier": identifier,
+      "title": title,
+      "name": name,
+      "track": track,
+      "size": size,
+      "length": length,
+      "url": url,
+      "highQCoverImage": highQCoverImage,
+      "startMs": startMs,
+      "durationMs": durationMs,
+    };
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -262,6 +314,8 @@ class AudiobookFile {
       "length": length,
       "url": url,
       "highQCoverImage": highQCoverImage,
+      "startMs": startMs,
+      "durationMs": durationMs,
     };
   }
 }

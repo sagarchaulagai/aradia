@@ -5,8 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
-import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
+import 'package:aradia/resources/services/chapter_parser.dart';
+import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
@@ -308,41 +309,83 @@ class LocalAudiobookItem extends StatelessWidget {
 
   // Convert audio files to AudiobookFile format
   Future<List<AudiobookFile>> _convertToAudiobookFiles() async {
-    final List<AudiobookFile> audiobookFiles = [];
+    final List<AudiobookFile> out = [];
+    final files = audiobook.audioFiles;
 
-    for (final entry in audiobook.audioFiles.asMap().entries) {
+    if (files.length == 1) {
+      final filePath = Uri.decodeComponent(files.first);
+      final lower = filePath.toLowerCase();
+      final isChapterable = lower.endsWith('.m4b') || lower.endsWith('.mp4') || lower.endsWith('.m4a') || lower.endsWith('.mp3');
+
+      if (isChapterable) {
+        try {
+          // Parse chapters
+          final f = File(filePath);
+          final cues = await ChapterParser.parseFile(f);
+
+          if (cues.length > 1) {
+            // Build per-chapter slices
+            for (int i = 0; i < cues.length; i++) {
+              final start = cues[i].startMs;
+              final int? durationMs = (i + 1 < cues.length)
+                  ? (cues[i + 1].startMs - start).clamp(1, 1 << 31)
+                  : null; // last chapter goes to EOF
+
+              out.add(
+                AudiobookFile.chapterSlice(
+                  identifier: audiobook.folderPath,
+                  url: filePath,
+                  parentTitle: audiobook.title,
+                  track: i + 1,
+                  chapterTitle: cues[i].title,
+                  startMs: start,
+                  durationMs: durationMs,
+                  highQCoverImage: audiobook.coverImagePath != null
+                      ? Uri.decodeComponent(audiobook.coverImagePath!)
+                      : null,
+                ),
+              );
+            }
+            return out; // done
+          }
+        } catch (e) {
+          // fall back to default
+        }
+      }
+    }
+
+    // Default behavior (multi-file folder books OR no chapters found)
+    for (final entry in files.asMap().entries) {
       final index = entry.key;
-      final filePath =
-          Uri.decodeComponent(entry.value); // Decode URL-encoded paths
+      final filePath = Uri.decodeComponent(entry.value);
       final fileName = filePath.split('/').last.split('\\').last;
 
-      // Get actual audio duration
       double? duration;
       try {
         final file = File(filePath);
         if (await file.exists()) {
           duration = await MediaHelper.getAudioDuration(file);
         }
-      } catch (e) {
-        duration = null; // Fallback if duration can't be retrieved
+      } catch (_) {
+        duration = null;
       }
 
-      audiobookFiles.add(AudiobookFile.fromMap({
+      out.add(AudiobookFile.fromMap({
         'identifier': audiobook.folderPath,
         'track': index + 1,
-        'title': fileName.replaceAll(
-            RegExp(r'\.[^.]*$'), ''), // Remove file extension
+        'title': fileName.replaceAll(RegExp(r'\.[^.]*$'), ''),
         'name': fileName,
         'url': filePath,
-        'length': duration, // Actual audio duration in seconds
+        'length': duration,
         'size': null,
         'highQCoverImage': audiobook.coverImagePath != null
             ? Uri.decodeComponent(audiobook.coverImagePath!)
             : null,
+        // No startMs/durationMs for whole-file tracks
       }));
     }
 
-    return audiobookFiles;
+    return out;
   }
 }
 
