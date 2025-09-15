@@ -1,12 +1,11 @@
 // lib/screens/home/widgets/history_section.dart
-import 'dart:io';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
+import 'package:aradia/resources/services/cover_image_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
 
@@ -36,78 +35,6 @@ class _HistorySectionState extends State<HistorySection> {
   void initState() {
     super.initState();
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
-  }
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // Cover resolution for History tiles
-  // Prefers mapped per-book cover (by audiobook.id), then legacy keys, then
-  // audiobook.lowQCoverImage, then first track's highQCoverImage.
-  // ────────────────────────────────────────────────────────────────────────────
-  static const String _coverMappingBoxName = 'cover_image_mapping';
-
-  Future<String?> _getMappedCover(String key) async {
-    try {
-      final box = await Hive.openBox(_coverMappingBoxName);
-      final path = box.get(key);
-      if (path is String && path.isNotEmpty) {
-        final f = File(path.startsWith('file://') ? Uri.parse(path).toFilePath() : path);
-        if (await f.exists()) return f.path;
-        // clean stale entry
-        await box.delete(key);
-      }
-    } catch (_) {}
-    return null;
-  }
-
-  // Helper: if URL is local-file-ish, return canonical file path; otherwise null.
-  String? _asLocalPath(String? s) {
-    if (s == null || s.isEmpty) return null;
-    try {
-      if (s.startsWith('file://')) return Uri.parse(s).toFilePath();
-      if (s.startsWith('/')) return s;
-      // treat windows-style abs paths too just in case
-      if (s.contains(':/') && !s.startsWith('http')) return s;
-    } catch (_) {}
-    return null;
-  }
-
-  Future<String?> _resolveHistoryCover(HistoryOfAudiobookItem item) async {
-    final a = item.audiobook;
-
-    // 1) Preferred: mapped by audiobook.id (after your recent changes id == cover key)
-    final byId = await _getMappedCover(a.id);
-    if (byId != null) return byId;
-
-    // 2) Legacy keys: try folder of first track (multi-track books) and track path (single-file books)
-    if (item.audiobookFiles.isNotEmpty) {
-      final firstUrl = item.audiobookFiles.first.url;
-      final firstLocal = _asLocalPath(firstUrl);
-      if (firstLocal != null) {
-        // a) mapping by the exact file (single-file root books)
-        final byFile = await _getMappedCover(firstLocal);
-        if (byFile != null) return byFile;
-
-        // b) mapping by the parent folder (multi-track folder books)
-        final byFolder = await _getMappedCover(p.dirname(firstLocal));
-        if (byFolder != null) return byFolder;
-      }
-    }
-
-    // 3) Fallback to whatever the Audiobook carried (might be local path or URL)
-    final low = a.lowQCoverImage;
-    final lowLocal = _asLocalPath(low);
-    if (lowLocal != null && await File(lowLocal).exists()) return lowLocal;
-    if (low != null && low.isNotEmpty) return low; // URL or unknown, let Image.network handle it
-
-    // 4) Last resort: first track's highQCoverImage (may come from metadata)
-    if (item.audiobookFiles.isNotEmpty) {
-      final hi = item.audiobookFiles.first.highQCoverImage;
-      final hiLocal = _asLocalPath(hi);
-      if (hiLocal != null && await File(hiLocal).exists()) return hiLocal;
-      if (hi != null && hi.isNotEmpty) return hi;
-    }
-
-    return null;
   }
 
   // This method is used to format the progress of the audiobook
@@ -157,38 +84,43 @@ class _HistorySectionState extends State<HistorySection> {
     );
   }
 
+  // Uses the centralized cover resolver/provider so History shows the same cover
+  // precedence as the grid and the player.
   Widget _historyCoverTile(HistoryOfAudiobookItem item, double size) {
     return FutureBuilder<String?>(
-      future: _resolveHistoryCover(item),
+      future: resolveCoverForHistory(item),
       builder: (context, snap) {
         final v = snap.data;
         if (v != null && v.isNotEmpty) {
-          // local file?
-          final local = _asLocalPath(v);
-          if (local != null && File(local).existsSync()) {
-            return Image.file(File(local), width: size, height: size, fit: BoxFit.cover);
-          }
-          // remote or other path
-          return Image.network(v, width: size, height: size, fit: BoxFit.cover);
+          return Image(
+            image: coverProvider(v),
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (context, _, __) => _placeholderCover(size),
+          );
         }
-        // Placeholder
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.primaryColor.withOpacity(0.7),
-                AppColors.primaryColor,
-              ],
-            ),
-          ),
-          child: const Icon(Icons.headphones, color: Colors.white70, size: 42),
-        );
+        return _placeholderCover(size);
       },
+    );
+  }
+
+  Widget _placeholderCover(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryColor.withOpacity(0.7),
+            AppColors.primaryColor,
+          ],
+        ),
+      ),
+      child: const Icon(Icons.headphones, color: Colors.white70, size: 42),
     );
   }
 
@@ -218,7 +150,8 @@ class _HistorySectionState extends State<HistorySection> {
             item.audiobookFiles.map((e) => e.toMap()).toList(),
           );
 
-          final hist = historyOfAudiobook.getHistoryOfAudiobookItem(item.audiobook.id);
+          final hist =
+          historyOfAudiobook.getHistoryOfAudiobookItem(item.audiobook.id);
           audioHandlerProvider.audioHandler.initSongs(
             item.audiobookFiles,
             item.audiobook,
@@ -235,16 +168,26 @@ class _HistorySectionState extends State<HistorySection> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Delete History', style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold)),
-                content: Text('Do you want to delete this audiobook from history?', style: GoogleFonts.ubuntu()),
+                title: Text(
+                  'Delete History',
+                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
+                ),
+                content: Text(
+                  'Do you want to delete this audiobook from history?',
+                  style: GoogleFonts.ubuntu(),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Cancel', style: GoogleFonts.ubuntu(color: Colors.grey[600])),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.ubuntu(color: Colors.grey[600]),
+                    ),
                   ),
                   TextButton(
                     onPressed: () async {
-                      if (audioHandlerProvider.audioHandler.getCurrentAudiobookId() ==
+                      if (audioHandlerProvider.audioHandler
+                          .getCurrentAudiobookId() ==
                           item.audiobook.id) {
                         Navigator.of(context).pop();
                         showDialog(
@@ -264,8 +207,14 @@ class _HistorySectionState extends State<HistorySection> {
                               ),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Text('OK', style: GoogleFonts.ubuntu(color: AppColors.primaryColor)),
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(),
+                                  child: Text(
+                                    'OK',
+                                    style: GoogleFonts.ubuntu(
+                                      color: AppColors.primaryColor,
+                                    ),
+                                  ),
                                 ),
                               ],
                             );
@@ -274,10 +223,16 @@ class _HistorySectionState extends State<HistorySection> {
                         return;
                       }
 
-                      historyOfAudiobook.removeAudiobookFromHistory(item.audiobook.id);
+                      historyOfAudiobook
+                          .removeAudiobookFromHistory(item.audiobook.id);
                       Navigator.of(context).pop();
                     },
-                    child: Text('Delete', style: GoogleFonts.ubuntu(color: AppColors.primaryColor)),
+                    child: Text(
+                      'Delete',
+                      style: GoogleFonts.ubuntu(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
                   ),
                 ],
               );
@@ -336,12 +291,14 @@ class _HistorySectionState extends State<HistorySection> {
                     right: 8,
                     child: Stack(
                       children: [
-                        IconTheme(
-                          data: const IconThemeData(color: Colors.black, size: 14),
-                          child: _getOriginIcon(item.audiobook.origin),
+                        const IconTheme(
+                          data: IconThemeData(color: Colors.black, size: 14),
+                          child:
+                          Icon(Ionicons.help_circle, color: Colors.black),
                         ),
                         IconTheme(
-                          data: const IconThemeData(color: Colors.white, size: 12),
+                          data: const IconThemeData(
+                              color: Colors.white, size: 12),
                           child: _getOriginIcon(item.audiobook.origin),
                         ),
                       ],
@@ -353,7 +310,10 @@ class _HistorySectionState extends State<HistorySection> {
             const SizedBox(height: 12),
             Text(
               item.audiobook.title,
-              style: GoogleFonts.ubuntu(fontSize: 15, fontWeight: FontWeight.w600),
+              style: GoogleFonts.ubuntu(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -361,7 +321,8 @@ class _HistorySectionState extends State<HistorySection> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -379,7 +340,10 @@ class _HistorySectionState extends State<HistorySection> {
                 Expanded(
                   child: Text(
                     formatProgress(item.position, totalTime, completedTime),
-                    style: GoogleFonts.ubuntu(fontSize: 12, color: Colors.grey[600]),
+                    style: GoogleFonts.ubuntu(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ),
               ],
@@ -415,7 +379,8 @@ class _HistorySectionState extends State<HistorySection> {
             children: [
               Text(
                 'Recently Played',
-                style: GoogleFonts.ubuntu(fontSize: 22, fontWeight: FontWeight.bold),
+                style: GoogleFonts.ubuntu(
+                    fontSize: 22, fontWeight: FontWeight.bold),
               )
             ],
           ),

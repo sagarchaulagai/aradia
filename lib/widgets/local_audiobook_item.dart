@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
@@ -11,6 +10,7 @@ import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
+import 'package:aradia/resources/services/cover_image_service.dart';
 import 'package:aradia/utils/media_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
@@ -20,18 +20,6 @@ import 'package:hive/hive.dart';
 import 'package:we_slide/we_slide.dart';
 
 import '../../../utils/app_logger.dart';
-
-// Unique key for mapping covers to *this* local book.
-String coverKeyForLocal(LocalAudiobook a) {
-  // Decode because we store decoded paths elsewhere in this file.
-  final files = a.audioFiles.map((s) => Uri.decodeComponent(s)).toList();
-  if (files.length == 1) {
-    // Root-level or any single-file book: key by the *file* itself.
-    return files.first;
-  }
-  // Multi-track book (folder of tracks): key by the folder.
-  return Uri.decodeComponent(a.folderPath);
-}
 
 class LocalAudiobookItem extends StatelessWidget {
   final LocalAudiobook audiobook;
@@ -158,16 +146,16 @@ class LocalAudiobookItem extends StatelessWidget {
 
   Widget _buildCoverImage() {
     return FutureBuilder<String?>(
-      future: CoverImageService.getBestCoverPathForLocal(audiobook),
+      future: resolveCoverForLocal(audiobook),
       builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data != null) {
-          final coverFile = File(snapshot.data!);
-          return Image.file(
-            coverFile,
+        final v = snapshot.data;
+        if (v != null && v.isNotEmpty) {
+          return Image(
+            image: coverProvider(v),
             width: width,
             height: width,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => _buildPlaceholderCover(),
+            errorBuilder: (context, _, __) => _buildPlaceholderCover(),
           );
         }
         return _buildPlaceholderCover();
@@ -230,11 +218,11 @@ class LocalAudiobookItem extends StatelessWidget {
   void _playAudiobook(BuildContext context) async {
     try {
       final audioHandlerProvider =
-          Provider.of<AudioHandlerProvider>(context, listen: false);
+      Provider.of<AudioHandlerProvider>(context, listen: false);
       final weSlideController =
-          Provider.of<WeSlideController>(context, listen: false);
+      Provider.of<WeSlideController>(context, listen: false);
       final playingAudiobookDetailsBox =
-          Hive.box('playing_audiobook_details_box');
+      Hive.box('playing_audiobook_details_box');
       final historyOfAudiobook = HistoryOfAudiobook();
 
       // Convert LocalAudiobook to required format
@@ -244,26 +232,27 @@ class LocalAudiobookItem extends StatelessWidget {
       // Store audiobook details in Hive
       playingAudiobookDetailsBox.put('audiobook', convertedAudiobook.toMap());
       playingAudiobookDetailsBox.put(
-          'audiobookFiles', audiobookFiles.map((e) => e.toMap()).toList());
+        'audiobookFiles',
+        audiobookFiles.map((e) => e.toMap()).toList(),
+      );
 
       // Check if audiobook is in history
       if (historyOfAudiobook.isAudiobookInHistory(convertedAudiobook.id)) {
-        final historyItem =
-            historyOfAudiobook.getHistoryOfAudiobookItem(convertedAudiobook.id);
+        final hist = historyOfAudiobook.getHistoryOfAudiobookItem(convertedAudiobook.id);
         audioHandlerProvider.audioHandler.initSongs(
           audiobookFiles,
-          await convertedAudiobook,
-          historyItem.index,
-          historyItem.position,
+          convertedAudiobook,
+          hist.index,
+          hist.position,
         );
-        playingAudiobookDetailsBox.put('index', historyItem.index);
-        playingAudiobookDetailsBox.put('position', historyItem.position);
+        playingAudiobookDetailsBox.put('index', hist.index);
+        playingAudiobookDetailsBox.put('position', hist.position);
       } else {
         playingAudiobookDetailsBox.put('index', 0);
         playingAudiobookDetailsBox.put('position', 0);
         audioHandlerProvider.audioHandler.initSongs(
           audiobookFiles,
-          await convertedAudiobook,
+          convertedAudiobook,
           0,
           0,
         );
@@ -273,7 +262,6 @@ class LocalAudiobookItem extends StatelessWidget {
       audioHandlerProvider.audioHandler.play();
       weSlideController.show();
     } catch (e) {
-      // Handle error - could show a snackbar or dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error playing audiobook: $e')),
       );
@@ -283,14 +271,14 @@ class LocalAudiobookItem extends StatelessWidget {
   // Convert LocalAudiobook to Audiobook format
   Future<Audiobook> _convertToAudiobook() async {
     final key = coverKeyForLocal(audiobook);
+    final resolvedCover = await resolveCoverForLocal(audiobook);
+
     return Audiobook.fromMap({
-      'id': key, // was: audiobook.folderPath
+      'id': key,
       'title': audiobook.title,
       'author': audiobook.author,
       'description': audiobook.description ?? '',
-      'lowQCoverImage': audiobook.coverImagePath != null
-          ? Uri.decodeComponent(audiobook.coverImagePath!)
-          : await CoverImageService.getMappedCoverImage(key), // was: folderPath
+      'lowQCoverImage': resolvedCover,
       'subject': ['Local Audiobook'],
       'language': 'Unknown',
       'origin': 'local',
@@ -309,31 +297,25 @@ class LocalAudiobookItem extends StatelessWidget {
     final files = audiobook.audioFiles;
     final key = coverKeyForLocal(audiobook);
 
-    // One resolved cover for the whole local book (mapped → embedded → null)
-    final mappedCover = await CoverImageService.getBestCoverPathForLocal(audiobook);
-    final resolvedCoverPath = mappedCover ??
-        (audiobook.coverImagePath != null
-            ? Uri.decodeComponent(audiobook.coverImagePath!)
-            : null);
+    // Resolve one cover to reuse across all tracks
+    final resolvedCover = await resolveCoverForLocal(audiobook);
 
     if (files.length == 1) {
-      final filePath = Uri.decodeComponent(files.first);
+      final filePath = decodePath(files.first);
       final lower = filePath.toLowerCase();
-      final isChapterable = lower.endsWith('.m4b') || lower.endsWith('.mp4') || lower.endsWith('.m4a') || lower.endsWith('.mp3');
+      final isChapterable = lower.endsWith('.m4b') || lower.endsWith('.mp4') ||
+          lower.endsWith('.m4a') || lower.endsWith('.mp3');
 
       if (isChapterable) {
         try {
-          // Parse chapters
           final f = File(filePath);
           final cues = await ChapterParser.parseFile(f);
-
           if (cues.length > 1) {
-            // Build per-chapter slices
             for (int i = 0; i < cues.length; i++) {
               final start = cues[i].startMs;
               final int? durationMs = (i + 1 < cues.length)
                   ? (cues[i + 1].startMs - start).clamp(1, 1 << 31)
-                  : null; // last chapter goes to EOF
+                  : null;
 
               out.add(
                 AudiobookFile.chapterSlice(
@@ -344,23 +326,20 @@ class LocalAudiobookItem extends StatelessWidget {
                   chapterTitle: cues[i].title,
                   startMs: start,
                   durationMs: durationMs,
-                  // ⬇ attach your mapped/selected cover here so it overrides embedded art
-                  highQCoverImage: resolvedCoverPath,
+                  highQCoverImage: resolvedCover, // ⬅️ use resolved cover
                 ),
               );
             }
-            return out; // done
+            return out;
           }
-        } catch (e) {
-          // fall back to default
-        }
+        } catch (_) {/* fall through */}
       }
     }
 
-    // Default behavior (multi-file folder books OR no chapters found)
+    // Default multi-file / no chapters
     for (final entry in files.asMap().entries) {
       final index = entry.key;
-      final filePath = Uri.decodeComponent(entry.value);
+      final filePath = decodePath(entry.value);
       final fileName = filePath.split('/').last.split('\\').last;
 
       double? duration;
@@ -381,8 +360,7 @@ class LocalAudiobookItem extends StatelessWidget {
         'url': filePath,
         'length': duration,
         'size': null,
-        // ⬇ same override here
-        'highQCoverImage': resolvedCoverPath,
+        'highQCoverImage': resolvedCover, // ⬅️ use resolved cover
       }));
     }
 
@@ -424,7 +402,7 @@ class _LocalAudiobookCoverSelectorState
     });
 
     try {
-      final coverUrls = await CoverImageService.fetchCoverImagesFromGoogle(
+      final coverUrls = await CoverImageRemote.fetchCoverImagesFromGoogle(
         widget.audiobook.title,
         widget.audiobook.author,
       );
@@ -451,15 +429,11 @@ class _LocalAudiobookCoverSelectorState
     try {
       // Download the selected cover image
       final downloadedPath =
-      await CoverImageService.downloadCoverImage(_selectedCoverUrl!);
+      await CoverImageRemote.downloadCoverImage(_selectedCoverUrl!);
 
       if (downloadedPath != null) {
-        final key = coverKeyForLocal(widget.audiobook);
-        await CoverImageService.mapCoverImage(key, downloadedPath);
-
-        // Remove any old per-folder mapping so other books don’t inherit it
-        await CoverImageService.removeCoverMapping(widget.audiobook.folderPath);
-
+        // Single point of truth: save by canonical key + legacy cleanup
+        await mapCoverForLocal(widget.audiobook, downloadedPath);
 
         if (mounted) {
           Navigator.pop(context);
@@ -643,26 +617,16 @@ class _LocalAudiobookCoverSelectorState
               borderRadius: BorderRadius.circular(8),
               child: Stack(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: imageUrl,
+                  Image(
+                    image: coverProvider(imageUrl),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    placeholder: (context, url) => Container(
+                    // You can keep the same loadingBuilder/errorBuilder if you like,
+                    // or remove them since coverProvider(FileImage) won't need it.
+                    errorBuilder: (context, error, stackTrace) => Container(
                       color: Colors.grey[200],
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryColor,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(
-                        Icons.broken_image,
-                        color: Colors.grey,
-                      ),
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
                     ),
                   ),
                   if (isSelected)
@@ -723,33 +687,9 @@ class _LocalAudiobookCoverSelectorState
   }
 }
 
-class CoverImageService {
-  static const String _coverMappingBoxName = 'cover_image_mapping';
-
-  static Future<String?> getBestCoverPathForLocal(LocalAudiobook a) async {
-    // 1) Per-book mapping (new, correct behavior)
-    // 1) Unified key (exactly what we use when saving)
-    final byKey = await getMappedCoverImage(coverKeyForLocal(a));
-    if (byKey != null) return byKey;
-
-    // 2) Optional: historical per-id mapping (if you ever had one)
-    final byId = await getMappedCoverImage(a.id);
-    if (byId != null) return byId;
-
-    // 3) Legacy per-folder mapping
-    final byFolder = await getMappedCoverImage(a.folderPath);
-    if (byFolder != null) return byFolder;
-
-    // 3) Embedded/explicit cover in the audiobook itself
-    if (a.coverImagePath != null) {
-      final p = Uri.decodeComponent(a.coverImagePath!);
-      final f = File(p);
-      if (await f.exists()) return p;
-    }
-
-    return null;
-  }
-
+/// Network-only utilities used by the cover picker UI.
+/// (All mapping/lookup logic lives in lib/resources/services/cover_image_service.dart)
+class CoverImageRemote {
   // Get cover images from Google Books API
   static Future<List<String>> fetchCoverImagesFromGoogle(
       String title, String author) async {
@@ -768,7 +708,6 @@ class CoverImageService {
           for (final item in data['items']) {
             final volumeInfo = item['volumeInfo'];
             if (volumeInfo['imageLinks'] != null) {
-              // Get different sizes if available
               final imageLinks = volumeInfo['imageLinks'];
               if (imageLinks['thumbnail'] != null) {
                 coverUrls.add(imageLinks['thumbnail']);
@@ -808,7 +747,7 @@ class CoverImageService {
 
       // Create localCoverImages directory
       final coverImagesDir =
-          Directory(path.join(externalDir.path, 'localCoverImages'));
+      Directory(path.join(externalDir.path, 'localCoverImages'));
       if (!await coverImagesDir.exists()) {
         await coverImagesDir.create(recursive: true);
       }
@@ -829,63 +768,6 @@ class CoverImageService {
     }
   }
 
-  // Map audiobook path to cover image path
-  static Future<void> mapCoverImage(
-      String audiobookPath, String coverImagePath) async {
-    try {
-      final box = await Hive.openBox(_coverMappingBoxName);
-      await box.put(audiobookPath, coverImagePath);
-      AppLogger.debug('Mapped $audiobookPath to $coverImagePath');
-    } catch (e) {
-      AppLogger.error('Error mapping cover image: $e');
-    }
-  }
-
-  // Get mapped cover image path for audiobook
-  static Future<String?> getMappedCoverImage(String audiobookPath) async {
-    try {
-      final box = await Hive.openBox(_coverMappingBoxName);
-      final coverPath = box.get(audiobookPath);
-
-      // Check if file still exists
-      if (coverPath != null) {
-        final file = File(coverPath);
-        if (await file.exists()) {
-          return coverPath;
-        } else {
-          // Remove mapping if file doesn't exist
-          await box.delete(audiobookPath);
-        }
-      }
-    } catch (e) {
-      AppLogger.error('Error getting mapped cover image: $e');
-    }
-
-    return null;
-  }
-
-  // Remove cover image mapping
-  static Future<void> removeCoverMapping(String audiobookPath) async {
-    try {
-      final box = await Hive.openBox(_coverMappingBoxName);
-      final coverPath = box.get(audiobookPath);
-
-      if (coverPath != null) {
-        // Delete the actual file
-        final file = File(coverPath);
-        if (await file.exists()) {
-          await file.delete();
-        }
-
-        // Remove mapping
-        await box.delete(audiobookPath);
-        AppLogger.debug('Removed cover mapping for: $audiobookPath');
-      }
-    } catch (e) {
-      AppLogger.error('Error removing cover mapping: $e');
-    }
-  }
-
   // Generate random string for filename
   static String _generateRandomString(int length) {
     const chars =
@@ -895,30 +777,5 @@ class CoverImageService {
       Iterable.generate(
           length, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
     );
-  }
-
-  // Clean up unused cover images
-  static Future<void> cleanupUnusedCoverImages() async {
-    try {
-      final externalDir = await getExternalStorageDirectory();
-      if (externalDir == null) return;
-
-      final coverImagesDir =
-          Directory(path.join(externalDir.path, 'localCoverImages'));
-      if (!await coverImagesDir.exists()) return;
-
-      final box = await Hive.openBox(_coverMappingBoxName);
-      final mappedPaths = box.values.toSet();
-
-      // Delete files that are not mapped
-      await for (final entity in coverImagesDir.list()) {
-        if (entity is File && !mappedPaths.contains(entity.path)) {
-          await entity.delete();
-          AppLogger.debug('Cleaned up unused cover image: ${entity.path}');
-        }
-      }
-    } catch (e) {
-      AppLogger.error('Error cleaning up cover images: $e');
-    }
   }
 }
