@@ -1,21 +1,32 @@
 // lib/resources/services/cover_image_service.dart
+//
+// Centralized cover-art mapping + lookup with a tiny in-memory cache and an
+// event bus so UIs / the audio handler can react to changes immediately.
+// File/folder semantics (what counts as a "book key") are delegated to
+// LocalLibraryLayout so you can tweak rules in ONE place.
+
 import 'dart:async';
 import 'dart:io';
 
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
+import 'package:aradia/resources/services/local_library_layout.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-// ── Cover art event bus ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Cover art event bus
+// Subscribers (player, history, tiles) can listen and refresh when a cover
+// changes for a specific book key.
+// payload: the canonical book key (see LocalLibraryLayout.bookKeyForLocal)
 class CoverArtBus {
   static final CoverArtBus _i = CoverArtBus._();
   CoverArtBus._();
   factory CoverArtBus() => _i;
 
-  final _ctrl = StreamController<String>.broadcast(); // payload: cover key/id
+  final _ctrl = StreamController<String>.broadcast();
   Stream<String> get stream => _ctrl.stream;
 
   void emit(String key) {
@@ -26,35 +37,28 @@ class CoverArtBus {
 
 final coverArtBus = CoverArtBus();
 
-/// All cover mappings are stored in this Hive box.
-/// Keys are *normalized* strings representing either a file path (single-file book)
-/// or a folder path (multi-track book). Values are absolute file paths to images.
+/// Hive box name for custom cover mappings
 const String kCoverMappingBox = 'cover_image_mapping';
 
-/// ─────────────────────────────────────────────────────────────────────────────
-/// Small LRU cache for resolved covers (per canonical book key).
-/// Caches both hits (file path/URL) and misses (null) to avoid repeated IO.
-/// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Small LRU cache for resolved covers (per canonical book key).
+// Caches both hits (String path/URL) and misses (null) to avoid repeated IO.
 class _CoverCache {
   static const int _maxEntries = 256;
-  final _map = <String, String?>{}; // key -> resolved cover (or null for miss)
+  final _map = <String, String?>{};
 
   bool containsKey(String key) => _map.containsKey(key);
 
   String? get(String key) {
     if (!_map.containsKey(key)) return null;
-    // Touch (move to most-recent)
     final v = _map.remove(key);
-    _map[key] = v;
+    _map[key] = v; // touch
     return v;
-    // Note: returning null here means either "cached miss" or "not present".
-    // Callers can use containsKey(key) to distinguish.
   }
 
   void set(String key, String? value) {
     if (!_map.containsKey(key) && _map.length >= _maxEntries) {
-      // Evict least-recently-used (the first key)
-      _map.remove(_map.keys.first);
+      _map.remove(_map.keys.first); // evict LRU
     }
     _map[key] = value;
   }
@@ -65,7 +69,8 @@ class _CoverCache {
 
 final _coverCache = _CoverCache();
 
-/// Cached Hive box accessor so we don't repeatedly call `Hive.openBox`.
+// ─────────────────────────────────────────────────────────────────────────────
+// Cached Hive box accessor so we don't repeatedly call `Hive.openBox`.
 class CoverImageStore {
   static final CoverImageStore _i = CoverImageStore._();
   CoverImageStore._();
@@ -96,16 +101,37 @@ class CoverImageStore {
   }
 }
 
-/// Returns a stable, per-book key for *local* audiobooks:
-/// - single-file books → absolute file path
-/// - multi-track (folder) books → absolute folder path
-String coverKeyForLocal(LocalAudiobook a) {
-  final files = a.audioFiles.map(decodePath).toList();
-  if (files.length == 1) {
-    return files.first; // single-file book keyed by its file path
+// ─────────────────────────────────────────────────────────────────────────────
+// Public helpers (keep existing names to avoid touching call sites)
+
+/// Canonical per-book key for local audiobooks.
+/// Delegates to LocalLibraryLayout so the rule is defined in one place.
+String coverKeyForLocal(LocalAudiobook a) =>
+    LocalLibraryLayout.bookKeyForLocal(a);
+
+/// Convert any path/URI to a local filesystem path if possible; null for URLs.
+String? asLocalPath(String? s) => LocalLibraryLayout.asLocalPath(s);
+
+/// Decode a path/URI consistently (safe for keys and values).
+String decodePath(String s) => LocalLibraryLayout.decodePath(s);
+
+/// Heuristic for "is local (not http/https)".
+bool looksLocal(String s) => s.isNotEmpty && LocalLibraryLayout.looksLocal(s);
+
+/// A small helper so widgets can render images without branching.
+/// Usage:
+///   final v = await resolveCoverForLocal(a);
+///   return v != null ? Image(image: coverProvider(v)) : placeholder();
+ImageProvider<Object> coverProvider(String v) {
+  final local = asLocalPath(v);
+  if (local != null) {
+    return FileImage(File(local));
   }
-  return decodePath(a.folderPath); // multi-track book keyed by its folder
+  return NetworkImage(v);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// High-level operations
 
 /// Save a cover for a local audiobook using the canonical key.
 /// Also removes any old *folder* mapping to prevent cross-book bleed.
@@ -116,13 +142,14 @@ Future<void> mapCoverForLocal(LocalAudiobook a, String coverImagePath) async {
 
   await mapCoverImage(key, normalized);
 
+  // Remove legacy per-folder mapping if different from canonical key.
   final folderKey = decodePath(a.folderPath);
   if (folderKey != key) {
     await removeCoverMapping(folderKey);
   }
 
   _coverCache.set(key, normalized);
-  coverArtBus.emit(key); // 🔔 publish for this local book too
+  coverArtBus.emit(key); // notify listeners
 }
 
 /// Resolve a cover for a local audiobook using consistent rules:
@@ -136,13 +163,11 @@ Future<String?> resolveCoverForLocal(LocalAudiobook a) async {
   if (_coverCache.containsKey(key)) {
     final cached = _coverCache.get(key); // may be null (negative cache)
     if (cached != null) {
-      // If it's a local file, make sure it still exists; otherwise evict and recompute.
       final local = asLocalPath(cached);
       if (local == null || await File(local).exists()) return cached;
-      _coverCache.remove(key);
+      _coverCache.remove(key); // stale file → evict and recompute
     } else {
-      // Cached miss
-      return null;
+      return null; // cached miss
     }
   }
 
@@ -153,7 +178,7 @@ Future<String?> resolveCoverForLocal(LocalAudiobook a) async {
     return byKey;
   }
 
-  // 2) Legacy id-based mapping (in case older code saved under a.id)
+  // 2) Legacy id-based mapping (older code may have saved a.id)
   final byId = await getMappedCoverImage(a.id);
   if (byId != null) {
     _coverCache.set(key, byId);
@@ -167,30 +192,28 @@ Future<String?> resolveCoverForLocal(LocalAudiobook a) async {
     return byFolder;
   }
 
-  // 4) Explicit/embedded path on the model
+  // 4) Explicit/embedded cover on the model
   final explicit = a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
   if (explicit != null && await File(explicit).exists()) {
     _coverCache.set(key, explicit);
     return explicit;
   }
 
-  // Nothing found; cache the miss (negative cache).
+  // Nothing found; cache the miss.
   _coverCache.set(key, null);
   return null;
 }
 
+/// Only the metadata/embedded default (used for "Use Default" tile preview).
 Future<String?> resolveDefaultCoverForLocal(LocalAudiobook a) async {
-  // Only use the explicit/embedded path on the model
   final explicit = a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
   if (explicit != null && await File(explicit).exists()) {
     return explicit;
   }
-  return null; // default is "no custom image" → caller can show placeholder
+  return null;
 }
 
-/// Resolve artwork for a History tile. This mirrors player/card precedence and
-/// remains backward-compatible with older history entries.
-///
+/// Resolve artwork for a History tile.
 /// Order:
 /// 1) mapping[audiobook.id]
 /// 2) mapping[firstTrackFilePath] → mapping[parentFolder]
@@ -203,20 +226,18 @@ Future<String?> resolveCoverForHistory(HistoryOfAudiobookItem item) async {
   final byId = await getMappedCoverImage(a.id);
   if (byId != null) return byId;
 
-  // 2) Legacy keys derived from the first track
-  if (item.audiobookFiles.isNotEmpty) {
-    final firstTrack = item.audiobookFiles.first;
-    final firstPath = decodePath(firstTrack.url ?? '');
-    if (firstPath.isNotEmpty) {
-      final byFile = await getMappedCoverImage(firstPath);
-      if (byFile != null) return byFile;
+  // 2) Legacy keys from the first track
+  final firstPath = LocalLibraryLayout.firstTrackLocalPath(item);
+  if (firstPath != null && firstPath.isNotEmpty) {
+    final byFile = await getMappedCoverImage(firstPath);
+    if (byFile != null) return byFile;
 
-      final byFolder = await getMappedCoverImage(p.dirname(firstPath));
-      if (byFolder != null) return byFolder;
-    }
+    final folder = LocalLibraryLayout.bookFolderFromHistory(item) ?? p.dirname(firstPath);
+    final byFolder = await getMappedCoverImage(folder);
+    if (byFolder != null) return byFolder;
   }
 
-  // 3) Fallback to the audiobook's cover (can be file or URL)
+  // 3) Fallback: audiobook's cover (can be file or URL)
   final low = a.lowQCoverImage;
   final lowLocal = asLocalPath(low);
   if (lowLocal != null && await File(lowLocal).exists()) return lowLocal;
@@ -233,46 +254,54 @@ Future<String?> resolveCoverForHistory(HistoryOfAudiobookItem item) async {
   return null;
 }
 
-/// Low-level: get mapped cover (verifies file exists; prunes stale entries).
+// ─────────────────────────────────────────────────────────────────────────────
+// Low-level mapping helpers
+
+/// Get mapped cover for a key (verifies file exists; prunes stale entries).
 Future<String?> getMappedCoverImage(String key) async {
   if (key.isEmpty) return null;
   final store = CoverImageStore();
-  final path = await store.get(key);
-  if (path == null) return null;
+  final mapped = await store.get(key);
+  if (mapped == null) return null;
 
-  final normalized = decodePath(path);
+  final normalized = decodePath(mapped);
   final f = File(normalized);
   if (await f.exists()) return f.path;
 
-  // Prune stale mapping if file is gone.
+  // Prune stale mapping if the file is gone.
   await store.delete(key);
   return null;
 }
 
-/// Low-level: put a mapping (expects an absolute path to an image file).
+/// Put a mapping (expects absolute path to an image file or a URL).
 Future<void> mapCoverImage(String key, String coverImagePath) async {
   if (key.isEmpty) return;
   final store = CoverImageStore();
   await store.put(key, decodePath(coverImagePath));
-  coverArtBus.emit(key); // 🔔 notify listeners
+  _coverCache.set(key, coverImagePath);
+  coverArtBus.emit(key); // notify listeners
 }
 
+/// Remove a mapping; if it points to a local file under our control, delete it.
 Future<void> removeCoverMapping(String key) async {
   if (key.isEmpty) return;
   final store = CoverImageStore();
   final path = await store.get(key);
   if (path != null) {
-    final f = File(decodePath(path));
-    if (await f.exists()) {
-      try { await f.delete(); } catch (_) {}
+    final local = asLocalPath(path);
+    if (local != null) {
+      final f = File(local);
+      if (await f.exists()) {
+        try { await f.delete(); } catch (_) {}
+      }
     }
   }
   await store.delete(key);
   _coverCache.remove(key);
-  coverArtBus.emit(key); // 🔔 notify listeners
+  coverArtBus.emit(key); // notify listeners
 }
 
-/// Optional explicit invalidation helpers, if other modules need them.
+// Optional explicit invalidation helpers, if other modules need them.
 void invalidateCoverForLocal(LocalAudiobook a) {
   _coverCache.remove(coverKeyForLocal(a));
 }
@@ -280,55 +309,8 @@ void invalidateCoverByKey(String key) {
   _coverCache.remove(key);
 }
 
-/// Convert any path/URI to a canonical local filesystem path if possible.
-/// Returns null for non-local (e.g., HTTP URLs).
-String? asLocalPath(String? s) {
-  if (s == null || s.isEmpty) return null;
-  try {
-    if (s.startsWith('file://')) return Uri.parse(s).toFilePath();
-    if (s.startsWith('/')) return s;
-    // Windows-style absolute path like C:\... or D:/...
-    if (s.contains(':/') && !s.startsWith('http')) return s;
-  } catch (_) {}
-  return null;
-}
-
-/// Decode a path/URI consistently (safe for keys and values).
-String decodePath(String s) {
-  if (s.isEmpty) return s;
-  try {
-    if (s.startsWith('file://')) return Uri.parse(s).toFilePath();
-    // If it looks like a percent-encoded file path, decode components.
-    return Uri.decodeComponent(s);
-  } catch (_) {
-    return s; // return as-is if decoding fails
-  }
-}
-
-/// Quick heuristic for "is this a local path (not http/https)".
-bool looksLocal(String s) =>
-    s.startsWith('file://') ||
-        s.startsWith('/') ||
-        (s.contains(':/') && !s.startsWith('http'));
-
-/// A small helper so widgets can render images without branching.
-/// Usage:
-///   final v = await resolveCoverForLocal(a);
-///   return v != null ? Image(image: coverProvider(v)) : placeholder();
-ImageProvider<Object> coverProvider(String v) {
-  final local = asLocalPath(v);
-  if (local != null) {
-    return FileImage(File(local));
-  }
-  // Treat everything else as remote; NetworkImage will handle http/https.
-  return NetworkImage(v);
-}
-
-/// Optional: housekeeping to remove orphaned images from your cover folder
-/// (and stale mappings pointing to missing files).
-/// - Scans the default 'localCoverImages' directory under external storage.
-/// - Deletes files not referenced by any mapping.
-/// Safe to run at app start or from a settings screen.
+// ─────────────────────────────────────────────────────────────────────────────
+// Optional housekeeping to remove orphaned images and stale mappings.
 Future<void> cleanupUnusedCoverImages() async {
   try {
     final ext = await getExternalStorageDirectory();
@@ -340,6 +322,7 @@ Future<void> cleanupUnusedCoverImages() async {
     final store = CoverImageStore();
     final mapped = Set<String>.from(await store.values());
 
+    // Delete files in the cover folder that are not referenced by any mapping.
     await for (final ent in coverDir.list()) {
       if (ent is File) {
         final presentInMap = mapped.contains(ent.path);
@@ -355,8 +338,8 @@ Future<void> cleanupUnusedCoverImages() async {
     for (final key in keys) {
       final val = box.get(key);
       if (val is String && val.isNotEmpty) {
-        final f = File(decodePath(val));
-        if (!await f.exists()) {
+        final local = asLocalPath(val);
+        if (local != null && !await File(local).exists()) {
           try { await box.delete(key); } catch (_) {}
         }
       }

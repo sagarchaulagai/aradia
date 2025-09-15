@@ -1,22 +1,27 @@
+// lib/widgets/local_audiobook_item.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:aradia/resources/designs/app_colors.dart';
-import 'package:aradia/resources/services/audio_handler_provider.dart';
-import 'package:aradia/resources/services/chapter_parser.dart';
-import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
+import 'package:aradia/resources/models/local_audiobook.dart';
+import 'package:aradia/resources/services/audio_handler_provider.dart';
+import 'package:aradia/resources/services/chapter_parser.dart';
 import 'package:aradia/resources/services/cover_image_service.dart';
+import 'package:aradia/resources/services/local_library_layout.dart';
 import 'package:aradia/utils/media_helper.dart';
+
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:hive/hive.dart';
 import 'package:we_slide/we_slide.dart';
 
 import '../../../utils/app_logger.dart';
@@ -42,14 +47,10 @@ class LocalAudiobookItem extends StatelessWidget {
       height: height,
       child: Card(
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(8),
-          ),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
         child: InkWell(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(8),
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           splashColor: AppColors.primaryColor,
           splashFactory: InkRipple.splashFactory,
           onLongPress: () => _showEditDialog(context),
@@ -65,13 +66,8 @@ class LocalAudiobookItem extends StatelessWidget {
                 child: _buildCoverImage(),
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 8,
-                  left: 8,
-                  right: 8,
-                ),
+                padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
@@ -105,11 +101,8 @@ class LocalAudiobookItem extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Icon(
-                              Icons.audiotrack,
-                              size: 14,
-                              color: AppColors.primaryColor,
-                            ),
+                            const Icon(Icons.audiotrack,
+                                size: 14, color: AppColors.primaryColor),
                             const SizedBox(width: 4),
                             Text(
                               '${audiobook.audioFiles.length} files',
@@ -180,11 +173,7 @@ class LocalAudiobookItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.headphones,
-            size: 48,
-            color: Colors.white.withOpacity(0.8),
-          ),
+          Icon(Icons.headphones, size: 48, color: Colors.white.withOpacity(0.8)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -225,32 +214,34 @@ class LocalAudiobookItem extends StatelessWidget {
       Hive.box('playing_audiobook_details_box');
       final historyOfAudiobook = HistoryOfAudiobook();
 
-      // Convert LocalAudiobook to required format
       final convertedAudiobook = await _convertToAudiobook();
       final audiobookFiles = await _convertToAudiobookFiles();
 
-      // Store audiobook details in Hive
-      playingAudiobookDetailsBox.put('audiobook', convertedAudiobook.toMap());
-      playingAudiobookDetailsBox.put(
+      // Store audiobook details in Hive (used by player + mini-player)
+      await playingAudiobookDetailsBox.put(
+        'audiobook',
+        convertedAudiobook.toMap(),
+      );
+      await playingAudiobookDetailsBox.put(
         'audiobookFiles',
         audiobookFiles.map((e) => e.toMap()).toList(),
       );
 
-      // Check if audiobook is in history
       if (historyOfAudiobook.isAudiobookInHistory(convertedAudiobook.id)) {
-        final hist = historyOfAudiobook.getHistoryOfAudiobookItem(convertedAudiobook.id);
-        audioHandlerProvider.audioHandler.initSongs(
+        final hist =
+        historyOfAudiobook.getHistoryOfAudiobookItem(convertedAudiobook.id);
+        await audioHandlerProvider.audioHandler.initSongs(
           audiobookFiles,
           convertedAudiobook,
           hist.index,
           hist.position,
         );
-        playingAudiobookDetailsBox.put('index', hist.index);
-        playingAudiobookDetailsBox.put('position', hist.position);
+        await playingAudiobookDetailsBox.put('index', hist.index);
+        await playingAudiobookDetailsBox.put('position', hist.position);
       } else {
-        playingAudiobookDetailsBox.put('index', 0);
-        playingAudiobookDetailsBox.put('position', 0);
-        audioHandlerProvider.audioHandler.initSongs(
+        await playingAudiobookDetailsBox.put('index', 0);
+        await playingAudiobookDetailsBox.put('position', 0);
+        await audioHandlerProvider.audioHandler.initSongs(
           audiobookFiles,
           convertedAudiobook,
           0,
@@ -258,7 +249,6 @@ class LocalAudiobookItem extends StatelessWidget {
         );
       }
 
-      // Start playback
       audioHandlerProvider.audioHandler.play();
       weSlideController.show();
     } catch (e) {
@@ -268,9 +258,9 @@ class LocalAudiobookItem extends StatelessWidget {
     }
   }
 
-  // Convert LocalAudiobook to Audiobook format
+  // Convert LocalAudiobook to Audiobook format (ID uses centralized layout key)
   Future<Audiobook> _convertToAudiobook() async {
-    final key = coverKeyForLocal(audiobook);
+    final key = LocalLibraryLayout.bookKeyForLocal(audiobook);
     final resolvedCover = await resolveCoverForLocal(audiobook);
 
     return Audiobook.fromMap({
@@ -278,7 +268,7 @@ class LocalAudiobookItem extends StatelessWidget {
       'title': audiobook.title,
       'author': audiobook.author,
       'description': audiobook.description ?? '',
-      'lowQCoverImage': resolvedCover,
+      'lowQCoverImage': resolvedCover, // unified custom/embedded resolution
       'subject': ['Local Audiobook'],
       'language': 'Unknown',
       'origin': 'local',
@@ -295,16 +285,19 @@ class LocalAudiobookItem extends StatelessWidget {
   Future<List<AudiobookFile>> _convertToAudiobookFiles() async {
     final List<AudiobookFile> out = [];
     final files = audiobook.audioFiles;
-    final key = coverKeyForLocal(audiobook);
+    final key = LocalLibraryLayout.bookKeyForLocal(audiobook);
 
     // Resolve one cover to reuse across all tracks
     final resolvedCover = await resolveCoverForLocal(audiobook);
 
+    // If single-file book, try chapter slices
     if (files.length == 1) {
-      final filePath = decodePath(files.first);
+      final filePath = LocalLibraryLayout.decodePath(files.first);
       final lower = filePath.toLowerCase();
-      final isChapterable = lower.endsWith('.m4b') || lower.endsWith('.mp4') ||
-          lower.endsWith('.m4a') || lower.endsWith('.mp3');
+      final isChapterable = lower.endsWith('.m4b') ||
+          lower.endsWith('.mp4') ||
+          lower.endsWith('.m4a') ||
+          lower.endsWith('.mp3');
 
       if (isChapterable) {
         try {
@@ -326,20 +319,22 @@ class LocalAudiobookItem extends StatelessWidget {
                   chapterTitle: cues[i].title,
                   startMs: start,
                   durationMs: durationMs,
-                  highQCoverImage: resolvedCover, // ⬅️ use resolved cover
+                  highQCoverImage: resolvedCover,
                 ),
               );
             }
-            return out;
+            return out; // done
           }
-        } catch (_) {/* fall through */}
+        } catch (_) {
+          // fall through to default single-track handling
+        }
       }
     }
 
-    // Default multi-file / no chapters
+    // Default: multi-file book or no chapter cues
     for (final entry in files.asMap().entries) {
       final index = entry.key;
-      final filePath = decodePath(entry.value);
+      final filePath = LocalLibraryLayout.decodePath(entry.value);
       final fileName = filePath.split('/').last.split('\\').last;
 
       double? duration;
@@ -360,7 +355,7 @@ class LocalAudiobookItem extends StatelessWidget {
         'url': filePath,
         'length': duration,
         'size': null,
-        'highQCoverImage': resolvedCover, // ⬅️ use resolved cover
+        'highQCoverImage': resolvedCover,
       }));
     }
 
@@ -383,24 +378,26 @@ class LocalAudiobookCoverSelector extends StatefulWidget {
       _LocalAudiobookCoverSelectorState();
 }
 
-class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelector> {
+class _LocalAudiobookCoverSelectorState
+    extends State<LocalAudiobookCoverSelector> {
   List<String> _coverImageUrls = [];
   String? _selectedCoverUrl;
   bool _isLoading = false;
   bool _isFetchingCovers = false;
 
-  bool _hasCustomCover = false;           // NEW
-  String? _defaultPreviewPath;            // NEW
+  // For "Use Default" tile
+  bool _hasCustomCover = false;
+  String? _defaultPreviewPath;
 
   @override
   void initState() {
     super.initState();
     _fetchCoverImages();
-    _loadCoverState();                     // NEW
+    _loadCoverState();
   }
 
-  Future<void> _loadCoverState() async {   // NEW
-    final key = coverKeyForLocal(widget.audiobook);
+  Future<void> _loadCoverState() async {
+    final key = LocalLibraryLayout.bookKeyForLocal(widget.audiobook);
     final mapped = await getMappedCoverImage(key);
     final def = await resolveDefaultCoverForLocal(widget.audiobook);
     if (!mounted) return;
@@ -410,56 +407,41 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
     });
   }
 
-  Future<void> _loadCurrentMapping() async { // ⬅️ NEW
-    final key = coverKeyForLocal(widget.audiobook);
-    final mapped = await getMappedCoverImage(key);
-    if (!mounted) return;
-    setState(() {
-      _hasCustomCover = mapped != null;
-    });
-  }
-
   Future<void> _fetchCoverImages() async {
-    setState(() {
-      _isFetchingCovers = true;
-    });
-
+    setState(() => _isFetchingCovers = true);
     try {
       final coverUrls = await CoverImageRemote.fetchCoverImagesFromGoogle(
         widget.audiobook.title,
         widget.audiobook.author,
       );
-
+      if (!mounted) return;
       setState(() {
         _coverImageUrls = coverUrls;
         _isFetchingCovers = false;
       });
     } catch (e) {
       AppLogger.error('Error fetching cover images: $e');
-      setState(() {
-        _isFetchingCovers = false;
-      });
+      if (!mounted) return;
+      setState(() => _isFetchingCovers = false);
     }
   }
 
   Future<void> _saveCoverImage() async {
     if (_selectedCoverUrl == null) return;
-
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      // Download the selected cover image
       final downloadedPath =
       await CoverImageRemote.downloadCoverImage(_selectedCoverUrl!);
 
       if (downloadedPath != null) {
         await mapCoverForLocal(widget.audiobook, downloadedPath);
+
         if (mounted) {
-          _hasCustomCover = true; // ⬅️ NEW (reflects state immediately)
+          _hasCustomCover = true;
           Navigator.pop(context);
           widget.onUpdated?.call();
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Cover image saved successfully!'),
@@ -488,18 +470,60 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
         );
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _useDefaultCover() async {
+    setState(() => _isLoading = true);
+    try {
+      final key = LocalLibraryLayout.bookKeyForLocal(widget.audiobook);
+
+      // Remove custom mapping (deletes file, clears cache, emits coverArtBus)
+      await removeCoverMapping(key);
+
+      // Update "now playing" stored cover to the default metadata path
+      final fallback = await resolveDefaultCoverForLocal(widget.audiobook);
+      final box = Hive.box('playing_audiobook_details_box');
+      final map = Map<String, dynamic>.from(box.get('audiobook') ?? {});
+      if ((map['id'] as String?) == key) {
+        map['lowQCoverImage'] = fallback;
+        await box.put('audiobook', map);
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        widget.onUpdated?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reverted to default cover.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error reverting cover: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasCustomCover = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
         padding: const EdgeInsets.all(24),
@@ -507,6 +531,7 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -514,13 +539,9 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Select Cover Image',
-                        style: GoogleFonts.ubuntu(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      Text('Select Cover Image',
+                          style: GoogleFonts.ubuntu(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Text(
                         '${widget.audiobook.title} by ${widget.audiobook.author}',
@@ -541,10 +562,13 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
               ],
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: _buildContent(),
-            ),
+
+            // Content
+            Expanded(child: _buildContent()),
+
             const SizedBox(height: 20),
+
+            // Actions
             _buildActionButtons(),
           ],
         ),
@@ -571,11 +595,7 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.image_not_supported,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.image_not_supported, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No cover images found',
@@ -587,10 +607,8 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
             const SizedBox(height: 8),
             Text(
               'Try searching with a different title or author',
-              style: GoogleFonts.ubuntu(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style:
+              GoogleFonts.ubuntu(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -608,8 +626,8 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
       );
     }
 
-    final showUseDefault = _hasCustomCover; // NEW
-    final itemCount = _coverImageUrls.length + (showUseDefault ? 1 : 0); // NEW
+    final showUseDefault = _hasCustomCover;
+    final itemCount = _coverImageUrls.length + (showUseDefault ? 1 : 0);
 
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -620,7 +638,7 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
-        // NEW: index 0 is the 'Use Default' tile
+        // Index 0 = "Use Default" tile when custom cover exists
         if (showUseDefault && index == 0) {
           return GestureDetector(
             onTap: _isLoading ? null : _useDefaultCover,
@@ -633,18 +651,17 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
                 borderRadius: BorderRadius.circular(8),
                 child: Stack(
                   children: [
-                    // Show default metadata preview if we have one; else a placeholder
                     if (_defaultPreviewPath != null)
                       Image(
                         image: coverProvider(_defaultPreviewPath!),
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: double.infinity,
-                        errorBuilder: (context, _, __) => _defaultTilePlaceholder(),
+                        errorBuilder: (context, _, __) =>
+                            _defaultTilePlaceholder(),
                       )
                     else
                       _defaultTilePlaceholder(),
-                    // Label ribbon
                     Positioned(
                       left: 0,
                       right: 0,
@@ -655,7 +672,8 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
                         alignment: Alignment.center,
                         child: const Text(
                           'Use Default',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -663,7 +681,8 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
                       const Positioned.fill(
                         child: ColoredBox(
                           color: Color(0x66000000),
-                          child: Center(child: CircularProgressIndicator()),
+                          child:
+                          Center(child: CircularProgressIndicator()),
                         ),
                       ),
                   ],
@@ -673,20 +692,23 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
           );
         }
 
-        // Shift index when 'Use Default' tile exists
+        // Shift index when "Use Default" exists
         final dataIndex = showUseDefault ? index - 1 : index;
         final imageUrl = _coverImageUrls[dataIndex];
         final isSelected = _selectedCoverUrl == imageUrl;
 
         return GestureDetector(
           onTap: () {
-            setState(() { _selectedCoverUrl = isSelected ? null : imageUrl; });
+            setState(() {
+              _selectedCoverUrl = isSelected ? null : imageUrl;
+            });
           },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+                color:
+                isSelected ? AppColors.primaryColor : Colors.grey[300]!,
                 width: isSelected ? 3 : 1,
               ),
             ),
@@ -699,16 +721,23 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    errorBuilder: (context, _, __) =>
-                        Container(color: Colors.grey[200], child: const Icon(Icons.broken_image, color: Colors.grey)),
+                    errorBuilder: (context, _, __) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                    ),
                   ),
                   if (isSelected)
                     Positioned(
-                      top: 8, right: 8,
+                      top: 8,
+                      right: 8,
                       child: Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(color: AppColors.primaryColor, shape: BoxShape.circle),
-                        child: const Icon(Icons.check, color: Colors.white, size: 16),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child:
+                        const Icon(Icons.check, color: Colors.white, size: 16),
                       ),
                     ),
                 ],
@@ -720,48 +749,13 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
     );
   }
 
-  // NEW: small helper for the default tile when no preview exists
   Widget _defaultTilePlaceholder() {
     return Container(
       color: Colors.grey[200],
-      child: const Center(child: Icon(Icons.image_not_supported, color: Colors.grey)),
+      child: const Center(
+        child: Icon(Icons.image_not_supported, color: Colors.grey),
+      ),
     );
-  }
-
-  Future<void> _useDefaultCover() async {  // NEW
-    setState(() { _isLoading = true; });
-
-    try {
-      final key = coverKeyForLocal(widget.audiobook);
-
-      // Remove custom mapping (deletes file, clears cache, emits coverArtBus)
-      await removeCoverMapping(key);
-
-      // Update "now playing" stored cover to the default metadata path
-      final fallback = await resolveDefaultCoverForLocal(widget.audiobook);
-      final box = Hive.box('playing_audiobook_details_box');
-      final map = Map<String, dynamic>.from(box.get('audiobook') ?? {});
-      if ((map['id'] as String?) == key) {
-        map['lowQCoverImage'] = fallback;
-        await box.put('audiobook', map);
-      }
-
-      if (mounted) {
-        Navigator.pop(context);
-        widget.onUpdated?.call();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reverted to default cover.'), backgroundColor: Colors.green),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error reverting cover: $e'), backgroundColor: Colors.red),
-        );
-      }
-    } finally {
-      if (mounted) setState(() { _isLoading = false; _hasCustomCover = false; });
-    }
   }
 
   Widget _buildActionButtons() {
@@ -774,7 +768,8 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
         ),
         const SizedBox(width: 12),
         ElevatedButton(
-          onPressed: _selectedCoverUrl != null && !_isLoading ? _saveCoverImage : null,
+          onPressed:
+          _selectedCoverUrl != null && !_isLoading ? _saveCoverImage : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: Colors.white,
@@ -783,7 +778,8 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
               ? const SizedBox(
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            child:
+            CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
           )
               : const Text('Save Cover'),
         ),
@@ -792,10 +788,9 @@ class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelecto
   }
 }
 
-/// Network-only utilities used by the cover picker UI.
-/// (All mapping/lookup logic lives in lib/resources/services/cover_image_service.dart)
+/// Network-only helpers used by the cover picker UI.
+/// Mapping/lookup logic lives in cover_image_service.dart.
 class CoverImageRemote {
-  // Get cover images from Google Books API
   static Future<List<String>> fetchCoverImagesFromGoogle(
       String title, String author) async {
     try {
@@ -804,7 +799,6 @@ class CoverImageRemote {
           'https://www.googleapis.com/books/v1/volumes?q=$query&maxResults=10';
 
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<String> coverUrls = [];
@@ -830,38 +824,31 @@ class CoverImageRemote {
           }
         }
 
-        // Remove duplicates and return
         return coverUrls.toSet().toList();
       }
     } catch (e) {
       AppLogger.error('Error fetching cover images from Google: $e');
     }
-
     return [];
   }
 
-  // Download cover image to external storage
   static Future<String?> downloadCoverImage(String imageUrl) async {
     try {
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode != 200) return null;
 
-      // Get external storage directory
       final externalDir = await getExternalStorageDirectory();
       if (externalDir == null) return null;
 
-      // Create localCoverImages directory
       final coverImagesDir =
       Directory(path.join(externalDir.path, 'localCoverImages'));
       if (!await coverImagesDir.exists()) {
         await coverImagesDir.create(recursive: true);
       }
 
-      // Generate random filename
       final randomName = _generateRandomString(10);
       final filePath = path.join(coverImagesDir.path, '$randomName.jpg');
 
-      // Save image
       final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
 
@@ -873,14 +860,15 @@ class CoverImageRemote {
     }
   }
 
-  // Generate random string for filename
   static String _generateRandomString(int length) {
     const chars =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
     return String.fromCharCodes(
       Iterable.generate(
-          length, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+        length,
+            (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+      ),
     );
   }
 }

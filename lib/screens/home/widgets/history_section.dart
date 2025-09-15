@@ -298,8 +298,7 @@ class _HistorySectionState extends State<HistorySection> {
                       children: [
                         const IconTheme(
                           data: IconThemeData(color: Colors.black, size: 14),
-                          child:
-                          Icon(Ionicons.help_circle, color: Colors.black),
+                          child: Icon(Ionicons.help_circle, color: Colors.black),
                         ),
                         IconTheme(
                           data: const IconThemeData(
