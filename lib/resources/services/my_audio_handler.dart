@@ -99,22 +99,41 @@ class MyAudioHandler extends BaseAudioHandler {
     });
   }
 
+  Future<Uri?> _resolveActiveArtUri() async {
+    final id = _activeAudiobookId;
+    if (id == null) return null;
+
+    // Prefer mapped cover (if any)
+    final mapped = await getMappedCoverImage(id);
+    if (mapped != null && mapped.isNotEmpty) {
+      return Uri.parse(mapped);
+    }
+
+    // Fallback: whatever "now playing" audiobook in Hive says
+    try {
+      final map = Map<String, dynamic>.from(playingAudiobookDetailsBox.get('audiobook') ?? {});
+      final v = map['lowQCoverImage'] as String?;
+      if (v != null && v.isNotEmpty) return Uri.parse(v);
+    } catch (_) {}
+
+    // Last resort: keep existing item art
+    final current = mediaItem.value?.artUri;
+    if (current != null) return current;
+
+    return null;
+  }
+
   Future<void> _refreshActiveCoverArt() async {
     final id = _activeAudiobookId;
     if (id == null) return;
     if (_playlist == null || queue.value.isEmpty) return;
 
-    // Try the latest mapped cover for this audiobook id
-    final newPath = await getMappedCoverImage(id);
-    if (newPath == null || newPath.isEmpty) return;
+    final newUri = await _resolveActiveArtUri();
+    if (newUri == null) return;
 
-    final newUri = Uri.parse(newPath);
-
-    // Rebuild queue items with the new art
     final old = queue.value;
     final rebuilt = <MediaItem>[];
     for (final item in old) {
-      // Preserve fields you set in initSongs
       rebuilt.add(MediaItem(
         id: item.id,
         album: item.album,
@@ -132,8 +151,7 @@ class MyAudioHandler extends BaseAudioHandler {
       ));
     }
 
-    // Publish to AudioService streams
-    addQueueItems([]);                 // no-op to keep semantics
+    addQueueItems([]);
     queue.add(rebuilt);
 
     final idx = _player.currentIndex ?? 0;
@@ -141,12 +159,7 @@ class MyAudioHandler extends BaseAudioHandler {
       mediaItem.add(rebuilt[idx]);
     }
 
-    // Keep the persisted "now playing" audiobook's cover in sync for future restores
-    try {
-      final map = Map<String, dynamic>.from(playingAudiobookDetailsBox.get('audiobook'));
-      map['lowQCoverImage'] = newPath;
-      await playingAudiobookDetailsBox.put('audiobook', map);
-    } catch (_) {}
+    // Keep Hive "audiobook.lowQCoverImage" as-is; selector already updates it.
   }
 
   Future<void> initSongs(

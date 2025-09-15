@@ -179,6 +179,15 @@ Future<String?> resolveCoverForLocal(LocalAudiobook a) async {
   return null;
 }
 
+Future<String?> resolveDefaultCoverForLocal(LocalAudiobook a) async {
+  // Only use the explicit/embedded path on the model
+  final explicit = a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
+  if (explicit != null && await File(explicit).exists()) {
+    return explicit;
+  }
+  return null; // default is "no custom image" → caller can show placeholder
+}
+
 /// Resolve artwork for a History tile. This mirrors player/card precedence and
 /// remains backward-compatible with older history entries.
 ///

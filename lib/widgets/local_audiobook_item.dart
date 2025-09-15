@@ -383,17 +383,40 @@ class LocalAudiobookCoverSelector extends StatefulWidget {
       _LocalAudiobookCoverSelectorState();
 }
 
-class _LocalAudiobookCoverSelectorState
-    extends State<LocalAudiobookCoverSelector> {
+class _LocalAudiobookCoverSelectorState extends State<LocalAudiobookCoverSelector> {
   List<String> _coverImageUrls = [];
   String? _selectedCoverUrl;
   bool _isLoading = false;
   bool _isFetchingCovers = false;
 
+  bool _hasCustomCover = false;           // NEW
+  String? _defaultPreviewPath;            // NEW
+
   @override
   void initState() {
     super.initState();
     _fetchCoverImages();
+    _loadCoverState();                     // NEW
+  }
+
+  Future<void> _loadCoverState() async {   // NEW
+    final key = coverKeyForLocal(widget.audiobook);
+    final mapped = await getMappedCoverImage(key);
+    final def = await resolveDefaultCoverForLocal(widget.audiobook);
+    if (!mounted) return;
+    setState(() {
+      _hasCustomCover = mapped != null;
+      _defaultPreviewPath = def;
+    });
+  }
+
+  Future<void> _loadCurrentMapping() async { // ⬅️ NEW
+    final key = coverKeyForLocal(widget.audiobook);
+    final mapped = await getMappedCoverImage(key);
+    if (!mounted) return;
+    setState(() {
+      _hasCustomCover = mapped != null;
+    });
   }
 
   Future<void> _fetchCoverImages() async {
@@ -432,13 +455,11 @@ class _LocalAudiobookCoverSelectorState
       await CoverImageRemote.downloadCoverImage(_selectedCoverUrl!);
 
       if (downloadedPath != null) {
-        // Single point of truth: save by canonical key + legacy cleanup
         await mapCoverForLocal(widget.audiobook, downloadedPath);
-
         if (mounted) {
+          _hasCustomCover = true; // ⬅️ NEW (reflects state immediately)
           Navigator.pop(context);
           widget.onUpdated?.call();
-
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Cover image saved successfully!'),
@@ -545,7 +566,7 @@ class _LocalAudiobookCoverSelectorState
       );
     }
 
-    if (_coverImageUrls.isEmpty) {
+    if (_coverImageUrls.isEmpty && !_hasCustomCover) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -587,6 +608,9 @@ class _LocalAudiobookCoverSelectorState
       );
     }
 
+    final showUseDefault = _hasCustomCover; // NEW
+    final itemCount = _coverImageUrls.length + (showUseDefault ? 1 : 0); // NEW
+
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -594,16 +618,69 @@ class _LocalAudiobookCoverSelectorState
         mainAxisSpacing: 12,
         childAspectRatio: 0.7,
       ),
-      itemCount: _coverImageUrls.length,
+      itemCount: itemCount,
       itemBuilder: (context, index) {
-        final imageUrl = _coverImageUrls[index];
+        // NEW: index 0 is the 'Use Default' tile
+        if (showUseDefault && index == 0) {
+          return GestureDetector(
+            onTap: _isLoading ? null : _useDefaultCover,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.primaryColor, width: 2),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Stack(
+                  children: [
+                    // Show default metadata preview if we have one; else a placeholder
+                    if (_defaultPreviewPath != null)
+                      Image(
+                        image: coverProvider(_defaultPreviewPath!),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, _, __) => _defaultTilePlaceholder(),
+                      )
+                    else
+                      _defaultTilePlaceholder(),
+                    // Label ribbon
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        color: Colors.black54,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Use Default',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    if (_isLoading)
+                      const Positioned.fill(
+                        child: ColoredBox(
+                          color: Color(0x66000000),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Shift index when 'Use Default' tile exists
+        final dataIndex = showUseDefault ? index - 1 : index;
+        final imageUrl = _coverImageUrls[dataIndex];
         final isSelected = _selectedCoverUrl == imageUrl;
 
         return GestureDetector(
           onTap: () {
-            setState(() {
-              _selectedCoverUrl = isSelected ? null : imageUrl;
-            });
+            setState(() { _selectedCoverUrl = isSelected ? null : imageUrl; });
           },
           child: Container(
             decoration: BoxDecoration(
@@ -622,28 +699,16 @@ class _LocalAudiobookCoverSelectorState
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    // You can keep the same loadingBuilder/errorBuilder if you like,
-                    // or remove them since coverProvider(FileImage) won't need it.
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
-                    ),
+                    errorBuilder: (context, _, __) =>
+                        Container(color: Colors.grey[200], child: const Icon(Icons.broken_image, color: Colors.grey)),
                   ),
                   if (isSelected)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 8, right: 8,
                       child: Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 16,
-                        ),
+                        decoration: const BoxDecoration(color: AppColors.primaryColor, shape: BoxShape.circle),
+                        child: const Icon(Icons.check, color: Colors.white, size: 16),
                       ),
                     ),
                 ],
@@ -655,31 +720,71 @@ class _LocalAudiobookCoverSelectorState
     );
   }
 
+  // NEW: small helper for the default tile when no preview exists
+  Widget _defaultTilePlaceholder() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Center(child: Icon(Icons.image_not_supported, color: Colors.grey)),
+    );
+  }
+
+  Future<void> _useDefaultCover() async {  // NEW
+    setState(() { _isLoading = true; });
+
+    try {
+      final key = coverKeyForLocal(widget.audiobook);
+
+      // Remove custom mapping (deletes file, clears cache, emits coverArtBus)
+      await removeCoverMapping(key);
+
+      // Update "now playing" stored cover to the default metadata path
+      final fallback = await resolveDefaultCoverForLocal(widget.audiobook);
+      final box = Hive.box('playing_audiobook_details_box');
+      final map = Map<String, dynamic>.from(box.get('audiobook') ?? {});
+      if ((map['id'] as String?) == key) {
+        map['lowQCoverImage'] = fallback;
+        await box.put('audiobook', map);
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        widget.onUpdated?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reverted to default cover.'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error reverting cover: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() { _isLoading = false; _hasCustomCover = false; });
+    }
+  }
+
   Widget _buildActionButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         const SizedBox(width: 12),
         ElevatedButton(
-          onPressed:
-              _selectedCoverUrl != null && !_isLoading ? _saveCoverImage : null,
+          onPressed: _selectedCoverUrl != null && !_isLoading ? _saveCoverImage : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: Colors.white,
           ),
           child: _isLoading
               ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+          )
               : const Text('Save Cover'),
         ),
       ],
