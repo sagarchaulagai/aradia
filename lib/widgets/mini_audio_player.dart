@@ -54,7 +54,11 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
     if (audiobookMap == null) return;
 
     final audiobook = Audiobook.fromMap(audiobookMap);
-    if (_initializedAudiobookId == audiobook.id) return;
+    final handlerIsEmpty =
+        provider.audioHandler.getAudioSourcesFromPlaylist().isEmpty;
+    if (!handlerIsEmpty && _initializedAudiobookId == audiobook.id) {
+      return; // already initialized with this book
+    }
 
     final files = (box.get('audiobookFiles') as List)
         .map((e) => AudiobookFile.fromMap(e))

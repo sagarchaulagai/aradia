@@ -56,6 +56,18 @@ class MyAudioHandler extends BaseAudioHandler {
   StreamSubscription<PlayerState>? _playerStateSub;
   StreamSubscription<bool>? _playingSub;
 
+  Future<void> _persistInstant() async {
+    if (!_canPersistProgress || _isReinitializing) return;
+    final id = _activeAudiobookId;
+    final idx = _player.currentIndex;
+    if (id == null || idx == null) return;
+    final liveMs = _player.position.inMilliseconds;
+    historyOfAudiobook.updateAudiobookPosition(id, idx, liveMs);
+    playingAudiobookDetailsBox.put('index', idx);
+    playingAudiobookDetailsBox.put('position', liveMs);
+    _lastPersistAt = DateTime.now();
+  }
+
   Future<void> _ensureAudioSession() async {
     if (_sessionConfigured) return;
 
@@ -80,7 +92,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
     // Keep notification/media session state in lock-step with the real player
     _bindStatePipelines();
-    StreamSubscription<String>? _coverSub;
   }
 
   void _bindStatePipelines() {
@@ -539,17 +550,20 @@ class MyAudioHandler extends BaseAudioHandler {
     await _player.stop();
     _coverSub?.cancel();
     _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   @override
   Future<void> seek(Duration position) async {
     await _player.seek(position);
     _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   @override
   Future<void> skipToQueueItem(int index) async {
     await _player.seek(Duration.zero, index: index);
+    await _persistInstant();
     await play();
   }
 
@@ -557,12 +571,14 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> skipToNext() async {
     await _player.seekToNext();
     _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   @override
   Future<void> skipToPrevious() async {
     await _player.seekToPrevious();
     _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   // Map Android's seekForward/seekBackward to fast-forward/rewind

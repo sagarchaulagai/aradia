@@ -70,10 +70,11 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         .toList();
 
     audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
-    final int index = playingAudiobookDetailsBox.get('index');
-    final int position = playingAudiobookDetailsBox.get('position');
-    audioHandlerProvider.audioHandler
-        .initSongs(audiobookFiles, audiobook, index, position);
+    // Do NOT reinitialize here. If the handler is empty (fresh app start),
+    // calling play() will cold-restore from Hive via _restoreQueueFromBoxIfEmpty().
+    if (audioHandlerProvider.audioHandler.getAudioSourcesFromPlaylist().isEmpty) {
+      audioHandlerProvider.audioHandler.play();
+    }
 
     // Initialize skip silence state
     _skipSilenceNotifier.value = _skipSilence;
