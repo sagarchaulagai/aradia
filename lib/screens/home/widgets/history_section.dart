@@ -1,4 +1,5 @@
 // lib/screens/home/widgets/history_section.dart
+import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/resources/services/cover_image_service.dart';
@@ -37,12 +38,22 @@ class _HistorySectionState extends State<HistorySection> {
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
   }
 
-  // This method is used to format the progress of the audiobook
+  // Helper: seconds for a file whether it's a full file (length in seconds)
+  // or a chapter slice (durationMs in milliseconds).
+  double _secondsForFile(AudiobookFile f) {
+    if (f.durationMs != null) return (f.durationMs! / 1000.0);
+    return f.length ?? 0.0;
+  }
+
+  // This method is used to format the progress of the audiobook.
+  // position = current track position in ms
+  // total = total duration of the whole book in seconds
+  // completedTime = total seconds from all tracks BEFORE the current index
   String formatProgress(int position, double total, double completedTime) {
     final totalTimeCompleted = position + completedTime * 1000;
     final duration = Duration(milliseconds: totalTimeCompleted.toInt());
 
-    final totalMinutes = total / 60;
+    final totalMinutes = total / 60.0; // total seconds → minutes
     final completedMinutes = duration.inMinutes.toDouble();
 
     if (totalMinutes >= 1000) {
@@ -131,11 +142,12 @@ class _HistorySectionState extends State<HistorySection> {
 
   Widget _buildHistoryItem(
       HistoryOfAudiobookItem item,
-      double totalTime,
-      double completedTime,
+      double totalTimeSeconds,
+      double completedSecondsBeforeIndex,
       ) {
-    final progress = totalTime > 0
-        ? (item.position + (completedTime * 1000)) / (totalTime * 1000)
+    final progress = totalTimeSeconds > 0
+        ? (item.position + (completedSecondsBeforeIndex * 1000)) /
+        (totalTimeSeconds * 1000)
         : 0.0;
 
     return Container(
@@ -343,7 +355,11 @@ class _HistorySectionState extends State<HistorySection> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    formatProgress(item.position, totalTime, completedTime),
+                    formatProgress(
+                      item.position,
+                      totalTimeSeconds,
+                      completedSecondsBeforeIndex,
+                    ),
                     style: GoogleFonts.ubuntu(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -405,17 +421,20 @@ class _HistorySectionState extends State<HistorySection> {
                 itemCount: historyItems.length,
                 itemBuilder: (context, index) {
                   final item = historyItems[index];
-                  final double totalTime = item.audiobookFiles.fold(
+
+                  // Total book duration (seconds) — supports chapter slices.
+                  final double totalSecs = item.audiobookFiles.fold(
                     0.0,
-                        (sum, file) => sum + (file.length ?? 0.0),
+                        (sum, f) => sum + _secondsForFile(f),
                   );
 
-                  double completedTime = 0;
+                  // Seconds completed across all tracks prior to the current one.
+                  double completedSecs = 0;
                   for (int i = 0; i < item.index; i++) {
-                    completedTime += (item.audiobookFiles[i].length ?? 0);
+                    completedSecs += _secondsForFile(item.audiobookFiles[i]);
                   }
 
-                  return _buildHistoryItem(item, totalTime, completedTime);
+                  return _buildHistoryItem(item, totalSecs, completedSecs);
                 },
               ),
             );
