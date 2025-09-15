@@ -16,6 +16,14 @@ import 'package:rxdart/rxdart.dart';
 import 'package:rxdart_ext/utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+// Turn a local path or remote URL into a proper Uri for MediaItem.artUri.
+Uri? _artUriFrom(String? s) {
+  if (s == null || s.isEmpty) return null;
+  // Use the same helper you already have in cover_image_service.dart
+  final local = asLocalPath(s);
+  return local != null ? Uri.file(local) : Uri.parse(s);
+}
+
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
 
@@ -103,24 +111,23 @@ class MyAudioHandler extends BaseAudioHandler {
     final id = _activeAudiobookId;
     if (id == null) return null;
 
-    // Prefer mapped cover (if any)
+    // Prefer mapped cover (custom)
     final mapped = await getMappedCoverImage(id);
-    if (mapped != null && mapped.isNotEmpty) {
-      return Uri.parse(mapped);
-    }
+    final byMap = _artUriFrom(mapped);
+    if (byMap != null) return byMap;
 
-    // Fallback: whatever "now playing" audiobook in Hive says
+    // Fallback: whatever is in the "now playing" audiobook (Hive)
     try {
-      final map = Map<String, dynamic>.from(playingAudiobookDetailsBox.get('audiobook') ?? {});
+      final map = Map<String, dynamic>.from(
+        playingAudiobookDetailsBox.get('audiobook') ?? {},
+      );
       final v = map['lowQCoverImage'] as String?;
-      if (v != null && v.isNotEmpty) return Uri.parse(v);
+      final byBox = _artUriFrom(v);
+      if (byBox != null) return byBox;
     } catch (_) {}
 
     // Last resort: keep existing item art
-    final current = mediaItem.value?.artUri;
-    if (current != null) return current;
-
-    return null;
+    return mediaItem.value?.artUri;
   }
 
   Future<void> _refreshActiveCoverArt() async {
@@ -216,21 +223,20 @@ class MyAudioHandler extends BaseAudioHandler {
         final isYouTube = song.url?.contains('youtube.com') == true ||
             song.url?.contains('youtu.be') == true;
 
+        // Pick one art string: prefer per-track, else audiobook fallback
+        final artStr = song.highQCoverImage ?? audiobook.lowQCoverImage;
+        final art = _artUriFrom(artStr);
+
         final item = MediaItem(
           id: song.track.toString(),
           album: audiobook.title,
           title: song.title ?? '',
           artist: audiobook.author ?? 'Librivox',
-          artUri: Uri.parse(
-            audiobook.lowQCoverImage.contains("youtube")
-                ? audiobook.lowQCoverImage
-                : (song.highQCoverImage ?? ''),
-          ),
+          artUri: art, // ← this can be file://... or https://...
           extras: {
             'url': song.url,
             'audiobook_id': audiobook.id,
             'is_youtube': isYouTube,
-            // Helpful for debugging
             'startMs': song.startMs,
             'durationMs': song.durationMs,
           },

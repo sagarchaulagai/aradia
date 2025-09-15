@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'dart:io';
+
+import 'package:aradia/resources/models/audiobook.dart';
+import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/resources/services/my_audio_handler.dart';
 import 'package:aradia/utils/app_logger.dart';
+import 'package:aradia/utils/optimized_timer.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:hive/hive.dart';
-import 'package:aradia/resources/models/audiobook.dart';
-import 'package:aradia/resources/models/audiobook_file.dart';
-import 'package:aradia/utils/optimized_timer.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
+
 import 'widgets/controls.dart';
 import 'widgets/progress_bar_widget.dart';
 
@@ -48,7 +50,6 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
   @override
   void dispose() {
-    // Clean up timer and ValueNotifiers
     _sleepTimer.dispose();
     _skipSilenceNotifier.dispose();
     _positionSubscription?.cancel();
@@ -69,8 +70,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         .toList();
 
     audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
-    int index = playingAudiobookDetailsBox.get('index');
-    int position = playingAudiobookDetailsBox.get('position');
+    final int index = playingAudiobookDetailsBox.get('index');
+    final int position = playingAudiobookDetailsBox.get('position');
     audioHandlerProvider.audioHandler
         .initSongs(audiobookFiles, audiobook, index, position);
 
@@ -80,7 +81,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     if (kDebugMode) {
       AppLogger.debug('audiobookFiles: ${audiobookFiles.length}');
       if (audiobookFiles.isNotEmpty) {
-        AppLogger.debug('audiobookFiles: ${audiobookFiles[0].highQCoverImage}');
+        AppLogger.debug(
+            'audiobookFiles: ${audiobookFiles[0].highQCoverImage}');
       }
     }
   }
@@ -265,15 +267,63 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     );
   }
 
+  // -------- Artwork helpers (handle local file:// and remote http/https) -----
+
+  Widget _artThumb(Uri? art, {double size = 50}) {
+    final isLocal = art != null && art.scheme == 'file';
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: isLocal
+            ? Image.file(
+          File(art!.toFilePath()),
+          fit: BoxFit.cover,
+        )
+            : CachedNetworkImage(
+          imageUrl: art?.toString() ?? '',
+          fit: BoxFit.cover,
+          errorWidget: (_, __, ___) =>
+          const Icon(Icons.broken_image, color: Colors.white54),
+        ),
+      ),
+    );
+  }
+
+  Widget _artLarge(Uri? art, {double size = 250}) {
+    final isLocal = art != null && art.scheme == 'file';
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: isLocal
+          ? Image.file(
+        File(art!.toFilePath()),
+        fit: BoxFit.cover,
+        height: size,
+        width: size,
+      )
+          : CachedNetworkImage(
+        imageUrl: art?.toString() ?? '',
+        fit: BoxFit.cover,
+        height: size,
+        width: size,
+        errorWidget: (_, __, ___) => const Icon(Icons.error),
+      ),
+    );
+  }
+
+  // --------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<MediaItem?>(
       stream: audioHandlerProvider.audioHandler.mediaItem,
       builder: (context, snapshot) {
         if (snapshot.data == null) {
-          return Container();
+          return const SizedBox.shrink();
         }
-        MediaItem mediaItem = snapshot.data!;
+        final MediaItem mediaItem = snapshot.data!;
+
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.grey[850],
@@ -281,33 +331,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
             title: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (mediaItem.artUri.toString().contains('storage/emulated'))
-                  Image.file(
-                    File(mediaItem.artUri.toString()),
-                    fit: BoxFit.cover,
-                    height: 50,
-                    width: 50,
-                  )
-                else
-                  CachedNetworkImage(
-                    imageUrl: mediaItem.artUri.toString(),
-                    fit: BoxFit.cover,
-                    height: 50,
-                    width: 50,
-                    errorWidget: (context, url, error) =>
-                    const Icon(Icons.error),
-                    placeholder: (context, url) => CachedNetworkImage(
-                      imageUrl: audiobook.lowQCoverImage,
-                      fit: BoxFit.cover,
-                      height: 50,
-                      width: 50,
-                      errorWidget: (context, url, error) =>
-                      const Icon(Icons.error),
-                    ),
-                  ),
-                const SizedBox(
-                  width: 10,
-                ),
+                _artThumb(mediaItem.artUri, size: 50),
+                const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -352,12 +377,12 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                 16,
                 16,
                 16,
-                16 + MediaQuery.viewInsetsOf(context).bottom, // make room for keyboard
+                16 + MediaQuery.viewInsetsOf(context).bottom,
               ),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min, // let it shrink when space is tight
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 20),
                   Hero(
@@ -367,7 +392,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).brightness == Brightness.dark
+                            color: Theme.of(context).brightness ==
+                                Brightness.dark
                                 ? Colors.black.withValues(alpha: 0.5)
                                 : Colors.grey.withValues(alpha: 0.5),
                             spreadRadius: 3,
@@ -376,36 +402,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: mediaItem.artUri
-                            .toString()
-                            .contains('storage/emulated')
-                            ? Image.file(
-                          File(mediaItem.artUri.toString()),
-                          fit: BoxFit.cover,
-                          height: 250,
-                          width: 250,
-                        )
-                            : CachedNetworkImage(
-                          imageUrl: mediaItem.artUri.toString(),
-                          fit: BoxFit.cover,
-                          height: 250,
-                          width: 250,
-                          errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                          placeholder: (context, url) => CachedNetworkImage(
-                            imageUrl: audiobook.lowQCoverImage,
-                            fit: BoxFit.cover,
-                            height: 250,
-                            width: 250,
-                            errorWidget: (context, url, error) =>
-                            const Icon(
-                              Icons.error,
-                            ),
-                          ),
-                        ),
-                      ),
+                      child: _artLarge(mediaItem.artUri, size: 250),
                     ),
                   ),
                   const SizedBox(height: 20),
