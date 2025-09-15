@@ -19,10 +19,22 @@ class _SettingsState extends State<Settings> {
     'es': 'Español (Spanish)',
     'fr': 'Français (French)',
     'nl': 'Nederlands (Dutch)',
-    'mul': 'Multiple',
+    'mul': 'Multiple / Multilingual',
     'pt': 'Português (Portuguese)',
     'it': 'Italiano (Italian)',
     'ru': 'Русский (Russian)',
+    'el': 'Ελληνικά (Greek)',
+    'grc': 'Ancient Greek',
+    'ja': '日本語 (Japanese)',
+    'pl': 'Polski (Polish)',
+    'zh': '中文 (Chinese)',
+    'he': 'עברית (Hebrew)',
+    'la': 'Latina (Latin)',
+    'fi': 'Suomi (Finnish)',
+    'sv': 'Svenska (Swedish)',
+    'ca': 'Català (Catalan)',
+    'da': 'Dansk (Danish)',
+    'eo': 'Esperanto',
   };
 
   late final Box _box;

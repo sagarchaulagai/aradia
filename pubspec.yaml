@@ -85,3 +85,4 @@ flutter:
   
   assets:
     - assets/icon.png
+    - assets/language_subjects.txt
