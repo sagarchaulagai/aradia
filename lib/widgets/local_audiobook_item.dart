@@ -249,7 +249,6 @@ class LocalAudiobookItem extends StatelessWidget {
         );
       }
 
-      audioHandlerProvider.audioHandler.play();
       weSlideController.show();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
