@@ -68,6 +68,13 @@ class MyAudioHandler extends BaseAudioHandler {
     _lastPersistAt = DateTime.now();
   }
 
+  /// Rebuild the queue from Hive on cold start *without* starting playback.
+  Future<void> restoreIfNeeded() async {
+    await _restoreQueueFromBoxIfEmpty(); // already silent (no play)
+    // Make sure the UI gets an immediate state + current media item
+    _broadcastState(_player.playbackEvent);
+  }
+
   Future<void> _ensureAudioSession() async {
     if (_sessionConfigured) return;
 

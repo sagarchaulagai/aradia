@@ -73,7 +73,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     // Do NOT reinitialize here. If the handler is empty (fresh app start),
     // calling play() will cold-restore from Hive via _restoreQueueFromBoxIfEmpty().
     if (audioHandlerProvider.audioHandler.getAudioSourcesFromPlaylist().isEmpty) {
-      audioHandlerProvider.audioHandler.play();
+      audioHandlerProvider.audioHandler.restoreIfNeeded();
     }
 
     // Initialize skip silence state
