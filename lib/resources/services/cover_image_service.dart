@@ -1,4 +1,5 @@
 // lib/resources/services/cover_image_service.dart
+import 'dart:async';
 import 'dart:io';
 
 import 'package:aradia/resources/models/history_of_audiobook.dart';
@@ -7,6 +8,23 @@ import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
+// ── Cover art event bus ──────────────────────────────────────────────────────
+class CoverArtBus {
+  static final CoverArtBus _i = CoverArtBus._();
+  CoverArtBus._();
+  factory CoverArtBus() => _i;
+
+  final _ctrl = StreamController<String>.broadcast(); // payload: cover key/id
+  Stream<String> get stream => _ctrl.stream;
+
+  void emit(String key) {
+    if (key.isEmpty) return;
+    _ctrl.add(key);
+  }
+}
+
+final coverArtBus = CoverArtBus();
 
 /// All cover mappings are stored in this Hive box.
 /// Keys are *normalized* strings representing either a file path (single-file book)
@@ -98,14 +116,13 @@ Future<void> mapCoverForLocal(LocalAudiobook a, String coverImagePath) async {
 
   await mapCoverImage(key, normalized);
 
-  // Legacy cleanup: if the key differs from folderPath, remove folder mapping.
   final folderKey = decodePath(a.folderPath);
   if (folderKey != key) {
     await removeCoverMapping(folderKey);
   }
 
-  // Prime/update cache so cards & player show the new cover immediately.
   _coverCache.set(key, normalized);
+  coverArtBus.emit(key); // 🔔 publish for this local book too
 }
 
 /// Resolve a cover for a local audiobook using consistent rules:
@@ -228,10 +245,9 @@ Future<void> mapCoverImage(String key, String coverImagePath) async {
   if (key.isEmpty) return;
   final store = CoverImageStore();
   await store.put(key, decodePath(coverImagePath));
+  coverArtBus.emit(key); // 🔔 notify listeners
 }
 
-/// Low-level: remove mapping (also deletes the file if it still exists).
-/// Also evicts the cache entry for the key.
 Future<void> removeCoverMapping(String key) async {
   if (key.isEmpty) return;
   final store = CoverImageStore();
@@ -239,12 +255,12 @@ Future<void> removeCoverMapping(String key) async {
   if (path != null) {
     final f = File(decodePath(path));
     if (await f.exists()) {
-      // Best-effort delete; ignore errors
       try { await f.delete(); } catch (_) {}
     }
   }
   await store.delete(key);
   _coverCache.remove(key);
+  coverArtBus.emit(key); // 🔔 notify listeners
 }
 
 /// Optional explicit invalidation helpers, if other modules need them.

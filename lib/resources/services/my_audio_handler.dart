@@ -6,6 +6,7 @@ import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/services/youtube_audio_service.dart';
+import 'package:aradia/resources/services/cover_image_service.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -29,6 +30,8 @@ class MyAudioHandler extends BaseAudioHandler {
   bool _sessionConfigured = false;
   bool _isReinitializing = false;
   int _initGen = 0;
+
+  StreamSubscription<String>? _coverSub;
 
   // Write barrier + context about the current audiobook
   bool _canPersistProgress = false;
@@ -69,25 +72,81 @@ class MyAudioHandler extends BaseAudioHandler {
 
     // Keep notification/media session state in lock-step with the real player
     _bindStatePipelines();
+    StreamSubscription<String>? _coverSub;
   }
 
   void _bindStatePipelines() {
     _eventSub?.cancel();
     _playerStateSub?.cancel();
     _playingSub?.cancel();
+    _coverSub?.cancel(); // ← add
 
-    // 1) Playback events (buffering, ready, completed, index, position updates)
     _eventSub = _player.playbackEventStream.listen(_broadcastState);
-
-    // 2) PlayerState (processing + playing bool changes)
     _playerStateSub = _player.playerStateStream.listen((_) {
       _broadcastState(_player.playbackEvent);
     });
-
-    // 3) Explicit playing changes (extra belt-and-suspenders for Android)
     _playingSub = _player.playingStream.listen((_) {
       _broadcastState(_player.playbackEvent);
     });
+
+    // 🔔 swap art immediately if the active audiobook’s cover mapping changes
+    _coverSub = coverArtBus.stream.listen((key) {
+      if (key.isEmpty) return;
+      if (_activeAudiobookId == null) return;
+      if (key == _activeAudiobookId) {
+        _refreshActiveCoverArt();
+      }
+    });
+  }
+
+  Future<void> _refreshActiveCoverArt() async {
+    final id = _activeAudiobookId;
+    if (id == null) return;
+    if (_playlist == null || queue.value.isEmpty) return;
+
+    // Try the latest mapped cover for this audiobook id
+    final newPath = await getMappedCoverImage(id);
+    if (newPath == null || newPath.isEmpty) return;
+
+    final newUri = Uri.parse(newPath);
+
+    // Rebuild queue items with the new art
+    final old = queue.value;
+    final rebuilt = <MediaItem>[];
+    for (final item in old) {
+      // Preserve fields you set in initSongs
+      rebuilt.add(MediaItem(
+        id: item.id,
+        album: item.album,
+        title: item.title,
+        artist: item.artist,
+        artUri: newUri,
+        extras: item.extras,
+        duration: item.duration,
+        genre: item.genre,
+        playable: item.playable,
+        displayTitle: item.displayTitle,
+        displaySubtitle: item.displaySubtitle,
+        displayDescription: item.displayDescription,
+        rating: item.rating,
+      ));
+    }
+
+    // Publish to AudioService streams
+    addQueueItems([]);                 // no-op to keep semantics
+    queue.add(rebuilt);
+
+    final idx = _player.currentIndex ?? 0;
+    if (idx >= 0 && idx < rebuilt.length) {
+      mediaItem.add(rebuilt[idx]);
+    }
+
+    // Keep the persisted "now playing" audiobook's cover in sync for future restores
+    try {
+      final map = Map<String, dynamic>.from(playingAudiobookDetailsBox.get('audiobook'));
+      map['lowQCoverImage'] = newPath;
+      await playingAudiobookDetailsBox.put('audiobook', map);
+    } catch (_) {}
   }
 
   Future<void> initSongs(
@@ -459,6 +518,7 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> stop() async {
     _positionUpdateTimer?.cancel();
     await _player.stop();
+    _coverSub?.cancel();
     _broadcastState(_player.playbackEvent);
   }
 

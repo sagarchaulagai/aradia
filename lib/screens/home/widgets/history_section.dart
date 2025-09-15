@@ -87,20 +87,25 @@ class _HistorySectionState extends State<HistorySection> {
   // Uses the centralized cover resolver/provider so History shows the same cover
   // precedence as the grid and the player.
   Widget _historyCoverTile(HistoryOfAudiobookItem item, double size) {
-    return FutureBuilder<String?>(
-      future: resolveCoverForHistory(item),
-      builder: (context, snap) {
-        final v = snap.data;
-        if (v != null && v.isNotEmpty) {
-          return Image(
-            image: coverProvider(v),
-            width: size,
-            height: size,
-            fit: BoxFit.cover,
-            errorBuilder: (context, _, __) => _placeholderCover(size),
-          );
-        }
-        return _placeholderCover(size);
+    return StreamBuilder<String>(
+      stream: coverArtBus.stream,
+      builder: (context, _) {
+        return FutureBuilder<String?>(
+          future: resolveCoverForHistory(item),
+          builder: (context, snap) {
+            final v = snap.data;
+            if (v != null && v.isNotEmpty) {
+              return Image(
+                image: coverProvider(v),
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, _, __) => _placeholderCover(size),
+              );
+            }
+            return _placeholderCover(size);
+          },
+        );
       },
     );
   }
