@@ -21,6 +21,18 @@ import 'package:we_slide/we_slide.dart';
 
 import '../../../utils/app_logger.dart';
 
+// Unique key for mapping covers to *this* local book.
+String coverKeyForLocal(LocalAudiobook a) {
+  // Decode because we store decoded paths elsewhere in this file.
+  final files = a.audioFiles.map((s) => Uri.decodeComponent(s)).toList();
+  if (files.length == 1) {
+    // Root-level or any single-file book: key by the *file* itself.
+    return files.first;
+  }
+  // Multi-track book (folder of tracks): key by the folder.
+  return Uri.decodeComponent(a.folderPath);
+}
+
 class LocalAudiobookItem extends StatelessWidget {
   final LocalAudiobook audiobook;
   final double width;
@@ -146,7 +158,7 @@ class LocalAudiobookItem extends StatelessWidget {
 
   Widget _buildCoverImage() {
     return FutureBuilder<String?>(
-      future: CoverImageService.getMappedCoverImage(audiobook.folderPath),
+      future: CoverImageService.getBestCoverPathForLocal(audiobook),
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data != null) {
           final coverFile = File(snapshot.data!);
@@ -155,26 +167,9 @@ class LocalAudiobookItem extends StatelessWidget {
             width: width,
             height: width,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) =>
-                _buildPlaceholderCover(),
+            errorBuilder: (context, error, stackTrace) => _buildPlaceholderCover(),
           );
         }
-
-        // Fallback to original cover image if no mapped image
-        if (audiobook.hasCoverImage) {
-          final coverFile = File(audiobook.coverImagePath!);
-          if (coverFile.existsSync()) {
-            return Image.file(
-              coverFile,
-              width: width,
-              height: width,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildPlaceholderCover(),
-            );
-          }
-        }
-
         return _buildPlaceholderCover();
       },
     );
@@ -287,14 +282,15 @@ class LocalAudiobookItem extends StatelessWidget {
 
   // Convert LocalAudiobook to Audiobook format
   Future<Audiobook> _convertToAudiobook() async {
+    final key = coverKeyForLocal(audiobook);
     return Audiobook.fromMap({
-      'id': audiobook.folderPath, // Use folder path as unique ID
+      'id': key, // was: audiobook.folderPath
       'title': audiobook.title,
       'author': audiobook.author,
       'description': audiobook.description ?? '',
       'lowQCoverImage': audiobook.coverImagePath != null
           ? Uri.decodeComponent(audiobook.coverImagePath!)
-          : await CoverImageService.getMappedCoverImage(audiobook.folderPath),
+          : await CoverImageService.getMappedCoverImage(key), // was: folderPath
       'subject': ['Local Audiobook'],
       'language': 'Unknown',
       'origin': 'local',
@@ -311,6 +307,7 @@ class LocalAudiobookItem extends StatelessWidget {
   Future<List<AudiobookFile>> _convertToAudiobookFiles() async {
     final List<AudiobookFile> out = [];
     final files = audiobook.audioFiles;
+    final key = coverKeyForLocal(audiobook);
 
     if (files.length == 1) {
       final filePath = Uri.decodeComponent(files.first);
@@ -333,7 +330,7 @@ class LocalAudiobookItem extends StatelessWidget {
 
               out.add(
                 AudiobookFile.chapterSlice(
-                  identifier: audiobook.folderPath,
+                  identifier: key,
                   url: filePath,
                   parentTitle: audiobook.title,
                   track: i + 1,
@@ -371,7 +368,7 @@ class LocalAudiobookItem extends StatelessWidget {
       }
 
       out.add(AudiobookFile.fromMap({
-        'identifier': audiobook.folderPath,
+        'identifier': key,
         'track': index + 1,
         'title': fileName.replaceAll(RegExp(r'\.[^.]*$'), ''),
         'name': fileName,
@@ -450,12 +447,15 @@ class _LocalAudiobookCoverSelectorState
     try {
       // Download the selected cover image
       final downloadedPath =
-          await CoverImageService.downloadCoverImage(_selectedCoverUrl!);
+      await CoverImageService.downloadCoverImage(_selectedCoverUrl!);
 
       if (downloadedPath != null) {
-        // Map the audiobook path to the cover image path
-        await CoverImageService.mapCoverImage(
-            widget.audiobook.folderPath, downloadedPath);
+        final key = coverKeyForLocal(widget.audiobook);
+        await CoverImageService.mapCoverImage(key, downloadedPath);
+
+        // Remove any old per-folder mapping so other books don’t inherit it
+        await CoverImageService.removeCoverMapping(widget.audiobook.folderPath);
+
 
         if (mounted) {
           Navigator.pop(context);
@@ -721,6 +721,30 @@ class _LocalAudiobookCoverSelectorState
 
 class CoverImageService {
   static const String _coverMappingBoxName = 'cover_image_mapping';
+
+  static Future<String?> getBestCoverPathForLocal(LocalAudiobook a) async {
+    // 1) Per-book mapping (new, correct behavior)
+    // 1) Unified key (exactly what we use when saving)
+    final byKey = await getMappedCoverImage(coverKeyForLocal(a));
+    if (byKey != null) return byKey;
+
+    // 2) Optional: historical per-id mapping (if you ever had one)
+    final byId = await getMappedCoverImage(a.id);
+    if (byId != null) return byId;
+
+    // 3) Legacy per-folder mapping
+    final byFolder = await getMappedCoverImage(a.folderPath);
+    if (byFolder != null) return byFolder;
+
+    // 3) Embedded/explicit cover in the audiobook itself
+    if (a.coverImagePath != null) {
+      final p = Uri.decodeComponent(a.coverImagePath!);
+      final f = File(p);
+      if (await f.exists()) return p;
+    }
+
+    return null;
+  }
 
   // Get cover images from Google Books API
   static Future<List<String>> fetchCoverImagesFromGoogle(
