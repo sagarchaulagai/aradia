@@ -309,6 +309,13 @@ class LocalAudiobookItem extends StatelessWidget {
     final files = audiobook.audioFiles;
     final key = coverKeyForLocal(audiobook);
 
+    // One resolved cover for the whole local book (mapped → embedded → null)
+    final mappedCover = await CoverImageService.getBestCoverPathForLocal(audiobook);
+    final resolvedCoverPath = mappedCover ??
+        (audiobook.coverImagePath != null
+            ? Uri.decodeComponent(audiobook.coverImagePath!)
+            : null);
+
     if (files.length == 1) {
       final filePath = Uri.decodeComponent(files.first);
       final lower = filePath.toLowerCase();
@@ -337,9 +344,8 @@ class LocalAudiobookItem extends StatelessWidget {
                   chapterTitle: cues[i].title,
                   startMs: start,
                   durationMs: durationMs,
-                  highQCoverImage: audiobook.coverImagePath != null
-                      ? Uri.decodeComponent(audiobook.coverImagePath!)
-                      : null,
+                  // ⬇ attach your mapped/selected cover here so it overrides embedded art
+                  highQCoverImage: resolvedCoverPath,
                 ),
               );
             }
@@ -375,10 +381,8 @@ class LocalAudiobookItem extends StatelessWidget {
         'url': filePath,
         'length': duration,
         'size': null,
-        'highQCoverImage': audiobook.coverImagePath != null
-            ? Uri.decodeComponent(audiobook.coverImagePath!)
-            : null,
-        // No startMs/durationMs for whole-file tracks
+        // ⬇ same override here
+        'highQCoverImage': resolvedCoverPath,
       }));
     }
 
