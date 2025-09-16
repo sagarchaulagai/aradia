@@ -1898,9 +1898,24 @@ class ArchiveApi {
 
   Future<Either<String, List<Audiobook>>> _fetchAudiobooks(String url) async {
     try {
-      final body = await _getJson(url);
-      final docs = json.decode(body)['response']['docs'];
-      return Right(Audiobook.fromJsonArray(docs));
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        final docs = (decoded['response']['docs'] as List).cast<Map<String, dynamic>>();
+
+        // De-dupe raw docs by Archive.org identifier before building models
+        final byId = <String, Map<String, dynamic>>{};
+        for (final d in docs) {
+          final id = (d['identifier'] as String?)?.trim();
+          if (id == null || id.isEmpty) continue;
+          byId.putIfAbsent(id, () => d); // keep first
+        }
+
+        return Right(Audiobook.fromJsonArray(byId.values.toList()));
+      } else {
+        throw Exception('Failed to load audiobooks');
+      }
     } catch (e) {
       return Left(e.toString());
     }
