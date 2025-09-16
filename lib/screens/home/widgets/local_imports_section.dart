@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
-import 'package:aradia/resources/services/local_audiobook_service.dart';
+import 'package:aradia/resources/services/local/local_audiobook_service.dart';
+import 'package:aradia/utils/app_events.dart';
 import 'package:aradia/utils/permission_helper.dart';
 import 'package:aradia/widgets/local_audiobook_item.dart';
 import 'package:file_picker/file_picker.dart';
@@ -18,10 +20,18 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   String? rootFolderPath;
   List<LocalAudiobook> audiobooks = [];
   bool isLoading = false;
+  StreamSubscription<void>? _directoryChangeSubscription;
+
   @override
   void initState() {
     super.initState();
     _loadRootFolder();
+
+    // Listen for directory changes from settings
+    _directoryChangeSubscription =
+        AppEvents.localDirectoryChanged.stream.listen((_) {
+      _loadRootFolder();
+    });
   }
 
   Future<void> _loadRootFolder() async {
@@ -274,5 +284,11 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _directoryChangeSubscription?.cancel();
+    super.dispose();
   }
 }

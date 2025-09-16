@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:aradia/resources/services/stream_client.dart';
+import 'package:aradia/resources/services/youtube/stream_client.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:path_provider/path_provider.dart';

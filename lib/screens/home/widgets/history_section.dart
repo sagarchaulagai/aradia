@@ -2,7 +2,7 @@
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
-import 'package:aradia/resources/services/cover_image_service.dart';
+import 'package:aradia/resources/services/local/cover_image_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
@@ -131,7 +131,7 @@ class _HistorySectionState extends State<HistorySection> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryColor.withOpacity(0.7),
+            AppColors.primaryColor.withValues(alpha: 0.7),
             AppColors.primaryColor,
           ],
         ),
@@ -141,13 +141,13 @@ class _HistorySectionState extends State<HistorySection> {
   }
 
   Widget _buildHistoryItem(
-      HistoryOfAudiobookItem item,
-      double totalTimeSeconds,
-      double completedSecondsBeforeIndex,
-      ) {
+    HistoryOfAudiobookItem item,
+    double totalTimeSeconds,
+    double completedSecondsBeforeIndex,
+  ) {
     final progress = totalTimeSeconds > 0
         ? (item.position + (completedSecondsBeforeIndex * 1000)) /
-        (totalTimeSeconds * 1000)
+            (totalTimeSeconds * 1000)
         : 0.0;
 
     return Container(
@@ -168,7 +168,7 @@ class _HistorySectionState extends State<HistorySection> {
           );
 
           final hist =
-          historyOfAudiobook.getHistoryOfAudiobookItem(item.audiobook.id);
+              historyOfAudiobook.getHistoryOfAudiobookItem(item.audiobook.id);
           audioHandlerProvider.audioHandler.initSongs(
             item.audiobookFiles,
             item.audiobook,
@@ -204,7 +204,7 @@ class _HistorySectionState extends State<HistorySection> {
                   TextButton(
                     onPressed: () async {
                       if (audioHandlerProvider.audioHandler
-                          .getCurrentAudiobookId() ==
+                              .getCurrentAudiobookId() ==
                           item.audiobook.id) {
                         Navigator.of(context).pop();
                         showDialog(
@@ -224,8 +224,7 @@ class _HistorySectionState extends State<HistorySection> {
                               ),
                               actions: [
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(),
+                                  onPressed: () => Navigator.of(context).pop(),
                                   child: Text(
                                     'OK',
                                     style: GoogleFonts.ubuntu(
@@ -310,7 +309,8 @@ class _HistorySectionState extends State<HistorySection> {
                       children: [
                         const IconTheme(
                           data: IconThemeData(color: Colors.black, size: 14),
-                          child: Icon(Ionicons.help_circle, color: Colors.black),
+                          child:
+                              Icon(Ionicons.help_circle, color: Colors.black),
                         ),
                         IconTheme(
                           data: const IconThemeData(
@@ -338,7 +338,7 @@ class _HistorySectionState extends State<HistorySection> {
               children: [
                 Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -425,7 +425,7 @@ class _HistorySectionState extends State<HistorySection> {
                   // Total book duration (seconds) — supports chapter slices.
                   final double totalSecs = item.audiobookFiles.fold(
                     0.0,
-                        (sum, f) => sum + _secondsForFile(f),
+                    (sum, f) => sum + _secondsForFile(f),
                   );
 
                   // Seconds completed across all tracks prior to the current one.

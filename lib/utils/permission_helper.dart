@@ -120,7 +120,7 @@ class PermissionHelper {
 
     // Show dialog to explain why we need permissions
     if (!context.mounted) return false;
-    
+
     final shouldOpenSettings = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -139,7 +139,7 @@ class PermissionHelper {
           ],
         ),
         content: const Text(
-          'To download audiobooks, we need access to your device storage. This allows us to save audiobooks for offline listening.',
+          'For the app to function properly, we need access to your device storage.',
         ),
         actions: [
           TextButton(
@@ -174,7 +174,7 @@ class PermissionHelper {
       return true;
     } else {
       if (!context.mounted) return false;
-      
+
       final shouldRequestPermission = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) => PermissionDialog(
@@ -193,7 +193,7 @@ class PermissionHelper {
             newPermissionStatus.isPermanentlyDenied) {
           // Re-prompt with dialog offering to go to settings
           if (!context.mounted) return false;
-          
+
           final shouldOpenSettings = await showDialog<bool>(
             context: context,
             builder: (BuildContext context) => PermissionDialog(

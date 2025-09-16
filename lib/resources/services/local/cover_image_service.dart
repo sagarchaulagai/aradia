@@ -1,5 +1,3 @@
-// lib/resources/services/cover_image_service.dart
-//
 // Centralized cover-art mapping + lookup with a tiny in-memory cache and an
 // event bus so UIs / the audio handler can react to changes immediately.
 // File/folder semantics (what counts as a "book key") are delegated to
@@ -10,7 +8,7 @@ import 'dart:io';
 
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
-import 'package:aradia/resources/services/local_library_layout.dart';
+import 'package:aradia/resources/services/local/local_library_layout.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:path/path.dart' as p;
@@ -193,7 +191,8 @@ Future<String?> resolveCoverForLocal(LocalAudiobook a) async {
   }
 
   // 4) Explicit/embedded cover on the model
-  final explicit = a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
+  final explicit =
+      a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
   if (explicit != null && await File(explicit).exists()) {
     _coverCache.set(key, explicit);
     return explicit;
@@ -206,7 +205,8 @@ Future<String?> resolveCoverForLocal(LocalAudiobook a) async {
 
 /// Only the metadata/embedded default (used for "Use Default" tile preview).
 Future<String?> resolveDefaultCoverForLocal(LocalAudiobook a) async {
-  final explicit = a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
+  final explicit =
+      a.coverImagePath == null ? null : decodePath(a.coverImagePath!);
   if (explicit != null && await File(explicit).exists()) {
     return explicit;
   }
@@ -232,7 +232,8 @@ Future<String?> resolveCoverForHistory(HistoryOfAudiobookItem item) async {
     final byFile = await getMappedCoverImage(firstPath);
     if (byFile != null) return byFile;
 
-    final folder = LocalLibraryLayout.bookFolderFromHistory(item) ?? p.dirname(firstPath);
+    final folder =
+        LocalLibraryLayout.bookFolderFromHistory(item) ?? p.dirname(firstPath);
     final byFolder = await getMappedCoverImage(folder);
     if (byFolder != null) return byFolder;
   }
@@ -292,7 +293,9 @@ Future<void> removeCoverMapping(String key) async {
     if (local != null) {
       final f = File(local);
       if (await f.exists()) {
-        try { await f.delete(); } catch (_) {}
+        try {
+          await f.delete();
+        } catch (_) {}
       }
     }
   }
@@ -305,6 +308,7 @@ Future<void> removeCoverMapping(String key) async {
 void invalidateCoverForLocal(LocalAudiobook a) {
   _coverCache.remove(coverKeyForLocal(a));
 }
+
 void invalidateCoverByKey(String key) {
   _coverCache.remove(key);
 }
@@ -327,7 +331,9 @@ Future<void> cleanupUnusedCoverImages() async {
       if (ent is File) {
         final presentInMap = mapped.contains(ent.path);
         if (!presentInMap) {
-          try { await ent.delete(); } catch (_) {}
+          try {
+            await ent.delete();
+          } catch (_) {}
         }
       }
     }
@@ -340,7 +346,9 @@ Future<void> cleanupUnusedCoverImages() async {
       if (val is String && val.isNotEmpty) {
         final local = asLocalPath(val);
         if (local != null && !await File(local).exists()) {
-          try { await box.delete(key); } catch (_) {}
+          try {
+            await box.delete(key);
+          } catch (_) {}
         }
       }
     }

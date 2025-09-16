@@ -1,8 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/utils/app_events.dart';
+import 'package:aradia/utils/permission_helper.dart';
+import 'package:aradia/resources/services/local/local_audiobook_service.dart';
+import 'package:aradia/resources/designs/app_colors.dart';
+import 'package:file_picker/file_picker.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -39,6 +41,7 @@ class _SettingsState extends State<Settings> {
 
   late final Box _box;
   List<String> _selected = [];
+  String? _rootFolderPath;
 
   @override
   void initState() {
@@ -47,6 +50,14 @@ class _SettingsState extends State<Settings> {
     _selected = List<String>.from(
       _box.get('selectedLanguages', defaultValue: <String>[]),
     );
+    _loadRootFolderPath();
+  }
+
+  Future<void> _loadRootFolderPath() async {
+    final path = await LocalAudiobookService.getRootFolderPath();
+    setState(() {
+      _rootFolderPath = path;
+    });
   }
 
   Future<void> _editLanguages() async {
@@ -122,6 +133,45 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  Future<void> _selectRootFolder() async {
+    // Request storage permissions first
+    final hasPermission =
+        await PermissionHelper.handleDownloadPermissionWithDialog(context);
+    if (!hasPermission) return;
+
+    try {
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+      if (selectedDirectory != null) {
+        await LocalAudiobookService.setRootFolderPath(selectedDirectory);
+        setState(() {
+          _rootFolderPath = selectedDirectory;
+        });
+
+        // Notify other screens about the directory change
+        AppEvents.localDirectoryChanged.add(null);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Audiobooks directory updated successfully!'),
+              backgroundColor: AppColors.primaryColor,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting folder: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final chips = _selected.isEmpty
@@ -159,6 +209,23 @@ class _SettingsState extends State<Settings> {
           ),
           const Divider(),
 
+          // Local Audiobooks Directory
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Local Audiobooks Directory'),
+            subtitle: Text(
+              _rootFolderPath ?? 'No directory selected',
+              style: TextStyle(
+                color: _rootFolderPath != null
+                    ? Theme.of(context).textTheme.bodySmall?.color
+                    : Colors.grey,
+              ),
+            ),
+            trailing: const Icon(Icons.edit),
+            onTap: _selectRootFolder,
+          ),
+          const Divider(),
+
           // About
           ListTile(
             leading: const Icon(Icons.info_outline),
@@ -182,7 +249,7 @@ class _SettingsState extends State<Settings> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),

@@ -13,8 +13,8 @@ import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/resources/services/chapter_parser.dart';
-import 'package:aradia/resources/services/cover_image_service.dart';
-import 'package:aradia/resources/services/local_library_layout.dart';
+import 'package:aradia/resources/services/local/cover_image_service.dart';
+import 'package:aradia/resources/services/local/local_library_layout.dart';
 import 'package:aradia/utils/media_helper.dart';
 
 import 'package:hive/hive.dart';
@@ -165,7 +165,7 @@ class LocalAudiobookItem extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryColor.withOpacity(0.7),
+            AppColors.primaryColor.withValues(alpha: 0.7),
             AppColors.primaryColor,
           ],
         ),
@@ -173,7 +173,8 @@ class LocalAudiobookItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.headphones, size: 48, color: Colors.white.withOpacity(0.8)),
+          Icon(Icons.headphones,
+              size: 48, color: Colors.white.withValues(alpha: 0.8)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -207,11 +208,11 @@ class LocalAudiobookItem extends StatelessWidget {
   void _playAudiobook(BuildContext context) async {
     try {
       final audioHandlerProvider =
-      Provider.of<AudioHandlerProvider>(context, listen: false);
+          Provider.of<AudioHandlerProvider>(context, listen: false);
       final weSlideController =
-      Provider.of<WeSlideController>(context, listen: false);
+          Provider.of<WeSlideController>(context, listen: false);
       final playingAudiobookDetailsBox =
-      Hive.box('playing_audiobook_details_box');
+          Hive.box('playing_audiobook_details_box');
       final historyOfAudiobook = HistoryOfAudiobook();
 
       final convertedAudiobook = await _convertToAudiobook();
@@ -229,7 +230,7 @@ class LocalAudiobookItem extends StatelessWidget {
 
       if (historyOfAudiobook.isAudiobookInHistory(convertedAudiobook.id)) {
         final hist =
-        historyOfAudiobook.getHistoryOfAudiobookItem(convertedAudiobook.id);
+            historyOfAudiobook.getHistoryOfAudiobookItem(convertedAudiobook.id);
         await audioHandlerProvider.audioHandler.initSongs(
           audiobookFiles,
           convertedAudiobook,
@@ -431,7 +432,7 @@ class _LocalAudiobookCoverSelectorState
 
     try {
       final downloadedPath =
-      await CoverImageRemote.downloadCoverImage(_selectedCoverUrl!);
+          await CoverImageRemote.downloadCoverImage(_selectedCoverUrl!);
 
       if (downloadedPath != null) {
         await mapCoverForLocal(widget.audiobook, downloadedPath);
@@ -606,8 +607,7 @@ class _LocalAudiobookCoverSelectorState
             const SizedBox(height: 8),
             Text(
               'Try searching with a different title or author',
-              style:
-              GoogleFonts.ubuntu(fontSize: 14, color: Colors.grey[600]),
+              style: GoogleFonts.ubuntu(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -680,8 +680,7 @@ class _LocalAudiobookCoverSelectorState
                       const Positioned.fill(
                         child: ColoredBox(
                           color: Color(0x66000000),
-                          child:
-                          Center(child: CircularProgressIndicator()),
+                          child: Center(child: CircularProgressIndicator()),
                         ),
                       ),
                   ],
@@ -706,8 +705,7 @@ class _LocalAudiobookCoverSelectorState
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color:
-                isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+                color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
                 width: isSelected ? 3 : 1,
               ),
             ),
@@ -735,8 +733,8 @@ class _LocalAudiobookCoverSelectorState
                           color: AppColors.primaryColor,
                           shape: BoxShape.circle,
                         ),
-                        child:
-                        const Icon(Icons.check, color: Colors.white, size: 16),
+                        child: const Icon(Icons.check,
+                            color: Colors.white, size: 16),
                       ),
                     ),
                 ],
@@ -768,18 +766,18 @@ class _LocalAudiobookCoverSelectorState
         const SizedBox(width: 12),
         ElevatedButton(
           onPressed:
-          _selectedCoverUrl != null && !_isLoading ? _saveCoverImage : null,
+              _selectedCoverUrl != null && !_isLoading ? _saveCoverImage : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: Colors.white,
           ),
           child: _isLoading
               ? const SizedBox(
-            width: 16,
-            height: 16,
-            child:
-            CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-          )
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
               : const Text('Save Cover'),
         ),
       ],
@@ -840,7 +838,7 @@ class CoverImageRemote {
       if (externalDir == null) return null;
 
       final coverImagesDir =
-      Directory(path.join(externalDir.path, 'localCoverImages'));
+          Directory(path.join(externalDir.path, 'localCoverImages'));
       if (!await coverImagesDir.exists()) {
         await coverImagesDir.create(recursive: true);
       }
@@ -866,7 +864,7 @@ class CoverImageRemote {
     return String.fromCharCodes(
       Iterable.generate(
         length,
-            (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+        (_) => chars.codeUnitAt(random.nextInt(chars.length)),
       ),
     );
   }

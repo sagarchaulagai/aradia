@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
-import 'package:aradia/resources/services/youtube_audio_service.dart';
-import 'package:aradia/resources/services/cover_image_service.dart';
+import 'package:aradia/resources/services/youtube/youtube_audio_service.dart';
+import 'package:aradia/resources/services/local/cover_image_service.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -30,7 +30,8 @@ class MyAudioHandler extends BaseAudioHandler {
   ConcatenatingAudioSource? _playlist;
   ConcatenatingAudioSource? get playlist => _playlist;
 
-  Box<dynamic> playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
+  Box<dynamic> playingAudiobookDetailsBox =
+      Hive.box('playing_audiobook_details_box');
 
   final HistoryOfAudiobook historyOfAudiobook = HistoryOfAudiobook();
   Timer? _positionUpdateTimer;
@@ -188,11 +189,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> initSongs(
-      List<AudiobookFile> files,
-      Audiobook audiobook,
-      int initialIndex,
-      int positionInMilliseconds,
-      ) async {
+    List<AudiobookFile> files,
+    Audiobook audiobook,
+    int initialIndex,
+    int positionInMilliseconds,
+  ) async {
     _isReinitializing = true;
     final myGen = ++_initGen;
 
@@ -263,9 +264,12 @@ class MyAudioHandler extends BaseAudioHandler {
 
         if (isYouTube && song.url != null) {
           final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
-          sources.add(YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
+          sources.add(
+              YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
         } else if (song.url != null) {
-          final uri = song.url!.startsWith('/') ? Uri.file(song.url!) : Uri.parse(song.url!);
+          final uri = song.url!.startsWith('/')
+              ? Uri.file(song.url!)
+              : Uri.parse(song.url!);
 
           // If this "file" is actually a chapter slice, clip it
           if ((song.startMs ?? 0) > 0 || (song.durationMs ?? 0) > 0) {
@@ -288,7 +292,8 @@ class MyAudioHandler extends BaseAudioHandler {
 
       if (myGen != _initGen) return;
 
-      final safeIndex = sources.isEmpty ? 0 : initialIndex.clamp(0, sources.length - 1);
+      final safeIndex =
+          sources.isEmpty ? 0 : initialIndex.clamp(0, sources.length - 1);
 
       addQueueItems(mediaItems);
       if (mediaItems.isNotEmpty) {
@@ -303,16 +308,20 @@ class MyAudioHandler extends BaseAudioHandler {
       await _player.setAudioSource(
         _playlist!,
         initialIndex: sources.isEmpty ? 0 : safeIndex,
-        initialPosition: currentIsYT ? Duration.zero : Duration(milliseconds: positionInMilliseconds),
+        initialPosition: currentIsYT
+            ? Duration.zero
+            : Duration(milliseconds: positionInMilliseconds),
       );
 
       if (myGen != _initGen) return;
 
       if (currentIsYT && positionInMilliseconds > 0) {
         await _waitForProcessingReady(timeout: const Duration(seconds: 5));
-        await _player.seek(Duration(milliseconds: positionInMilliseconds), index: safeIndex);
+        await _player.seek(Duration(milliseconds: positionInMilliseconds),
+            index: safeIndex);
       } else {
-        await _player.seek(Duration(milliseconds: positionInMilliseconds), index: safeIndex);
+        await _player.seek(Duration(milliseconds: positionInMilliseconds),
+            index: safeIndex);
       }
 
       // Auto-advance on completed
@@ -360,7 +369,8 @@ class MyAudioHandler extends BaseAudioHandler {
     return children[index] is YouTubeAudioSource;
   }
 
-  Future<void> _waitForProcessingReady({Duration timeout = const Duration(seconds: 5)}) async {
+  Future<void> _waitForProcessingReady(
+      {Duration timeout = const Duration(seconds: 5)}) async {
     final deadline = DateTime.now().add(timeout);
     while (DateTime.now().isBefore(deadline)) {
       if (_player.processingState == ProcessingState.ready) return;
@@ -369,11 +379,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> _waitForStartToSettle(
-      int index,
-      int positionMs, {
-        required bool isYouTube,
-        Duration timeout = const Duration(seconds: 2),
-      }) async {
+    int index,
+    int positionMs, {
+    required bool isYouTube,
+    Duration timeout = const Duration(seconds: 2),
+  }) async {
     final deadline = DateTime.now().add(timeout);
 
     // Tolerances: YT tends to have more jitter/latency
@@ -381,7 +391,8 @@ class MyAudioHandler extends BaseAudioHandler {
 
     while (DateTime.now().isBefore(deadline)) {
       final idxOk = _player.currentIndex == index;
-      final posOk = (_player.position.inMilliseconds - positionMs).abs() <= posEpsMs;
+      final posOk =
+          (_player.position.inMilliseconds - positionMs).abs() <= posEpsMs;
 
       if (idxOk && posOk) return;
       await Future.delayed(const Duration(milliseconds: 60));
@@ -487,7 +498,7 @@ class MyAudioHandler extends BaseAudioHandler {
       _player.positionStream,
       _player.bufferedPositionStream,
       _player.durationStream,
-          (position, bufferedPosition, duration) {
+      (position, bufferedPosition, duration) {
         return PositionData(
           position,
           bufferedPosition,
@@ -508,9 +519,11 @@ class MyAudioHandler extends BaseAudioHandler {
       final storedFiles = box.get('audiobookFiles');
       if (storedAudiobookMap == null || storedFiles == null) return;
 
-      final audiobook = Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
+      final audiobook =
+          Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
       final files = (storedFiles as List)
-          .map((e) => AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
+          .map(
+              (e) => AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList();
 
       final index = (box.get('index') as int?) ?? 0;
@@ -545,7 +558,10 @@ class MyAudioHandler extends BaseAudioHandler {
     // Opportunistic persist when pausing the active item
     final id = _activeAudiobookId;
     final idx = _player.currentIndex;
-    if (_canPersistProgress && !_isReinitializing && id != null && idx != null) {
+    if (_canPersistProgress &&
+        !_isReinitializing &&
+        id != null &&
+        idx != null) {
       _persistNow(id, idx);
     }
     _broadcastState(_player.playbackEvent);
@@ -633,7 +649,9 @@ class MyAudioHandler extends BaseAudioHandler {
 
   void playNext() {
     final length = _playlist?.children.length ?? 0;
-    if (_player.currentIndex != null && length > 0 && _player.currentIndex! < length - 1) {
+    if (_player.currentIndex != null &&
+        length > 0 &&
+        _player.currentIndex! < length - 1) {
       _player.seekToNext();
     }
   }
