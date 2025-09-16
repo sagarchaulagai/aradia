@@ -465,11 +465,12 @@ packages:
   flutter_media_metadata:
     dependency: "direct main"
     description:
-      name: flutter_media_metadata
-      sha256: "69cfc76ffd6cd5d546dcc4880584b3844c5e879e435aa54f57f1096c15bd04db"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0+1"
+      path: "."
+      ref: master
+      resolved-ref: "4dbeadc5fd54c248b160633faa0093c1e120f8ae"
+      url: "https://github.com/sagarchaulagai/flutter_media_metadata.git"
+    source: git
+    version: "1.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
