@@ -44,7 +44,7 @@ const Map<String, List<String>> _langAliases = {
 String _languageQueryClause() {
   final box = Hive.box('language_prefs_box');
   final List<String> selected =
-  List<String>.from(box.get('selectedLanguages', defaultValue: <String>[]));
+      List<String>.from(box.get('selectedLanguages', defaultValue: <String>[]));
 
   if (selected.isEmpty) return '';
 
@@ -271,7 +271,13 @@ class _LanguageSubjectIndex {
       if (m != null) {
         // flush previous
         if (currentLangCode != null) {
-          final items = buf.toString().split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toSet().toList();
+          final items = buf
+              .toString()
+              .split(',')
+              .map((s) => s.trim())
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList();
           map[currentLangCode!] = items;
           buf.clear();
         }
@@ -285,11 +291,18 @@ class _LanguageSubjectIndex {
       }
     }
     if (currentLangCode != null) {
-      final items = buf.toString().split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toSet().toList();
+      final items = buf
+          .toString()
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toSet()
+          .toList();
       map[currentLangCode!] = items;
     }
     _cache = map;
-    AppLogger.info('Loaded language subjects for ${_cache!.length} languages', 'ArchiveApi');
+    AppLogger.info('Loaded language subjects for ${_cache!.length} languages',
+        'ArchiveApi');
   }
 
   static List<String> subjectsFor(String uiCode) {
@@ -337,29 +350,29 @@ final Map<String, List<RegExp>> _categoryFilters = {
   ],
   'adventure': [
     RegExp(r'\badventur', caseSensitive: false),
-    RegExp(r'\baventur', caseSensitive: false),  // fr/es/it/pt
+    RegExp(r'\baventur', caseSensitive: false), // fr/es/it/pt
     RegExp(r'\babenteuer\b', caseSensitive: false), // de
     RegExp(r'\bseikkailu\b', caseSensitive: false), // fi
-    RegExp(r'\bäventyr\b', caseSensitive: false),   // sv
+    RegExp(r'\bäventyr\b', caseSensitive: false), // sv
     RegExp(r'\bviaje|viajar|voyage|viagem\b', caseSensitive: false),
-    RegExp(r'\bexplor', caseSensitive: false),      // exploration
+    RegExp(r'\bexplor', caseSensitive: false), // exploration
   ],
   'biography': [
     RegExp(r'\bbiograph', caseSensitive: false),
     RegExp(r'\bbiograf', caseSensitive: false),
     RegExp(r'\bmemoi', caseSensitive: false),
     RegExp(r'\blebensbeschreib', caseSensitive: false), // de
-    RegExp(r'\bvida\b', caseSensitive: false),          // es/pt
-    RegExp(r'\bvie\b', caseSensitive: false),           // fr
+    RegExp(r'\bvida\b', caseSensitive: false), // es/pt
+    RegExp(r'\bvie\b', caseSensitive: false), // fr
   ],
   'children': [
     RegExp(r'\bchildren\b', caseSensitive: false),
     RegExp(r'\bjuvenil|juvenile\b', caseSensitive: false),
     RegExp(r'\benfant|enfants\b', caseSensitive: false),
-    RegExp(r'\bkind(er)?\b', caseSensitive: false),  // de
-    RegExp(r'\bbarn\b', caseSensitive: false),       // sv/no
+    RegExp(r'\bkind(er)?\b', caseSensitive: false), // de
+    RegExp(r'\bbarn\b', caseSensitive: false), // sv/no
     RegExp(r'\bniñ[oa]s?\b', caseSensitive: false), // es
-    RegExp(r'\bragazzi\b', caseSensitive: false),   // it
+    RegExp(r'\bragazzi\b', caseSensitive: false), // it
     RegExp(r'\bboys|girls|kids\b', caseSensitive: false),
     RegExp(r'\bfairy tale|nursery rhyme\b', caseSensitive: false),
   ],
@@ -367,19 +380,19 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bcomedy|\bhumou?r|\bsatire|\bfarce', caseSensitive: false),
     RegExp(r'\bcom(è|e)die\b', caseSensitive: false), // fr
     RegExp(r'\bkom(ö|o)die\b', caseSensitive: false), // de
-    RegExp(r'\bsátira\b', caseSensitive: false),      // es/pt
-    RegExp(r'\bsatira\b', caseSensitive: false),      // it/eo
+    RegExp(r'\bsátira\b', caseSensitive: false), // es/pt
+    RegExp(r'\bsatira\b', caseSensitive: false), // it/eo
   ],
   'crime': [
     RegExp(r'\bcrime|detective|murder|mystery|suspense', caseSensitive: false),
-    RegExp(r'\bcrimen\b', caseSensitive: false),    // es
-    RegExp(r'\bdelitto\b', caseSensitive: false),   // it
-    RegExp(r'\bkriminal\b', caseSensitive: false),  // de
+    RegExp(r'\bcrimen\b', caseSensitive: false), // es
+    RegExp(r'\bdelitto\b', caseSensitive: false), // it
+    RegExp(r'\bkriminal\b', caseSensitive: false), // de
     RegExp(r'\bforbrydelse\b', caseSensitive: false), // da
   ],
   'fantasy': [
     RegExp(r'\bfantasy\b', caseSensitive: false),
-    RegExp(r'\bfantast', caseSensitive: false),     // stems
+    RegExp(r'\bfantast', caseSensitive: false), // stems
     RegExp(r'\bmyth', caseSensitive: false),
     RegExp(r'\bmytholog', caseSensitive: false),
     RegExp(r'\blegend', caseSensitive: false),
@@ -391,17 +404,17 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bterror\b', caseSensitive: false),
     RegExp(r'\bghost\b', caseSensitive: false),
     RegExp(r'\bsupernatural\b', caseSensitive: false),
-    RegExp(r'\bespanto\b', caseSensitive: false),    // es/pt
-    RegExp(r'\bgespenst\b', caseSensitive: false),   // de
+    RegExp(r'\bespanto\b', caseSensitive: false), // es/pt
+    RegExp(r'\bgespenst\b', caseSensitive: false), // de
   ],
   'love': [
     RegExp(r'\bromance\b', caseSensitive: false),
     RegExp(r'\blove( story)?\b', caseSensitive: false),
     RegExp(r'\bmarriage\b', caseSensitive: false),
     RegExp(r'\brelationship', caseSensitive: false),
-    RegExp(r'\bamour\b', caseSensitive: false),   // fr
-    RegExp(r'\bamore\b', caseSensitive: false),   // it
-    RegExp(r'\bamor\b', caseSensitive: false),    // es/pt
+    RegExp(r'\bamour\b', caseSensitive: false), // fr
+    RegExp(r'\bamore\b', caseSensitive: false), // it
+    RegExp(r'\bamor\b', caseSensitive: false), // es/pt
     RegExp(r'\brakkaus\b', caseSensitive: false), // fi
   ],
   'mystery': [
@@ -414,9 +427,9 @@ final Map<String, List<RegExp>> _categoryFilters = {
   ],
   'philosophy': [
     RegExp(r'\bphilosoph', caseSensitive: false),
-    RegExp(r'\bfilosof', caseSensitive: false),   // es/pt/it
-    RegExp(r'\bfilosofi', caseSensitive: false),  // sv
-    RegExp(r'\bfilozof', caseSensitive: false),   // pl
+    RegExp(r'\bfilosof', caseSensitive: false), // es/pt/it
+    RegExp(r'\bfilosofi', caseSensitive: false), // sv
+    RegExp(r'\bfilozof', caseSensitive: false), // pl
     RegExp(r'\bphilosophia\b', caseSensitive: false), // la
   ],
   'poem': [
@@ -424,8 +437,8 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bpoesi', caseSensitive: false),
     RegExp(r'\bpoez(j|í|i)a\b', caseSensitive: false),
     RegExp(r'\bgedicht\b', caseSensitive: false), // de
-    RegExp(r'\bvers\b', caseSensitive: false),    // fr/es/pt
-    RegExp(r'\bstih\b', caseSensitive: false),    // slavic
+    RegExp(r'\bvers\b', caseSensitive: false), // fr/es/pt
+    RegExp(r'\bstih\b', caseSensitive: false), // slavic
   ],
   'romance': [
     RegExp(r'\bromance\b', caseSensitive: false),
@@ -440,7 +453,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bsci-?fi\b', caseSensitive: false),
     RegExp(r'\bfic(ci[oó]n|ção)\s+cient', caseSensitive: false), // es/pt
     RegExp(r'\bfantascien', caseSensitive: false), // it
-    RegExp(r'\bfiktion\b', caseSensitive: false),  // de
+    RegExp(r'\bfiktion\b', caseSensitive: false), // de
     RegExp(r'\bfutur(ism|o)\b', caseSensitive: false),
     RegExp(r'\btechnolog', caseSensitive: false),
   ],
@@ -457,7 +470,10 @@ Future<String> _buildSubjectQueryForGenre(String genreLower) async {
   final box = Hive.box('language_prefs_box');
   final selected = List<String>.from(
     box.get('selectedLanguages', defaultValue: <String>[]),
-  ).map((c) => c.toLowerCase()).where((c) => _langAliases.containsKey(c)).toList();
+  )
+      .map((c) => c.toLowerCase())
+      .where((c) => _langAliases.containsKey(c))
+      .toList();
 
   final filters = _categoryFilters[genreLower] ?? const <RegExp>[];
   final tokens = {...base}; // set
@@ -490,9 +506,9 @@ Future<String> _buildSubjectQueryForGenre(String genreLower) async {
 
 class ArchiveApi {
   Future<Either<String, List<Audiobook>>> getLatestAudiobook(
-      int page,
-      int rows,
-      ) async {
+    int page,
+    int rows,
+  ) async {
     final url = _buildAdvancedSearchUrl(
       collection: 'librivoxaudio',
       sortBy: 'addeddate',
@@ -503,9 +519,9 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> getMostViewedWeeklyAudiobook(
-      int page,
-      int rows,
-      ) async {
+    int page,
+    int rows,
+  ) async {
     final url = _buildAdvancedSearchUrl(
       collection: 'librivoxaudio',
       sortBy: 'week',
@@ -516,9 +532,9 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> getMostDownloadedEverAudiobook(
-      int page,
-      int rows,
-      ) async {
+    int page,
+    int rows,
+  ) async {
     final url = _buildAdvancedSearchUrl(
       collection: 'librivoxaudio',
       sortBy: 'downloads',
@@ -529,13 +545,16 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> getAudiobooksByGenre(
-      String genre,
-      int page,
-      int rows,
-      String sortBy,
-      ) async {
-    final genreLower = genre.toLowerCase();
-    final genreQuery = await _buildSubjectQueryForGenre(genreLower);
+    String genre,
+    int page,
+    int rows,
+    String sortBy,
+  ) async {
+    final genreQuery = genre
+        .split(RegExp(r'\s+OR\s+',
+            caseSensitive: false)) // split by any 'OR' variant
+        .map((s) => s.trim().toLowerCase())
+        .join(' OR '); // join back with uppercase OR
 
     final url = _buildAdvancedSearchUrl(
       collection: 'audio_bookspoetry',
@@ -548,8 +567,8 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<AudiobookFile>>> getAudiobookFiles(
-      String identifier,
-      ) async {
+    String identifier,
+  ) async {
     final url = "https://archive.org/metadata/$identifier/files?output=json";
 
     try {
@@ -584,10 +603,10 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> searchAudiobook(
-      String searchQuery,
-      int page,
-      int rows,
-      ) async {
+    String searchQuery,
+    int page,
+    int rows,
+  ) async {
     // Encode the free-form query to avoid breaking the `q` param.
     final encoded = Uri.encodeComponent(searchQuery);
     final lang = _languageQueryClause(); // may be empty
