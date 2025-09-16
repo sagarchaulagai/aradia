@@ -1,5 +1,6 @@
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:aradia/screens/home/widgets/favourite_section.dart';
 import 'package:aradia/screens/home/widgets/local_imports_section.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
@@ -162,18 +163,22 @@ class _HomeState extends State<Home> {
       ),
       body: CustomScrollView(
         slivers: [
+          // --- Welcome section ---
           SliverToBoxAdapter(
             child: WelcomeSection(theme: theme),
           ),
+          // --- Recently Played section ---
           SliverToBoxAdapter(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 290),
               child: const HistorySection(),
             ),
           ),
+          // --- Local imports section ---
           SliverToBoxAdapter(
             child: LocalImportsSection(),
           ),
+          // --- Recommended genres section ---
           SliverToBoxAdapter(
             child: FutureBuilder<String>(
               future: _recommendedGenresFuture,
@@ -200,9 +205,14 @@ class _HomeState extends State<Home> {
             ),
           ),
 
-          // --- Featured sections (stable blocs/controllers) ---
+          // --- Featured sections (popular and trending this week) ---
           SliverToBoxAdapter(
             child: _buildFeaturedSections(),
+          ),
+
+          // --- Favourite section ---
+          SliverToBoxAdapter(
+            child: FavouriteSection(),
           ),
 
           // --- Genres ---

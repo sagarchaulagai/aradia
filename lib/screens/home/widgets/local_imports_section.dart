@@ -124,7 +124,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
               Text(
                 'Local Audiobooks',
                 style: GoogleFonts.ubuntu(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),

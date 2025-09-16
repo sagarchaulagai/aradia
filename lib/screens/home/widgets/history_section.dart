@@ -400,7 +400,7 @@ class _HistorySectionState extends State<HistorySection> {
               Text(
                 'Recently Played',
                 style: GoogleFonts.ubuntu(
-                    fontSize: 22, fontWeight: FontWeight.bold),
+                    fontSize: 20, fontWeight: FontWeight.bold),
               )
             ],
           ),

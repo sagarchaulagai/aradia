@@ -136,14 +136,18 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8),
+      padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             widget.title,
-            style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
+            style: GoogleFonts.ubuntu(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          SizedBox(height: 5),
           SizedBox(
             height: 250,
             child: BlocConsumer<HomeBloc, HomeState>(

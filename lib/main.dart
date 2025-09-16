@@ -13,7 +13,6 @@ import 'package:aradia/screens/audiobook_details/audiobook_details.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
 import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/screens/download_audiobook/downloads_page.dart';
-import 'package:aradia/screens/favourite/favourite.dart';
 import 'package:aradia/screens/genre_audiobooks/genre_audiobooks.dart';
 import 'package:aradia/screens/home/home.dart';
 import 'package:aradia/screens/search/bloc/search_bloc.dart';
@@ -145,15 +144,6 @@ class _MyAppState extends State<MyApp> {
                   path: '/player',
                   name: 'player',
                   builder: (context, state) => const AudiobookPlayer(),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/favourite',
-                  name: 'favourite',
-                  builder: (context, state) => const Favourite(),
                 ),
               ],
             ),
