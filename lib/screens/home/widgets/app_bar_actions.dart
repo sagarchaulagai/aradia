@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:go_router/go_router.dart';
 
 class AppBarActions extends StatelessWidget {
   final ThemeNotifier themeNotifier;
@@ -16,7 +18,11 @@ class AppBarActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        
+        AnimatedIconButton(
+          icon: const Icon(Ionicons.logo_youtube),
+          onPressed: () => context.push('/youtube'),
+          tooltip: 'YouTube Import',
+        ),
         AnimatedIconButton(
           onPressed: themeNotifier.toggleTheme,
           icon: AnimatedSwitcher(

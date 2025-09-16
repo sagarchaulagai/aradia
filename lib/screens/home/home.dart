@@ -2,6 +2,7 @@ import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/screens/home/widgets/favourite_section.dart';
 import 'package:aradia/screens/home/widgets/local_imports_section.dart';
+import 'package:aradia/screens/home/widgets/youtube_import_section.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -177,6 +178,10 @@ class _HomeState extends State<Home> {
           // --- Local imports section ---
           SliverToBoxAdapter(
             child: LocalImportsSection(),
+          ),
+          // --- YouTube imports section ---
+          SliverToBoxAdapter(
+            child: YoutubeImportsSection(),
           ),
           // --- Recommended genres section ---
           SliverToBoxAdapter(
