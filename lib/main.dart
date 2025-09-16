@@ -1,6 +1,5 @@
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/designs/themes.dart';
-import 'package:aradia/screens/import/import_audiobook.dart';
 import 'package:aradia/screens/recommendation/recommendation_screen.dart';
 import 'package:aradia/screens/setting/settings.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
@@ -92,7 +91,8 @@ class _MyAppState extends State<MyApp> {
   GoRouter _buildRouter() {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
+      initialLocation:
+          isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
       routes: [
         GoRoute(
           path: '/recommendation_screen',
@@ -175,15 +175,16 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/import',
-                  name: 'import',
-                  builder: (context, state) => const ImportAudiobookScreen(),
-                ),
-              ],
-            ),
+            // NEW removed import screen for now, may add different tab later
+            // StatefulShellBranch(
+            //   routes: [
+            //     GoRoute(
+            //       path: '/import',
+            //       name: 'import',
+            //       builder: (context, state) => const ImportAudiobookScreen(),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ],
@@ -194,7 +195,7 @@ class _MyAppState extends State<MyApp> {
     AppLogger.debug(
         'initialized back button interceptor', 'BackButtonInterceptor');
     WeSlideController weSlideController =
-    Provider.of<WeSlideController>(context, listen: false);
+        Provider.of<WeSlideController>(context, listen: false);
     if (weSlideController.isOpened) {
       AppLogger.debug('closing', 'BackButtonInterceptor');
       weSlideController.hide();
