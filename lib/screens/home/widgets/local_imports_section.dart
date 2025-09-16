@@ -114,7 +114,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -139,7 +139,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          //const SizedBox(height: 8),
           if (isLoading)
             const Center(
               child: CircularProgressIndicator(
@@ -272,14 +272,9 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
         scrollDirection: Axis.horizontal,
         itemCount: audiobooks.length,
         itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(
-              right: index < audiobooks.length - 1 ? 12 : 0,
-            ),
-            child: LocalAudiobookItem(
-              audiobook: audiobooks[index],
-              onUpdated: _loadAudiobooks,
-            ),
+          return LocalAudiobookItem(
+            audiobook: audiobooks[index],
+            onUpdated: _loadAudiobooks,
           );
         },
       ),

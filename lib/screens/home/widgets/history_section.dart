@@ -67,7 +67,7 @@ class _HistorySectionState extends State<HistorySection> {
 
   Widget _buildEmptyState() {
     return Container(
-      height: 220,
+      height: 235,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Center(
         child: Column(
@@ -151,8 +151,8 @@ class _HistorySectionState extends State<HistorySection> {
         : 0.0;
 
     return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
+      width: 175,
+      padding: const EdgeInsets.only(right: 8),
       child: GestureDetector(
         onTap: () {
           if (audioHandlerProvider.audioHandler.getCurrentAudiobookId() ==
@@ -275,9 +275,9 @@ class _HistorySectionState extends State<HistorySection> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
-                      height: 160,
-                      width: 160,
-                      child: _historyCoverTile(item, 160),
+                      height: 175,
+                      width: 175,
+                      child: _historyCoverTile(item, 175),
                     ),
                   ),
                   Positioned(
@@ -394,7 +394,7 @@ class _HistorySectionState extends State<HistorySection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           child: Row(
             children: [
               Text(
@@ -414,7 +414,7 @@ class _HistorySectionState extends State<HistorySection> {
             if (historyItems.isEmpty) return _buildEmptyState();
 
             return SizedBox(
-              height: 220,
+              height: 235,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,

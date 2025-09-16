@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/home/bloc/home_bloc.dart';
-import 'package:aradia/utils/app_events.dart';
 import 'package:aradia/widgets/audiobook_item.dart';
 
 enum AudiobooksFetchType {
@@ -114,19 +111,19 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
 
   bool _isLoadingState(HomeState s) {
     final loadingType =
-    fetchTypeMapping[widget.fetchType]?['loadingState'] as Type?;
+        fetchTypeMapping[widget.fetchType]?['loadingState'] as Type?;
     return loadingType != null && s.runtimeType == loadingType;
   }
 
   bool _isSuccessState(HomeState s) {
     final successType =
-    fetchTypeMapping[widget.fetchType]?['successState'] as Type?;
+        fetchTypeMapping[widget.fetchType]?['successState'] as Type?;
     return successType != null && s.runtimeType == successType;
   }
 
   bool _isFailedState(HomeState s) {
     final failedType =
-    fetchTypeMapping[widget.fetchType]?['failedState'] as Type?;
+        fetchTypeMapping[widget.fetchType]?['failedState'] as Type?;
     return failedType != null && s.runtimeType == failedType;
   }
 
@@ -139,7 +136,7 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(left: 8, right: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -168,7 +165,7 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
                 }
               },
               buildWhen: (previous, current) =>
-              _isSuccessState(current) ||
+                  _isSuccessState(current) ||
                   _isLoadingState(current) ||
                   _isFailedState(current),
               builder: (context, state) {
