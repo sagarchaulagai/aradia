@@ -109,7 +109,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
       height: 50,
       fit: BoxFit.cover,
       errorBuilder: (context, _, __) =>
-      const Icon(Icons.broken_image, color: Colors.white54),
+          const Icon(Icons.broken_image, color: Colors.white54),
     );
   }
 
@@ -128,7 +128,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
     final panelMaxSize = MediaQuery.of(context).size.height;
     final footerHeight = keyboardOpen ? 0.0 : widget.bottomNavBarSize;
     final footer =
-    keyboardOpen ? const SizedBox.shrink() : widget.bottomNavigationBar;
+        keyboardOpen ? const SizedBox.shrink() : widget.bottomNavigationBar;
     final panelMin = keyboardOpen ? 0.0 : (80 + widget.bottomNavBarSize);
 
     return WeSlide(
@@ -167,23 +167,22 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                               ),
                               const SizedBox(width: 10),
                               SizedBox(
-                                width:
-                                MediaQuery.of(context).size.width * 0.5,
+                                width: MediaQuery.of(context).size.width * 0.5,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       mediaItem.album ?? "",
-                                      style: const TextStyle(
-                                          color: Colors.white),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
                                     Text(
                                       mediaItem.title,
-                                      style: const TextStyle(
-                                          color: Colors.white),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
@@ -196,11 +195,10 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                             stream: handler.playbackState,
                             builder: (context, s) {
                               final st = s.data;
-                              final loading =
-                                  st?.processingState ==
+                              final loading = st?.processingState ==
                                       AudioProcessingState.loading ||
-                                      st?.processingState ==
-                                          AudioProcessingState.buffering;
+                                  st?.processingState ==
+                                      AudioProcessingState.buffering;
                               if (loading) {
                                 return const CircularProgressIndicator(
                                   color: AppColors.primaryColor,
@@ -213,9 +211,8 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                                   playing ? Icons.pause : Icons.play_arrow,
                                   color: Colors.white,
                                 ),
-                                onPressed: () => playing
-                                    ? handler.pause()
-                                    : handler.play(),
+                                onPressed: () =>
+                                    playing ? handler.pause() : handler.play(),
                               );
                             },
                           ),

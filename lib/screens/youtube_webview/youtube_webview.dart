@@ -5,12 +5,14 @@ import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/services/youtube/youtube_audiobook_notifier.dart';
+import 'package:aradia/resources/services/youtube/webview_keep_alive_provider.dart';
 import 'package:aradia/utils/app_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:aradia/utils/permission_helper.dart';
 
@@ -24,67 +26,73 @@ class YoutubeWebview extends StatefulWidget {
 class _YoutubeWebviewState extends State<YoutubeWebview> {
   String? _currentUrl;
   bool _isImporting = false;
-  bool _isWebViewLoading = true;
+  bool _isWebViewLoading = true; // Still defaults to true
   String? _errorMessageYT;
-  late final WebViewController _webViewController;
+  bool _isCurrentContentImported = false;
+  InAppWebViewController? _webViewController;
+  late final YoutubeAudiobookNotifier _audioBookNotifier;
 
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
+    _audioBookNotifier = YoutubeAudiobookNotifier();
+    _audioBookNotifier.addListener(_onAudiobookListChanged);
   }
 
-  void _initializeWebView() {
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel(
-        'URLChanged',
-        onMessageReceived: (msg) {
-          setState(() {
-            _currentUrl = msg.message;
-          });
-        },
-      )
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageStarted: (_) {
-          if (mounted) {
-            setState(() {
-              _isWebViewLoading = true;
-            });
-          }
-        },
-        onPageFinished: (_) {
-          if (mounted) {
-            setState(() {
-              _isWebViewLoading = false;
-            });
-          }
-          _webViewController.runJavaScript('''
-            const pushState = history.pushState;
-            history.pushState = function() {
-              pushState.apply(this, arguments);
-              URLChanged.postMessage(window.location.href);
-            };
-            window.addEventListener('popstate', function() {
-              URLChanged.postMessage(window.location.href);
-            });
-            URLChanged.postMessage(window.location.href);
-          ''');
-        },
-      ))
-      ..loadRequest(Uri.parse('https://www.youtube.com'));
+  @override
+  void dispose() {
+    _audioBookNotifier.removeListener(_onAudiobookListChanged);
+    super.dispose();
+  }
+
+  void _onAudiobookListChanged() {
+    if (mounted) {
+      _checkIfCurrentContentIsImported();
+    }
+  }
+
+  void _checkIfCurrentContentIsImported() {
+    if (_currentUrl == null) {
+      _isCurrentContentImported = false;
+      return;
+    }
+
+    try {
+      String? entityId;
+
+      if (_currentUrl!.contains('playlist?list=')) {
+        final uri = Uri.parse(_currentUrl!);
+        entityId = uri.queryParameters['list'];
+      } else if (_currentUrl!.contains('youtube.com/watch')) {
+        final uri = Uri.parse(_currentUrl!);
+        entityId = uri.queryParameters['v'];
+      }
+
+      if (entityId != null) {
+        final wasImported = _isCurrentContentImported;
+        _isCurrentContentImported =
+            _audioBookNotifier.isAudiobookAlreadyImported(entityId);
+
+        if (wasImported != _isCurrentContentImported) {
+          setState(() {});
+        }
+      } else {
+        _isCurrentContentImported = false;
+      }
+    } catch (e) {
+      _isCurrentContentImported = false;
+    }
   }
 
   Future<void> _importFromYouTube() async {
     if (!mounted || _currentUrl == null) return;
-
-    // maybe pause the video when clicking import button
-    try {
-      await _webViewController
-          .runJavaScript("document.querySelector('video')?.pause();");
-    } catch (_) {
-      // Ignore if no video element found
-    }
+    // Lets not pause the video , we can add this feature in the future if needed
+    // try {
+    //   await _webViewController?.evaluateJavascript(
+    //       source: "document.querySelector('video')?.pause();");
+    // } catch (_) {
+    //   // Ignore if no video element found
+    // }
 
     if (!_currentUrl!.contains('youtube.com/watch') &&
         !_currentUrl!.contains('youtube.com/playlist')) {
@@ -121,6 +129,10 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
         entityDescription = playlist.description;
         tags = _extractTags(playlist.description);
 
+        if (_isCurrentContentImported) {
+          return;
+        }
+
         final videos = await yt.playlists.getVideos(playlist.id).toList();
         if (videos.isEmpty) throw Exception("Playlist contains no videos.");
 
@@ -146,6 +158,10 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
         entityDescription = video.description;
         tags = _extractTags(video.description);
         coverImage = video.thumbnails.highResUrl;
+
+        if (_isCurrentContentImported) {
+          return;
+        }
 
         files.add(AudiobookFile.fromMap({
           "identifier": video.id.value,
@@ -176,16 +192,7 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
       });
 
       await _saveYouTubeAudiobookMetadata(audiobook, files);
-
-      // Notify the YoutubeAudiobookNotifier about the new audiobook
       YoutubeAudiobookNotifier().addAudiobook(audiobook);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              '${_currentUrl!.contains('playlist') ? 'Playlist' : 'Video'} imported successfully!'),
-        ));
-      }
     } catch (e) {
       if (mounted) {
         setState(() => _errorMessageYT = 'Error importing from YouTube: $e');
@@ -228,75 +235,164 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'YouTube Import',
-          style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: Column(
+      // appBar: AppBar(
+      //   title: Text(
+      //     'YouTube Import',
+      //     style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
+      //   ),
+      //   centerTitle: true,
+      // ),
+      body: Stack(
         children: [
-          if (_errorMessageYT != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12.0),
-              color: theme.colorScheme.error.withValues(alpha: 0.1),
-              child: Text(
-                _errorMessageYT!,
-                style: TextStyle(
-                  color: theme.colorScheme.error,
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          Expanded(
-            child: Stack(
-              children: [
-                WebViewWidget(controller: _webViewController),
-                if (_isWebViewLoading)
-                  Container(
-                    color: theme.scaffoldBackgroundColor,
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+          Column(
+            children: [
+              if (_errorMessageYT != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
+                    elevation: 2,
+                    color: theme.colorScheme.error.withValues(alpha: 0.08),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
                         children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text(
-                            'Loading YouTube...',
-                            style: TextStyle(fontSize: 16),
+                          Icon(Icons.error_outline,
+                              color: theme.colorScheme.error),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessageYT!,
+                              style: TextStyle(
+                                color: theme.colorScheme.error,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    InAppWebView(
+                      keepAlive: Provider.of<WebViewKeepAliveProvider>(context,
+                              listen: false)
+                          .keepAlive,
+                      initialUrlRequest:
+                          URLRequest(url: WebUri('https://www.youtube.com')),
+                      onWebViewCreated: (controller) async {
+                        _webViewController = controller;
+
+                        final url = await controller.getUrl();
+
+                        if (url != null && url.toString() != 'about:blank') {
+                          if (mounted) {
+                            setState(() {
+                              _currentUrl = url.toString();
+                              _isWebViewLoading = false;
+                              _checkIfCurrentContentIsImported();
+                            });
+                          }
+                        }
+                      },
+                      onLoadStart: (controller, url) {
+                        if (mounted) {
+                          setState(() {
+                            _isWebViewLoading = true;
+                          });
+                        }
+                      },
+                      onLoadStop: (controller, url) {
+                        if (mounted) {
+                          setState(() {
+                            _isWebViewLoading = false;
+                            _currentUrl = url.toString();
+                            _checkIfCurrentContentIsImported();
+                          });
+                        }
+                      },
+                      onUpdateVisitedHistory:
+                          (controller, url, androidIsReload) {
+                        if (mounted && url != null) {
+                          setState(() {
+                            _currentUrl = url.toString();
+                            _checkIfCurrentContentIsImported();
+                          });
+                        }
+                      },
+                    ),
+                    if (_isWebViewLoading)
+                      Container(
+                        color: theme.scaffoldBackgroundColor,
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 16),
+                              Text(
+                                'Loading YouTube...',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      floatingActionButton: _currentUrl != null &&
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FutureBuilder<bool>(
+            future: _webViewController?.canGoBack() ?? Future.value(false),
+            builder: (context, snapshot) {
+              if (snapshot.data == true) {
+                return FloatingActionButton(
+                  heroTag: 'back',
+                  mini: true,
+                  backgroundColor:
+                      AppColors.primaryColor.withValues(alpha: 0.8),
+                  onPressed: () => _webViewController?.goBack(),
+                  child: const Icon(Icons.arrow_back, color: Colors.white),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          if (_currentUrl != null &&
               (_currentUrl!.contains('youtube.com/watch') ||
-                  _currentUrl!.contains('youtube.com/playlist'))
-          ? FloatingActionButton.extended(
-              onPressed: _isImporting ? null : _importFromYouTube,
+                  _currentUrl!.contains('youtube.com/playlist')))
+            const SizedBox(width: 8),
+          if (_currentUrl != null &&
+              (_currentUrl!.contains('youtube.com/watch') ||
+                  _currentUrl!.contains('youtube.com/playlist')))
+            FloatingActionButton(
+              heroTag: 'import',
               backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-              icon: _isImporting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+              onPressed: _isImporting
+                  ? null
+                  : _isCurrentContentImported
+                      ? () => context.go('/home')
+                      : _importFromYouTube,
+              child: _isImporting
+                  ? const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
                     )
-                  : const Icon(Icons.download_outlined),
-              label: Text(_isImporting ? 'Importing...' : 'Import Audio'),
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+                  : _isCurrentContentImported
+                      ? const Icon(Icons.visibility, color: Colors.white)
+                      : const Icon(Icons.download_outlined,
+                          color: Colors.white),
+            ),
+        ],
+      ),
     );
   }
 }

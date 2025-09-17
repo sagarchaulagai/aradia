@@ -183,6 +183,10 @@ class _HomeState extends State<Home> {
           SliverToBoxAdapter(
             child: YoutubeImportsSection(),
           ),
+          // --- Favourite section ---
+          SliverToBoxAdapter(
+            child: FavouriteSection(),
+          ),
           // --- Recommended genres section ---
           SliverToBoxAdapter(
             child: FutureBuilder<String>(
@@ -213,11 +217,6 @@ class _HomeState extends State<Home> {
           // --- Featured sections (popular and trending this week) ---
           SliverToBoxAdapter(
             child: _buildFeaturedSections(),
-          ),
-
-          // --- Favourite section ---
-          SliverToBoxAdapter(
-            child: FavouriteSection(),
           ),
 
           // --- Genres ---

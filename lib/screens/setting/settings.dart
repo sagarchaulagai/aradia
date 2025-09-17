@@ -199,16 +199,6 @@ class _SettingsState extends State<Settings> {
           ),
           const Divider(),
 
-          // Licenses
-          ListTile(
-            leading: const Icon(Icons.book),
-            title: const Text('3rd Party Libraries'),
-            subtitle: const Text('View licenses of the libraries used'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => showLicensePage(context: context),
-          ),
-          const Divider(),
-
           // Local Audiobooks Directory
           ListTile(
             leading: const Icon(Icons.folder),
@@ -223,6 +213,16 @@ class _SettingsState extends State<Settings> {
             ),
             trailing: const Icon(Icons.edit),
             onTap: _selectRootFolder,
+          ),
+          const Divider(),
+
+          // Licenses
+          ListTile(
+            leading: const Icon(Icons.book),
+            title: const Text('3rd Party Libraries'),
+            subtitle: const Text('View licenses of the libraries used'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => showLicensePage(context: context),
           ),
           const Divider(),
 

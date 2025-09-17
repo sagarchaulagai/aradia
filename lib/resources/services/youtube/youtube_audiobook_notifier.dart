@@ -130,6 +130,10 @@ class YoutubeAudiobookNotifier extends ChangeNotifier {
     }
   }
 
+  bool isAudiobookAlreadyImported(String audiobookId) {
+    return _audiobooks.any((audiobook) => audiobook.id == audiobookId);
+  }
+
   void addAudiobook(Audiobook audiobook) {
     // Check if audiobook already exists
     final existingIndex = _audiobooks.indexWhere((ab) => ab.id == audiobook.id);

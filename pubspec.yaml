@@ -60,7 +60,7 @@ dependencies:
   logger: ^2.6.1
   meta: ^1.16.0
   audio_session: ^0.2.2
-  webview_flutter: ^4.13.0
+  flutter_inappwebview: ^6.1.5
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2

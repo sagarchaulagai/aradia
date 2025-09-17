@@ -1,4 +1,3 @@
-// lib/resources/services/chapter_parser.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -31,7 +30,9 @@ class ChapterParser {
     }
 
     // MP4-family
-    if (lower.endsWith('.m4b') || lower.endsWith('.m4a') || lower.endsWith('.mp4')) {
+    if (lower.endsWith('.m4b') ||
+        lower.endsWith('.m4a') ||
+        lower.endsWith('.mp4')) {
       // 1) Nero chpl
       final chpl = _parseMp4Chpl(bytes);
       if (chpl.isNotEmpty) return chpl;
@@ -54,7 +55,8 @@ class ChapterParser {
 
   static List<ChapterCue> _parseMp3Id3Chapters(Uint8List data) {
     if (data.length < 10) return const [];
-    if (!(data[0] == 0x49 && data[1] == 0x44 && data[2] == 0x33)) return const [];
+    if (!(data[0] == 0x49 && data[1] == 0x44 && data[2] == 0x33))
+      return const [];
 
     final version = data[3]; // 2,3,4
     final tagSize = _syncsafeToInt(data.sublist(6, 10));
@@ -108,7 +110,9 @@ class ChapterParser {
       cues.add(_Chap(startMs: start, title: title ?? elementId));
     }
 
-    final out = cues.map((c) => ChapterCue(startMs: c.startMs, title: c.title)).toList();
+    final out = cues
+        .map((c) => ChapterCue(startMs: c.startMs, title: c.title))
+        .toList();
     out.sort((a, b) => a.startMs.compareTo(b.startMs));
     return out;
   }
@@ -144,11 +148,13 @@ class ChapterParser {
             int i = 5;
             for (int n = 0; n < count; n++) {
               if (i + 9 > b.length) break;
-              final time = _u64(b, i); i += 8;
+              final time = _u64(b, i);
+              i += 8;
               final len = b[i++];
 
               if (i + len > b.length) break;
-              final title = utf8.decode(b.sublist(i, i + len), allowMalformed: true);
+              final title =
+                  utf8.decode(b.sublist(i, i + len), allowMalformed: true);
               i += len;
 
               final ms = (time > 0x7FFFFFFF) ? (time ~/ 1000) : time; // guard
@@ -159,7 +165,9 @@ class ChapterParser {
             }
           }
         } else if (_isContainer(type)) {
-          final childStart = (type == 'meta' && boxStart + 4 <= boxEnd) ? boxStart + 4 : boxStart;
+          final childStart = (type == 'meta' && boxStart + 4 <= boxEnd)
+              ? boxStart + 4
+              : boxStart;
           walk(childStart, boxEnd);
         }
 
@@ -195,8 +203,10 @@ class ChapterParser {
     return v;
   }
 
-  static int _u32be(Uint8List b) => (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
-  static int _u32(Uint8List b, int o) => (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
+  static int _u32be(Uint8List b) =>
+      (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
+  static int _u32(Uint8List b, int o) =>
+      (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
 
   static int _u64(Uint8List b, int o) {
     int v = 0;
@@ -206,17 +216,34 @@ class ChapterParser {
 
   static bool _isContainer(String type) {
     return {
-      'moov','trak','mdia','minf','stbl','tref','edts','udta','meta','ilst','free','skip','uuid','----'
+      'moov',
+      'trak',
+      'mdia',
+      'minf',
+      'stbl',
+      'tref',
+      'edts',
+      'udta',
+      'meta',
+      'ilst',
+      'free',
+      'skip',
+      'uuid',
+      '----'
     }.contains(type);
   }
 
   static String? _decodeId3Text(int enc, Uint8List data) {
     try {
       switch (enc) {
-        case 0: return latin1.decode(data);
-        case 1: return _decodeUtf16(data);
-        case 3: return utf8.decode(data);
-        default: return utf8.decode(data);
+        case 0:
+          return latin1.decode(data);
+        case 1:
+          return _decodeUtf16(data);
+        case 3:
+          return utf8.decode(data);
+        default:
+          return utf8.decode(data);
       }
     } catch (_) {
       return utf8.decode(data, allowMalformed: true);
@@ -228,8 +255,13 @@ class ChapterParser {
     int offset = 0;
     if (bytes.length >= 2) {
       final b0 = bytes[0], b1 = bytes[1];
-      if (b0 == 0xFE && b1 == 0xFF) { endian = Endian.big; offset = 2; }
-      else if (b0 == 0xFF && b1 == 0xFE) { endian = Endian.little; offset = 2; }
+      if (b0 == 0xFE && b1 == 0xFF) {
+        endian = Endian.big;
+        offset = 2;
+      } else if (b0 == 0xFF && b1 == 0xFE) {
+        endian = Endian.little;
+        offset = 2;
+      }
     }
     final usableLen = bytes.length - offset;
     final codeUnits = <int>[];
@@ -277,13 +309,17 @@ class _Mp4ChapterTrack {
       int ticks = 0;
       final cues = <ChapterCue>[];
 
-      for (int c = 0; c < chunkOffsets.length && sampleIndex < stsz.length; c++) {
+      for (int c = 0;
+          c < chunkOffsets.length && sampleIndex < stsz.length;
+          c++) {
         final samplesInChunk = _samplesPerChunkAt(stsc, c);
         int offset = chunkOffsets[c];
         for (int s = 0; s < samplesInChunk && sampleIndex < stsz.length; s++) {
           final size = stsz[sampleIndex];
           if (size < 2) {
-            ticks += (sampleDur.isNotEmpty && sampleIndex < sampleDur.length) ? sampleDur[sampleIndex] : 0;
+            ticks += (sampleDur.isNotEmpty && sampleIndex < sampleDur.length)
+                ? sampleDur[sampleIndex]
+                : 0;
             sampleIndex++;
             continue;
           }
@@ -295,16 +331,25 @@ class _Mp4ChapterTrack {
             final textLen = (sample[0] << 8) | sample[1];
             if (2 + textLen <= sample.length && textLen > 0) {
               try {
-                title = utf8.decode(sample.sublist(2, 2 + textLen), allowMalformed: true).trim();
+                title = utf8
+                    .decode(sample.sublist(2, 2 + textLen),
+                        allowMalformed: true)
+                    .trim();
               } catch (_) {
-                title = const Latin1Codec().decode(sample.sublist(2, 2 + textLen), allowInvalid: true).trim();
+                title = const Latin1Codec()
+                    .decode(sample.sublist(2, 2 + textLen), allowInvalid: true)
+                    .trim();
               }
             }
             final startMs = (ticks * 1000) ~/ scale;
-            cues.add(ChapterCue(startMs: startMs, title: title.isEmpty ? 'Chapter ${cues.length + 1}' : title));
+            cues.add(ChapterCue(
+                startMs: startMs,
+                title: title.isEmpty ? 'Chapter ${cues.length + 1}' : title));
           }
 
-          ticks += (sampleDur.isNotEmpty && sampleIndex < sampleDur.length) ? sampleDur[sampleIndex] : 0;
+          ticks += (sampleDur.isNotEmpty && sampleIndex < sampleDur.length)
+              ? sampleDur[sampleIndex]
+              : 0;
           offset += size;
           sampleIndex++;
         }
@@ -350,7 +395,9 @@ class _Mp4ChapterTrack {
       _visit(ctx, path, boxStart, boxEnd);
 
       if (_isContainer(type)) {
-        final childStart = (type == 'meta' && boxStart + 4 <= boxEnd) ? boxStart + 4 : boxStart;
+        final childStart = (type == 'meta' && boxStart + 4 <= boxEnd)
+            ? boxStart + 4
+            : boxStart;
         _walk(ctx, childStart, boxEnd, path);
       }
       path.removeLast();
@@ -407,12 +454,14 @@ class _Mp4ChapterTrack {
     }
 
     if (_endsWith(path, ['trak', 'mdia', 'minf', 'stbl', 'stts'])) {
-      final id = ctx.currentTrakId; if (id == null) return;
+      final id = ctx.currentTrakId;
+      if (id == null) return;
       final b = ctx.data.sublist(s, e);
       if (b.length < 8) return;
       int p = 4;
       if (p + 4 > b.length) return;
-      final count = _u32(b, p); p += 4;
+      final count = _u32(b, p);
+      p += 4;
       final out = <(int count, int delta)>[];
       for (int i = 0; i < count; i++) {
         if (p + 8 > b.length) break;
@@ -424,12 +473,14 @@ class _Mp4ChapterTrack {
     }
 
     if (_endsWith(path, ['trak', 'mdia', 'minf', 'stbl', 'stsc'])) {
-      final id = ctx.currentTrakId; if (id == null) return;
+      final id = ctx.currentTrakId;
+      if (id == null) return;
       final b = ctx.data.sublist(s, e);
       if (b.length < 8) return;
       int p = 4;
       if (p + 4 > b.length) return;
-      final count = _u32(b, p); p += 4;
+      final count = _u32(b, p);
+      p += 4;
       final out = <(int firstChunk, int samplesPerChunk, int descIdx)>[];
       for (int i = 0; i < count; i++) {
         if (p + 12 > b.length) break;
@@ -441,51 +492,61 @@ class _Mp4ChapterTrack {
     }
 
     if (_endsWith(path, ['trak', 'mdia', 'minf', 'stbl', 'stco'])) {
-      final id = ctx.currentTrakId; if (id == null) return;
+      final id = ctx.currentTrakId;
+      if (id == null) return;
       final b = ctx.data.sublist(s, e);
       if (b.length < 8) return;
       int p = 4;
       if (p + 4 > b.length) return;
-      final count = _u32(b, p); p += 4;
+      final count = _u32(b, p);
+      p += 4;
       final out = <int>[];
       for (int i = 0; i < count; i++) {
         if (p + 4 > b.length) break;
-        out.add(_u32(b, p)); p += 4;
+        out.add(_u32(b, p));
+        p += 4;
       }
       ctx.stco[id] = out;
       return;
     }
 
     if (_endsWith(path, ['trak', 'mdia', 'minf', 'stbl', 'co64'])) {
-      final id = ctx.currentTrakId; if (id == null) return;
+      final id = ctx.currentTrakId;
+      if (id == null) return;
       final b = ctx.data.sublist(s, e);
       if (b.length < 8) return;
       int p = 4;
       if (p + 4 > b.length) return;
-      final count = _u32(b, p); p += 4;
+      final count = _u32(b, p);
+      p += 4;
       final out = <int>[];
       for (int i = 0; i < count; i++) {
         if (p + 8 > b.length) break;
-        out.add(_u64(b, p)); p += 8;
+        out.add(_u64(b, p));
+        p += 8;
       }
       ctx.co64[id] = out;
       return;
     }
 
     if (_endsWith(path, ['trak', 'mdia', 'minf', 'stbl', 'stsz'])) {
-      final id = ctx.currentTrakId; if (id == null) return;
+      final id = ctx.currentTrakId;
+      if (id == null) return;
       final b = ctx.data.sublist(s, e);
       if (b.length < 12) return;
       int p = 4;
-      final sampleSize = _u32(b, p); p += 4;
-      final count = _u32(b, p); p += 4;
+      final sampleSize = _u32(b, p);
+      p += 4;
+      final count = _u32(b, p);
+      p += 4;
       final out = <int>[];
       if (sampleSize != 0) {
         for (int i = 0; i < count; i++) out.add(sampleSize);
       } else {
         for (int i = 0; i < count; i++) {
           if (p + 4 > b.length) break;
-          out.add(_u32(b, p)); p += 4;
+          out.add(_u32(b, p));
+          p += 4;
         }
       }
       ctx.stsz[id] = out;
@@ -496,7 +557,8 @@ class _Mp4ChapterTrack {
   static bool _endsWith(List<String> path, List<String> suffix) {
     if (suffix.length > path.length) return false;
     for (int i = 0; i < suffix.length; i++) {
-      if (path[path.length - 1 - i] != suffix[suffix.length - 1 - i]) return false;
+      if (path[path.length - 1 - i] != suffix[suffix.length - 1 - i])
+        return false;
     }
     return true;
   }
@@ -535,7 +597,8 @@ class _Ctx {
 
   final Map<int, int> timeScale = {};
   final Map<int, List<(int count, int delta)>> stts = {};
-  final Map<int, List<(int firstChunk, int samplesPerChunk, int descIdx)>> stsc = {};
+  final Map<int, List<(int firstChunk, int samplesPerChunk, int descIdx)>>
+      stsc = {};
   final Map<int, List<int>> stco = {};
   final Map<int, List<int>> co64 = {};
   final Map<int, List<int>> stsz = {};
@@ -554,14 +617,32 @@ class _Ctx {
 }
 
 // Shared low-level utils (local copies to avoid cross-file deps)
-int _u32(Uint8List b, int o) => (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
-int _u64(Uint8List b, int o) { int v = 0; for (int i = 0; i < 8; i++) v = (v << 8) | b[o + i]; return v; }
+int _u32(Uint8List b, int o) =>
+    (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
+int _u64(Uint8List b, int o) {
+  int v = 0;
+  for (int i = 0; i < 8; i++) v = (v << 8) | b[o + i];
+  return v;
+}
+
 String _type(Uint8List b, int o) => String.fromCharCodes(b.sublist(o, o + 4));
 
 bool _isContainer(String type) {
   return {
-    'moov','trak','mdia','minf','stbl','tref','edts','udta','meta',
-    'ilst','free','skip','uuid','----'
+    'moov',
+    'trak',
+    'mdia',
+    'minf',
+    'stbl',
+    'tref',
+    'edts',
+    'udta',
+    'meta',
+    'ilst',
+    'free',
+    'skip',
+    'uuid',
+    '----'
   }.contains(type);
 }
 
@@ -570,7 +651,8 @@ class _Chap {
   final String title;
   const _Chap({required this.startMs, required this.title});
   @override
-  bool operator ==(Object other) => other is _Chap && startMs == other.startMs && title == other.title;
+  bool operator ==(Object other) =>
+      other is _Chap && startMs == other.startMs && title == other.title;
   @override
   int get hashCode => Object.hash(startMs, title);
 }
