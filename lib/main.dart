@@ -218,8 +218,8 @@ class _MyAppState extends State<MyApp> {
           ],
           child: MaterialApp.router(
             // ✅ Use your custom themes for both modes
-            theme: Themes().lightTheme,
-            darkTheme: Themes().darkTheme,
+            theme: Themes.lightTheme,
+            darkTheme: Themes.darkTheme,
             themeMode: themeNotifier.themeMode,
             routerConfig: _router,
             debugShowCheckedModeBanner: false,

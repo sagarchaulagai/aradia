@@ -1,34 +1,53 @@
-import 'package:aradia/resources/designs/app_colors.dart';
+// lib/resources/designs/themes.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/src/material/theme_data.dart';
+import 'app_colors.dart';
 
 class Themes {
   // Light Theme
-  ThemeData lightTheme = ThemeData.light().copyWith(
+  static final ThemeData lightTheme = ThemeData.light().copyWith(
+    useMaterial3: true,
     scaffoldBackgroundColor: AppColors.scaffoldBackgroundColor,
-    cardTheme: const CardThemeData(
-      color: AppColors.cardColorLight,
+    // Kill surface tint so grays don't get a blue cast
+    colorScheme: ThemeData.light().colorScheme.copyWith(
+      primary: AppColors.primaryColor,
+      secondary: AppColors.primaryColor,
+      surfaceTint: Colors.transparent,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.scaffoldBackgroundColor,
-      elevation: 2,
-      surfaceTintColor: Colors.grey, // keep neutral
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
     ),
-    colorScheme: ThemeData.light().colorScheme.copyWith(
-      primary: AppColors.primaryColor, // <- make buttons orange
-      secondary: AppColors.primaryColor, // optional: for FABs / accents
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.scaffoldBackgroundColor,
+      elevation: 0,
+      selectedItemColor: AppColors.primaryColor,
+      unselectedItemColor: Colors.grey,
+    ),
+    cardTheme: const CardThemeData(
+      color: AppColors.cardColorLight,
     ),
   );
 
   // Dark Theme
-  ThemeData darkTheme = ThemeData.dark().copyWith(
-    appBarTheme: const AppBarTheme(
-      surfaceTintColor: Colors.transparent, // <- matches the dark surface exactly
-    ),
+  static final ThemeData darkTheme = ThemeData.dark().copyWith(
+    useMaterial3: true,
+    scaffoldBackgroundColor: AppColors.darkScaffoldBackgroundColor,
     colorScheme: ThemeData.dark().colorScheme.copyWith(
-      primary: AppColors.primaryColor, // <- make buttons orange
+      primary: AppColors.primaryColor,
       secondary: AppColors.primaryColor,
+      surfaceTint: Colors.transparent,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.darkScaffoldBackgroundColor,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.darkScaffoldBackgroundColor,
+      elevation: 0,
+      selectedItemColor: AppColors.primaryColor,
+      unselectedItemColor: Colors.grey,
     ),
   );
-
 }
