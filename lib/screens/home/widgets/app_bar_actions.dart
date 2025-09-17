@@ -4,6 +4,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 
 class AppBarActions extends StatelessWidget {
+  // ignore: unused_field
   final ThemeNotifier themeNotifier;
   final VoidCallback onSettingsPressed;
 
@@ -23,25 +24,7 @@ class AppBarActions extends StatelessWidget {
           onPressed: () => context.push('/youtube'),
           tooltip: 'YouTube Import',
         ),
-        AnimatedIconButton(
-          onPressed: themeNotifier.toggleTheme,
-          icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return RotationTransition(
-                turns: animation,
-                child: child,
-              );
-            },
-            child: Icon(
-              themeNotifier.themeMode == ThemeMode.light
-                  ? Icons.nightlight_round
-                  : Icons.wb_sunny,
-              key: ValueKey<bool>(themeNotifier.themeMode == ThemeMode.light),
-            ),
-          ),
-          tooltip: 'Toggle theme mode',
-        ),
+        // Theme toggling moved to Settings page.
         AnimatedIconButton(
           icon: const Icon(Icons.settings),
           onPressed: onSettingsPressed,

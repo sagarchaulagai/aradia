@@ -5,6 +5,8 @@ import 'package:aradia/utils/permission_helper.dart';
 import 'package:aradia/resources/services/local/local_audiobook_service.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:aradia/resources/designs/theme_notifier.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -93,9 +95,7 @@ class _SettingsState extends State<Settings> {
                       controlAffinity: ListTileControlAffinity.leading,
                       dense: true,
                     ),
-                    SizedBox(
-                      height: 10,
-                    )
+                    const SizedBox(height: 10),
                   ],
                 );
               }).toList(),
@@ -136,7 +136,7 @@ class _SettingsState extends State<Settings> {
   Future<void> _selectRootFolder() async {
     // Request storage permissions first
     final hasPermission =
-        await PermissionHelper.handleDownloadPermissionWithDialog(context);
+    await PermissionHelper.handleDownloadPermissionWithDialog(context);
     if (!hasPermission) return;
 
     try {
@@ -172,11 +172,79 @@ class _SettingsState extends State<Settings> {
     }
   }
 
+  String _themeSubtitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+      default:
+        return 'System default';
+    }
+  }
+
+  Future<void> _pickTheme(BuildContext context) async {
+    final themeNotifier = Provider.of<ThemeNotifier>(context, listen: false);
+    ThemeMode current = themeNotifier.themeMode;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<ThemeMode>(
+              title: const Text('System default'),
+              value: ThemeMode.system,
+              groupValue: current,
+              onChanged: (v) {
+                if (v == null) return;
+                themeNotifier.setTheme(v);
+                Navigator.of(ctx).pop();
+              },
+            ),
+            RadioListTile<ThemeMode>(
+              title: const Text('Light'),
+              value: ThemeMode.light,
+              groupValue: current,
+              onChanged: (v) {
+                if (v == null) return;
+                themeNotifier.setTheme(v);
+                Navigator.of(ctx).pop();
+              },
+            ),
+            RadioListTile<ThemeMode>(
+              title: const Text('Dark'),
+              value: ThemeMode.dark,
+              groupValue: current,
+              onChanged: (v) {
+                if (v == null) return;
+                themeNotifier.setTheme(v);
+                Navigator.of(ctx).pop();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
+    );
+
+    if (mounted) setState(() {}); // refresh subtitle after change
+  }
+
   @override
   Widget build(BuildContext context) {
     final chips = _selected.isEmpty
         ? [const Chip(label: Text('All languages (no filter)'))]
         : _selected.map((c) => Chip(label: Text(_langs[c] ?? c))).toList();
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final currentTheme = themeNotifier.themeMode;
 
     return Scaffold(
       appBar: AppBar(
@@ -185,6 +253,16 @@ class _SettingsState extends State<Settings> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // Theme selection (moved from App Bar)
+          ListTile(
+            leading: const Icon(Icons.brightness_6),
+            title: const Text('Theme'),
+            subtitle: Text(_themeSubtitle(currentTheme)),
+            trailing: const Icon(Icons.edit),
+            onTap: () => _pickTheme(context),
+          ),
+          const Divider(),
+
           // Language filter
           ListTile(
             leading: const Icon(Icons.language),

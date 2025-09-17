@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:aradia/utils/permission_helper.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SearchAudiobook extends StatefulWidget {
   const SearchAudiobook({super.key});
@@ -210,7 +211,18 @@ class _SearchAudiobookState extends State<SearchAudiobook> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Search Audiobooks')),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0, // optional: keeps it flat like the rest of the page
+        title: Text(
+          'Search Audiobooks',
+          style: GoogleFonts.ubuntu(
+            fontSize: 22,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
       body: Column(
         children: [
           Padding(

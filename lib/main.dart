@@ -98,7 +98,7 @@ class _MyAppState extends State<MyApp> {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation:
-          isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
+      isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
       routes: [
         GoRoute(
           path: '/recommendation_screen',
@@ -177,16 +177,6 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            // NEW removed import screen for now, may add different tab later
-            // StatefulShellBranch(
-            //   routes: [
-            //     GoRoute(
-            //       path: '/import',
-            //       name: 'import',
-            //       builder: (context, state) => const ImportAudiobookScreen(),
-            //     ),
-            //   ],
-            // ),
           ],
         ),
       ],
@@ -197,7 +187,7 @@ class _MyAppState extends State<MyApp> {
     AppLogger.debug(
         'initialized back button interceptor', 'BackButtonInterceptor');
     WeSlideController weSlideController =
-        Provider.of<WeSlideController>(context, listen: false);
+    Provider.of<WeSlideController>(context, listen: false);
     if (weSlideController.isOpened) {
       AppLogger.debug('closing', 'BackButtonInterceptor');
       weSlideController.hide();
@@ -214,22 +204,28 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => AudiobookDetailsBloc(),
-        ),
-        BlocProvider(
-          create: (context) => SearchBloc(),
-        ),
-      ],
-      child: MaterialApp.router(
-        theme: Themes().lightTheme,
-        darkTheme: ThemeData.dark(), // Themes().darkTheme is another dark theme
-        themeMode: Provider.of<ThemeNotifier>(context).themeMode,
-        routerConfig: _router,
-        debugShowCheckedModeBanner: false,
-      ),
+    // ✅ Wrap in Consumer so MaterialApp rebuilds immediately on theme changes.
+    return Consumer<ThemeNotifier>(
+      builder: (context, themeNotifier, _) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => AudiobookDetailsBloc(),
+            ),
+            BlocProvider(
+              create: (context) => SearchBloc(),
+            ),
+          ],
+          child: MaterialApp.router(
+            // ✅ Use your custom themes for both modes
+            theme: Themes().lightTheme,
+            darkTheme: Themes().darkTheme,
+            themeMode: themeNotifier.themeMode,
+            routerConfig: _router,
+            debugShowCheckedModeBanner: false,
+          ),
+        );
+      },
     );
   }
 }
