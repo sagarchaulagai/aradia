@@ -325,6 +325,29 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         }
         final MediaItem mediaItem = snapshot.data!;
 
+        // Decide what to show for title/subtitle when there's only one track.
+        // We read the same Hive box you already use to persist "now playing".
+        final box = playingAudiobookDetailsBox;
+        final filesDyn = box.get('audiobookFiles') as List?;
+        final isSingleTrack = (filesDyn?.length ?? 0) <= 1;
+
+        // Prefer author from our stored Audiobook; fall back to MediaItem.artist.
+        String? _authorFromBox;
+        final audiobookMap = box.get('audiobook');
+        if (audiobookMap != null) {
+          _authorFromBox = Audiobook.fromMap(
+            Map<String, dynamic>.from(audiobookMap as Map),
+          ).author;
+        }
+
+        // Titles to render in the app bar and in the large title below the cover.
+        final headerTitle =
+        isSingleTrack ? (mediaItem.album ?? mediaItem.title) : mediaItem.title;
+        final headerSubtitle =
+        isSingleTrack ? (_authorFromBox ?? mediaItem.artist ?? 'Unknown')
+            : (mediaItem.artist ?? 'Unknown');
+        final contentTitle = headerTitle; // keep the big center title in sync
+
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.grey[850],
@@ -340,7 +363,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width - 150,
                       child: Text(
-                        mediaItem.title,
+                        headerTitle,
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.white,
@@ -351,7 +374,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width - 150,
                       child: Text(
-                        mediaItem.artist ?? 'Unknown',
+                        headerSubtitle,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.white70,
@@ -408,7 +431,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    mediaItem.title,
+                    contentTitle,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -417,17 +440,18 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    mediaItem.album ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.grey[800]
-                          : Colors.grey[300],
+                  if (!isSingleTrack)
+                    Text(
+                      mediaItem.album ?? 'Unknown',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.grey[800]
+                            : Colors.grey[300],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                   Text(
                     mediaItem.artist ?? 'Unknown',
                     style: TextStyle(

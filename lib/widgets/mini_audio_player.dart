@@ -153,6 +153,22 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                   builder: (context, snapshot) {
                     final mediaItem = snapshot.data;
                     if (mediaItem == null) return const SizedBox.shrink();
+
+                    // Determine if this is a single-track book based on what we saved in Hive
+                    final box = widget.playingAudiobookDetailsBox;
+                    final filesDyn = box.get('audiobookFiles') as List?;
+                    final isSingleTrack = (filesDyn?.length ?? 0) <= 1;
+
+                    // Resolve author (prefer from our stored Audiobook, fall back to MediaItem.artist)
+                    String? author;
+                    final audiobookMap = box.get('audiobook');
+                    if (audiobookMap != null) {
+                      author = Audiobook.fromMap(audiobookMap).author;
+                    }
+                    final secondaryLine = isSingleTrack
+                        ? (author ?? mediaItem.artist ?? '')
+                        : mediaItem.title;
+
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Row(
@@ -172,17 +188,17 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
+                                    // First line: keep the book title (album)
                                     Text(
                                       mediaItem.album ?? "",
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                      style: const TextStyle(color: Colors.white),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
+                                    // Second line: either the track title (multi-track) or the author (single-track)
                                     Text(
-                                      mediaItem.title,
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                      secondaryLine,
+                                      style: const TextStyle(color: Colors.white),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
