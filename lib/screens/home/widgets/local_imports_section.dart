@@ -113,12 +113,13 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Match FavouriteSection's header padding
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -131,29 +132,22 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
               if (rootFolderPath != null)
                 IconButton(
                   onPressed: _refreshAudiobooks,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: AppColors.primaryColor,
-                  ),
+                  icon: const Icon(Icons.refresh, color: AppColors.primaryColor),
                   tooltip: 'Refresh audiobooks',
                 ),
             ],
           ),
-          //const SizedBox(height: 8),
-          if (isLoading)
-            const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            )
-          else if (rootFolderPath == null)
-            _buildSelectFolderCard()
-          else if (audiobooks.isEmpty)
+        ),
+
+        if (isLoading)
+          const Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
+        else if (rootFolderPath == null)
+          _buildSelectFolderCard()
+        else if (audiobooks.isEmpty)
             _buildEmptyState()
           else
             _buildAudiobooksList(),
-        ],
-      ),
+      ],
     );
   }
 
@@ -270,6 +264,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
       height: 250,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         itemCount: audiobooks.length,
         itemBuilder: (context, index) {
           return LocalAudiobookItem(

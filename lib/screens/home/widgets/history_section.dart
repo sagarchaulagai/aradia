@@ -416,7 +416,7 @@ class _HistorySectionState extends State<HistorySection> {
             return SizedBox(
               height: 235,
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 scrollDirection: Axis.horizontal,
                 itemCount: historyItems.length,
                 itemBuilder: (context, index) {

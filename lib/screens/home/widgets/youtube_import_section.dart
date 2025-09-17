@@ -31,7 +31,7 @@ class _YoutubeImportsSectionState extends State<YoutubeImportsSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -129,7 +129,7 @@ class _YoutubeImportsSectionState extends State<YoutubeImportsSection> {
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 itemCount: audiobooks.length,
                 itemBuilder: (context, index) {
                   final audiobook = audiobooks[index];
