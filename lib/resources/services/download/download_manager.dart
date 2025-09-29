@@ -384,9 +384,10 @@ class DownloadManager {
 
   List<String> getTaskIdsForAudiobook(String audiobookId) {
     List<String> ids = [];
-    for (var key in downloadStatusBox.keys) {
-      if (key.toString().startsWith('task_$audiobookId-')) {
-        ids.add(key.toString());
+    for (final key in downloadStatusBox.keys) {
+      final keyString = key.toString();
+      if (keyString.startsWith('task_$audiobookId-')) {
+        ids.add(keyString.substring('task_'.length));
       }
     }
     return ids;

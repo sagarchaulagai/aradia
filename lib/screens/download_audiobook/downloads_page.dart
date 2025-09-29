@@ -92,72 +92,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
     }
   }
 
-  void _pauseDownload(String audiobookId, String? firstFileTaskId) {
-    final status = Hive.box('download_status_box').get('status_$audiobookId')
-        as Map<dynamic, dynamic>?;
-
-    // For now, only enable for direct downloads if a task ID exists
-    bool isYouTubeDownload = status?['files']?.any((file) =>
-            (file['url'] as String).contains('youtube.com') ||
-            (file['url'] as String).contains('youtu.be')) ??
-        false; // crude check
-
-    if (!isYouTubeDownload && firstFileTaskId != null) {
-      AppLogger.debug(
-          'UI: Pausing direct download for $audiobookId, task $firstFileTaskId');
-      _downloadManager.pauseDownload(firstFileTaskId);
-      // Update Hive status to reflect "paused"
-      if (status != null) {
-        Hive.box('download_status_box').put('status_$audiobookId', {
-          ...status,
-          'isPaused': true,
-          'isDownloading':
-              false, // Explicitly set isDownloading to false when paused
-        });
-      }
-    } else {
-      AppLogger.debug(
-          'UI: Pause not supported for this type or no task ID: $audiobookId');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Pause not yet supported for YouTube downloads.')),
-        );
-      }
-    }
-  }
-
-  void _resumeDownload(String audiobookId, String? firstFileTaskId) {
-    final status = Hive.box('download_status_box').get('status_$audiobookId')
-        as Map<dynamic, dynamic>?;
-    bool isYouTubeDownload = status?['files']?.any((file) =>
-            (file['url'] as String).contains('youtube.com') ||
-            (file['url'] as String).contains('youtu.be')) ??
-        false;
-
-    if (!isYouTubeDownload && firstFileTaskId != null) {
-      AppLogger.debug(
-          'UI: Resuming direct download for $audiobookId, task $firstFileTaskId');
-      _downloadManager.resumeDownload(firstFileTaskId);
-      if (status != null) {
-        Hive.box('download_status_box').put('status_$audiobookId', {
-          ...status,
-          'isPaused': false,
-          'isDownloading': true,
-        });
-      }
-    } else {
-      AppLogger.debug(
-          'UI: Resume not supported for this type or no task ID: $audiobookId');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Resume not yet supported for YouTube downloads.')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -255,28 +189,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
                     context, Ionicons.download_outline),
                 ...activeDownloads.map((status) {
                   final String audiobookId = status['audiobookId'] as String;
-                  final List<String> taskIds =
-                      _downloadManager.getTaskIdsForAudiobook(audiobookId);
-                  final String? firstFileTaskId =
-                      taskIds.isNotEmpty ? taskIds.first : null;
-                  bool isYouTubeDownload = status['files']?.any(
-                          (file) => // A more robust check would be ideal
-                              (file['url'] as String).contains('youtube.com') ||
-                              (file['url'] as String).contains('youtu.be')) ??
-                      false;
-
                   return _buildDownloadItem(
                     context,
                     status,
                     onCancel: () =>
                         _downloadManager.cancelDownload(audiobookId),
-                    onPause: !isYouTubeDownload &&
-                            firstFileTaskId != null // Conditionally enable
-                        ? () => _pauseDownload(audiobookId, firstFileTaskId)
-                        : null,
-                    onResume: !isYouTubeDownload && firstFileTaskId != null
-                        ? () => _resumeDownload(audiobookId, firstFileTaskId)
-                        : null,
                   );
                 }),
                 const SizedBox(height: 16),
@@ -375,13 +292,63 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
+  Future<void> _openDownloadedAudiobook(
+      BuildContext context, String audiobookId, String audiobookTitle) async {
+    try {
+      final appDir = await getExternalStorageDirectory();
+      final metadataFilePath =
+          '${appDir?.path}/downloads/$audiobookId/audiobook_metadata.json';
+      final metadataFile = File(metadataFilePath);
+
+      late final Audiobook audiobook;
+
+      if (await metadataFile.exists()) {
+        final content = await metadataFile.readAsString();
+        audiobook = Audiobook.fromMap(
+            jsonDecode(content) as Map<String, dynamic>);
+      } else {
+        final oldMetadataFile =
+            File('${appDir?.path}/downloads/$audiobookId/audiobook.txt');
+        if (await oldMetadataFile.exists()) {
+          final content = await oldMetadataFile.readAsString();
+          audiobook = Audiobook.fromMap(
+              jsonDecode(content) as Map<String, dynamic>);
+        } else {
+          AppLogger.debug(
+              'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
+          audiobook = Audiobook.fromMap({
+            'id': audiobookId,
+            'title': audiobookTitle,
+            'origin': 'download',
+          });
+        }
+      }
+
+      AppLogger.debug('Playing downloaded audiobook: ${audiobook.title}');
+      if (!mounted) return;
+      context.push(
+        '/audiobook-details',
+        extra: {
+          'audiobook': audiobook,
+          'isDownload': true,
+          'isYoutube': false,
+          'isLocal': false,
+        },
+      );
+    } catch (e) {
+      AppLogger.debug('Error preparing to play audiobook $audiobookId: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error playing: ${e.toString()}')),
+      );
+    }
+  }
+
   Widget _buildDownloadItem(
     BuildContext context,
     Map<dynamic, dynamic> status, {
     VoidCallback? onCancel,
     VoidCallback? onDelete,
-    VoidCallback? onPause,
-    VoidCallback? onResume,
     VoidCallback? onRetry,
   }) {
     final String audiobookId = status['audiobookId'] as String;
@@ -510,20 +477,19 @@ class _DownloadsPageState extends State<DownloadsPage> {
                               ),
                             )
                           : null,
+              onTap: isCompleted
+                  ? () => _openDownloadedAudiobook(
+                      context, audiobookId, audiobookTitle)
+                  : null,
               trailing: _buildTrailingActions(
                 context: context,
-                status: status,
                 isDownloading: isDownloading,
                 isPaused: isPaused,
                 isCompleted: isCompleted,
                 hasError: hasError,
                 onCancel: onCancel,
                 onDelete: onDelete,
-                onPause: onPause,
-                onResume: onResume,
                 onRetry: onRetry,
-                audiobookId: audiobookId, // Pass ID for play action
-                audiobookTitle: audiobookTitle, // Pass title for play action
               ),
             ),
           ],
@@ -534,108 +500,22 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Widget _buildTrailingActions({
     required BuildContext context,
-    required Map<dynamic, dynamic> status,
     required bool isDownloading,
     required bool isPaused,
     required bool isCompleted,
     required bool hasError,
     VoidCallback? onCancel,
     VoidCallback? onDelete,
-    VoidCallback? onPause,
-    VoidCallback? onResume,
     VoidCallback? onRetry,
-    required String audiobookId,
-    required String audiobookTitle,
   }) {
     List<Widget> actions = [];
 
-    if (isDownloading && onPause != null) {
-      actions.add(IconButton(
-          icon: const Icon(Ionicons.pause_outline),
-          tooltip: 'Pause',
-          onPressed: onPause,
-          color: Colors.orange.shade700));
-    }
-    if (isPaused && onResume != null) {
-      actions.add(IconButton(
-          icon: const Icon(Ionicons.play_outline),
-          tooltip: 'Resume',
-          onPressed: onResume,
-          color: Colors.green.shade700));
-    }
     if ((isDownloading || isPaused) && onCancel != null) {
       actions.add(IconButton(
           icon: const Icon(Ionicons.close_circle_outline),
           tooltip: 'Cancel',
           onPressed: onCancel,
           color: Theme.of(context).colorScheme.error));
-    }
-
-    if (isCompleted) {
-      actions.add(IconButton(
-          icon: const Icon(Ionicons.play_circle_outline),
-          tooltip: 'Play',
-          color: Theme.of(context).colorScheme.primary,
-          onPressed: () async {
-            try {
-              // --- Robust Audiobook Data Retrieval for Playback ---
-              // Option 1: Read from dedicated metadata file (created by DownloadButton)
-              final appDir = await getExternalStorageDirectory();
-              final metadataFilePath =
-                  '${appDir?.path}/downloads/$audiobookId/audiobook_metadata.json'; // Standardize filename
-              final metadataFile = File(metadataFilePath);
-              Audiobook? audiobook;
-
-              if (await metadataFile.exists()) {
-                final content = await metadataFile.readAsString();
-                audiobook = Audiobook.fromMap(
-                    jsonDecode(content) as Map<String, dynamic>);
-              } else {
-                // Fallback: Try to get from the deprecated audiobook.txt or construct minimally
-                final oldMetadataFile = File(
-                    '${appDir?.path}/downloads/$audiobookId/audiobook.txt');
-                if (await oldMetadataFile.exists()) {
-                  final content = await oldMetadataFile.readAsString();
-                  audiobook = Audiobook.fromMap(
-                      jsonDecode(content) as Map<String, dynamic>);
-                } else {
-                  AppLogger.debug(
-                      "Warning: Metadata file not found for $audiobookId. Playing with minimal data.");
-                  // Construct a minimal object if all else fails
-                  audiobook = Audiobook.fromMap({
-                    // Ensure Audiobook.fromMap handles missing fields gracefully
-                    'id': audiobookId,
-                    'title': audiobookTitle,
-                    'origin': 'download', // Mark as downloaded
-                    // We MUST ensure Audiobook can be constructed with minimal data for details page
-                  });
-                }
-              }
-              // --- End of Retrieval ---
-
-              AppLogger.debug(
-                  'Playing downloaded audiobook: ${audiobook.title}');
-              if (context.mounted) {
-                context.push(
-                  '/audiobook-details',
-                  extra: {
-                    'audiobook': audiobook,
-                    'isDownload': true,
-                    'isYoutube': false,
-                    'isLocal': false,
-                  },
-                );
-              }
-            } catch (e) {
-              AppLogger.debug(
-                  'Error preparing to play audiobook $audiobookId: $e');
-              if (mounted) {
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(content: Text('Error playing: ${e.toString()}')),
-                );
-              }
-            }
-          }));
     }
 
     if ((isCompleted || hasError) && onDelete != null) {
