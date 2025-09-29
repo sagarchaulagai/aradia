@@ -633,7 +633,7 @@ class _LocalAudiobookCoverSelectorState
         crossAxisCount: 3,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.7,
+        childAspectRatio: 1,
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -648,42 +648,46 @@ class _LocalAudiobookCoverSelectorState
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Stack(
-                  children: [
-                    if (_defaultPreviewPath != null)
-                      Image(
-                        image: coverProvider(_defaultPreviewPath!),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, _, __) =>
-                            _defaultTilePlaceholder(),
-                      )
-                    else
-                      _defaultTilePlaceholder(),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        color: Colors.black54,
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Use Default',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w600),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: Stack(
+                    children: [
+                      if (_defaultPreviewPath != null)
+                        Image(
+                          image: coverProvider(_defaultPreviewPath!),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, _, __) =>
+                              _defaultTilePlaceholder(),
+                        )
+                      else
+                        _defaultTilePlaceholder(),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          color: Colors.black54,
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Use Default',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
-                    ),
-                    if (_isLoading)
-                      const Positioned.fill(
-                        child: ColoredBox(
-                          color: Color(0x66000000),
-                          child: Center(child: CircularProgressIndicator()),
+                      if (_isLoading)
+                        const Positioned.fill(
+                          child: ColoredBox(
+                            color: Color(0x66000000),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -711,33 +715,37 @@ class _LocalAudiobookCoverSelectorState
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Stack(
-                children: [
-                  Image(
-                    image: coverProvider(imageUrl),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    errorBuilder: (context, _, __) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
-                    ),
-                  ),
-                  if (isSelected)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.check,
-                            color: Colors.white, size: 16),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Stack(
+                  children: [
+                    Image(
+                      image: coverProvider(imageUrl),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, _, __) => Container(
+                        color: Colors.grey[200],
+                        child:
+                            const Icon(Icons.broken_image, color: Colors.grey),
                       ),
                     ),
-                ],
+                    if (isSelected)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.check,
+                              color: Colors.white, size: 16),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
