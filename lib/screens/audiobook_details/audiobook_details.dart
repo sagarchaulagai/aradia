@@ -7,6 +7,7 @@ import 'package:hive/hive.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:aradia/resources/designs/app_circular_progress_indicator.dart';
 import 'package:aradia/resources/models/audiobook.dart';
+import 'package:aradia/resources/models/audiobook_file.dart';
 
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
 import 'package:aradia/screens/audiobook_details/widgets/description_text.dart';
@@ -43,6 +44,29 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
   late AudioHandlerProvider audioHandlerProvider;
 
   late HistoryOfAudiobook historyOfAudiobook;
+
+  Future<void> _playChapter(List<AudiobookFile> files, int index) async {
+    try {
+      await playingAudiobookDetailsBox.put('audiobook', widget.audiobook.toMap());
+      await playingAudiobookDetailsBox.put(
+        'audiobookFiles',
+        files.map((e) => e.toMap()).toList(),
+      );
+      await playingAudiobookDetailsBox.put('index', index);
+      await playingAudiobookDetailsBox.put('position', 0);
+
+      await audioHandlerProvider.audioHandler
+          .initSongs(files, widget.audiobook, index, 0);
+      await audioHandlerProvider.audioHandler.play();
+      _weSlideController.show();
+    } catch (e) {
+      AppLogger.debug('Error starting chapter playback: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to start playback. Please try again.')),
+      );
+    }
+  }
   @override
   void initState() {
     _audiobookDetailsBloc = BlocProvider.of<AudiobookDetailsBloc>(context);
@@ -323,26 +347,10 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   return ListTile(
-                                      onTap: () {
-                                        playingAudiobookDetailsBox.put(
-                                            'audiobook',
-                                            widget.audiobook.toMap());
-                                        playingAudiobookDetailsBox.put(
-                                            'audiobookFiles',
-                                            state.audiobookFiles
-                                                .map((e) => e.toMap())
-                                                .toList());
-                                        playingAudiobookDetailsBox.put(
-                                            'index', index);
-                                        playingAudiobookDetailsBox.put(
-                                            'position', 0);
-                                        audioHandlerProvider.audioHandler
-                                            .initSongs(state.audiobookFiles,
-                                                widget.audiobook, index, 0);
-                                        audioHandlerProvider.audioHandler
-                                            .play();
-                                        _weSlideController.show();
-                                      },
+                                      onTap: () => _playChapter(
+                                            state.audiobookFiles,
+                                            index,
+                                          ),
                                       title: Text(
                                         state.audiobookFiles[index].title ??
                                             'N/A',
@@ -362,7 +370,10 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                                         ),
                                       ),
                                       trailing: IconButton(
-                                        onPressed: () {},
+                                        onPressed: () => _playChapter(
+                                          state.audiobookFiles,
+                                          index,
+                                        ),
                                         icon: const Icon(Icons.play_arrow),
                                       ));
                                 },
