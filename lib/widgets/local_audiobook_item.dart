@@ -410,7 +410,7 @@ class _LocalAudiobookCoverSelectorState
   Future<void> _fetchCoverImages() async {
     setState(() => _isFetchingCovers = true);
     try {
-      final coverUrls = await CoverImageRemote.fetchCoverImagesFromGoogle(
+      final coverUrls = await CoverImageRemote.fetchCoverImages(
         widget.audiobook.title,
         widget.audiobook.author,
       );
@@ -796,47 +796,97 @@ class _LocalAudiobookCoverSelectorState
 /// Network-only helpers used by the cover picker UI.
 /// Mapping/lookup logic lives in cover_image_service.dart.
 class CoverImageRemote {
-  static Future<List<String>> fetchCoverImagesFromGoogle(
+  static const _duckDuckGoUserAgent =
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+
+  static const Map<String, String> _duckDuckGoHeaders = {
+    'User-Agent': _duckDuckGoUserAgent,
+  };
+
+  static const Map<String, String> _duckDuckGoImageHeaders = {
+    'User-Agent': _duckDuckGoUserAgent,
+    'Referer': 'https://duckduckgo.com/',
+  };
+
+  static Future<List<String>> fetchCoverImages(
       String title, String author) async {
     try {
-      final query = Uri.encodeComponent('$title $author');
-      final url =
-          'https://www.googleapis.com/books/v1/volumes?q=$query&maxResults=10';
+      final trimmedTitle = title.trim();
+      final trimmedAuthor = author.trim();
+      final queryParts = <String>[
+        if (trimmedTitle.isNotEmpty) trimmedTitle,
+        if (trimmedAuthor.isNotEmpty) trimmedAuthor,
+        'audiobook cover',
+      ];
+      if (queryParts.isEmpty) {
+        return [];
+      }
+      final query = queryParts.join(' ');
+      final encodedQuery = Uri.encodeComponent(query);
 
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<String> coverUrls = [];
+      final searchUri = Uri.parse(
+        'https://duckduckgo.com/?q=$encodedQuery&iax=images&ia=images',
+      );
+      final searchResponse = await http.get(searchUri, headers: _duckDuckGoHeaders);
+      if (searchResponse.statusCode != 200) {
+        return [];
+      }
 
-        if (data['items'] != null) {
-          for (final item in data['items']) {
-            final volumeInfo = item['volumeInfo'];
-            if (volumeInfo['imageLinks'] != null) {
-              final imageLinks = volumeInfo['imageLinks'] as Map<String, dynamic>;
-              const preferredOrder = [
-                'extraLarge',
-                'large',
-                'medium',
-                'small',
-                'thumbnail',
-                'smallThumbnail',
-              ];
-              for (final key in preferredOrder) {
-                final dynamic url = imageLinks[key];
-                if (url is String && url.isNotEmpty) {
-                  final normalized = url.replaceFirst('http://', 'https://');
-                  coverUrls.add(normalized);
-                  break;
-                }
-              }
-            }
-          }
+      final vqd = _extractDuckDuckGoVqd(searchResponse.body);
+      if (vqd == null || vqd.isEmpty) {
+        AppLogger.debug('DuckDuckGo vqd token missing for query: $query', 'CoverImageRemote');
+        return [];
+      }
+
+      final imagesUri = Uri.parse(
+        'https://duckduckgo.com/i.js?l=us-en&o=json&q=$encodedQuery&vqd=$vqd&p=1',
+      );
+      final imagesResponse =
+          await http.get(imagesUri, headers: _duckDuckGoImageHeaders);
+      if (imagesResponse.statusCode != 200) {
+        return [];
+      }
+
+      final decoded = json.decode(imagesResponse.body);
+      final results = decoded['results'];
+      if (results is! List) {
+        return [];
+      }
+
+      final seen = <String>{};
+      final scored = <_ScoredCover>[];
+
+      for (var i = 0; i < results.length; i++) {
+        final item = results[i];
+        if (item is! Map) continue;
+
+        final rawImage = item['image'] ?? item['thumbnail'];
+        if (rawImage is! String || rawImage.isEmpty) continue;
+
+        final normalized = rawImage.replaceFirst(RegExp('^http:'), 'https:');
+        if (!seen.add(normalized)) continue;
+
+        double? width = (item['width'] as num?)?.toDouble();
+        double? height = (item['height'] as num?)?.toDouble();
+
+        if ((width == null || height == null) &&
+            item['thumbnail_width'] != null &&
+            item['thumbnail_height'] != null) {
+          width = (item['thumbnail_width'] as num?)?.toDouble();
+          height = (item['thumbnail_height'] as num?)?.toDouble();
         }
 
-        return coverUrls.toSet().toList();
+        final score = _squarenessScore(width, height);
+        scored.add(_ScoredCover(url: normalized, score: score, originalIndex: i));
       }
+
+      if (scored.isEmpty) {
+        return [];
+      }
+
+      return _sortCoversBySquareness(scored);
     } catch (e) {
-      AppLogger.error('Error fetching cover images from Google: $e');
+      AppLogger.error('Error fetching cover images from DuckDuckGo: $e');
     }
     return [];
   }
@@ -880,4 +930,48 @@ class CoverImageRemote {
       ),
     );
   }
+
+  static List<String> _sortCoversBySquareness(List<_ScoredCover> scored) {
+    scored.sort((a, b) {
+      final scoreCompare = a.score.compareTo(b.score);
+      if (scoreCompare != 0) return scoreCompare;
+      return a.originalIndex.compareTo(b.originalIndex);
+    });
+    return scored.map((e) => e.url).toList();
+  }
+
+  static double _squarenessScore(double? width, double? height) {
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return double.infinity;
+    }
+    final larger = max(width, height);
+    final smaller = min(width, height);
+    if (smaller == 0) return double.infinity;
+    return (larger / smaller - 1).abs();
+  }
+
+  static String? _extractDuckDuckGoVqd(String body) {
+    final quotedMatch =
+        RegExp("vqd=([\'\"])([A-Za-z0-9-]+)\\1").firstMatch(body);
+    if (quotedMatch != null) {
+      return quotedMatch.group(2);
+    }
+    final unquotedMatch = RegExp(r'vqd=([A-Za-z0-9-]+)&').firstMatch(body);
+    if (unquotedMatch != null) {
+      return unquotedMatch.group(1);
+    }
+    return null;
+  }
+}
+
+class _ScoredCover {
+  final String url;
+  final double score;
+  final int originalIndex;
+
+  const _ScoredCover({
+    required this.url,
+    required this.score,
+    required this.originalIndex,
+  });
 }
