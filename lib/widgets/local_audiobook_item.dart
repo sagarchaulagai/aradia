@@ -804,18 +804,22 @@ class CoverImageRemote {
           for (final item in data['items']) {
             final volumeInfo = item['volumeInfo'];
             if (volumeInfo['imageLinks'] != null) {
-              final imageLinks = volumeInfo['imageLinks'];
-              if (imageLinks['thumbnail'] != null) {
-                coverUrls.add(imageLinks['thumbnail']);
-              }
-              if (imageLinks['smallThumbnail'] != null) {
-                coverUrls.add(imageLinks['smallThumbnail']);
-              }
-              if (imageLinks['small'] != null) {
-                coverUrls.add(imageLinks['small']);
-              }
-              if (imageLinks['medium'] != null) {
-                coverUrls.add(imageLinks['medium']);
+              final imageLinks = volumeInfo['imageLinks'] as Map<String, dynamic>;
+              const preferredOrder = [
+                'extraLarge',
+                'large',
+                'medium',
+                'small',
+                'thumbnail',
+                'smallThumbnail',
+              ];
+              for (final key in preferredOrder) {
+                final dynamic url = imageLinks[key];
+                if (url is String && url.isNotEmpty) {
+                  final normalized = url.replaceFirst('http://', 'https://');
+                  coverUrls.add(normalized);
+                  break;
+                }
               }
             }
           }
