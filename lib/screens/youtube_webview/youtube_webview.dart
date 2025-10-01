@@ -100,11 +100,11 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
           'Please navigate to a YouTube video or playlist page');
       return;
     }
-
-    if (!await PermissionHelper.requestStorageAndMediaPermissions()) {
-      setState(() => _errorMessageYT = 'Storage permission denied.');
-      return;
-    }
+    // No need for permission, uses externalstorage
+    // if (!await PermissionHelper.requestStorageAndMediaPermissions()) {
+    //   setState(() => _errorMessageYT = 'Storage permission denied.');
+    //   return;
+    // }
 
     setState(() {
       _isImporting = true;

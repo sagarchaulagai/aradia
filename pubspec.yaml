@@ -61,6 +61,9 @@ dependencies:
   meta: ^1.16.0
   audio_session: ^0.2.2
   flutter_inappwebview: ^6.1.5
+  saf:
+    git:
+      url: https://github.com/sagarchaulagai/saf.git
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2
