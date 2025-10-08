@@ -24,6 +24,7 @@ import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/utils/app_logger.dart';
 
 import 'package:aradia/widgets/scaffold_with_nav_bar.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
@@ -32,7 +33,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initHive();
-
+  await MediaStore.ensureInitialized();
+  
   final audioHandlerProvider = AudioHandlerProvider();
   final weSlideController = WeSlideController();
   final themeNotifier = ThemeNotifier();

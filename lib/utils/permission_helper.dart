@@ -59,44 +59,19 @@ class PermissionHelper {
     return await openAppSettings();
   }
 
-  /// Comprehensive download permission handler for different Android API levels
+  /// Download permission handler for different Android API levels
   /// Returns true if all required permissions are granted
   static Future<bool> requestDownloadPermissions() async {
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
 
-      if (sdkInt >= 33) {
-        // Android 13+ - Request granular media permissions
-        var photos = await Permission.photos.status;
-        var audio = await Permission.audio.status;
-        var videos = await Permission.videos.status;
-
-        if (photos.isDenied || audio.isDenied || videos.isDenied) {
-          final results = await [
-            Permission.photos,
-            Permission.audio,
-            Permission.videos
-          ].request();
-          return results.values.every((status) => status.isGranted);
-        }
-        return photos.isGranted && audio.isGranted && videos.isGranted;
-      } else if (sdkInt >= 30) {
-        // Android 11-12 - Request storage and manage external storage
-        final storage = await Permission.storage.status;
-        final manageStorage = await Permission.manageExternalStorage.status;
-
-        if (storage.isDenied) await Permission.storage.request();
-        if (manageStorage.isDenied) {
-          await Permission.manageExternalStorage.request();
-          if (await Permission.manageExternalStorage.status.isDenied) {
-            await openAppSettings();
-          }
-        }
-        return await Permission.storage.status.isGranted &&
-            await Permission.manageExternalStorage.status.isGranted;
+      if (sdkInt >= 30) {
+        // Android 10+ (API 29+) - No storage permissions needed for MediaStore
+        // Files will be downloaded to temp directory then moved via MediaStore
+        return true;
       } else {
-        // Android 10 and below - Request storage permission
+        // Android 9 and below (API 28 and below) - Request WRITE_EXTERNAL_STORAGE
         final storage = await Permission.storage.status;
         if (storage.isDenied) {
           final result = await Permission.storage.request();

@@ -294,6 +294,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
   Widget _artLarge(Uri? art, {double size = 250}) {
     final isLocal = art != null && art.scheme == 'file';
+    AppLogger.log(art?.toString() ?? '', 'art of playing audiobook');
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: isLocal

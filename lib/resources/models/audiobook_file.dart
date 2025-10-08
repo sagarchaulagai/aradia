@@ -168,8 +168,9 @@ class AudiobookFile {
   static Future<Either<String, List<AudiobookFile>>> fromDownloadedFiles(
       String audiobookId) async {
     try {
-      final appDir = await getExternalStorageDirectory();
-      final downloadDir = Directory('${appDir?.path}/downloads/$audiobookId');
+      // Always read from the public Downloads/Aradia directory
+      // This is where files end up after download completion
+      final downloadDir = Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
 
       // Get all MP3 files in the directory sorted by date
       List<FileSystemEntity> files = downloadDir
@@ -179,10 +180,7 @@ class AudiobookFile {
       files.sort(
             (a, b) => a.statSync().changed.compareTo(b.statSync().changed),
       );
-
-      AppLogger.debug(
-          'Now the files are going to be parsed from the downloaded files');
-
+      AppLogger.log(files.map((file) => file.path).toString() ,  "DownloadedFiles");
       List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
 
       for (var i = 0; i < files.length; i++) {
