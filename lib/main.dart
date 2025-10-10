@@ -34,6 +34,7 @@ void main() async {
 
   await initHive();
   await MediaStore.ensureInitialized();
+  await AppLogger.initialize();
   
   final audioHandlerProvider = AudioHandlerProvider();
   final weSlideController = WeSlideController();
