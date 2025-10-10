@@ -25,6 +25,27 @@ class DownloadManager {
 
   static const int _veryLargeFileThresholdBytes = 50 * 1024 * 1024;
 
+  /// Sanitize filename by removing invalid characters and ensuring proper extension
+  String _sanitizeFilename(String filename) {
+    // Remove or replace invalid characters for filenames
+    String sanitized = filename
+        .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')  // Replace invalid chars with underscore
+        .replaceAll(RegExp(r'\s+'), ' ')           // Normalize whitespace
+        .trim();                                   // Remove leading/trailing spaces
+    
+    // Ensure filename is not empty
+    if (sanitized.isEmpty) {
+      sanitized = 'audio_file';
+    }
+    
+    // Limit filename length to prevent issues
+    if (sanitized.length > 100) {
+      sanitized = sanitized.substring(0, 100);
+    }
+    
+    return sanitized;
+  }
+
   /// Check if the current Android version is API 29 (Android 10) or higher
   /// If it is higher then we use temporary directory for downloads
   /// using MediaStore to move files to public directory
@@ -114,7 +135,8 @@ class DownloadManager {
     }
   }
 
-  /// Move file from temporary location to public Downloads/Aradia directory using MediaStore
+  /// Move file from temporary location to public Downloads/Aradia directory using hybrid approach
+  /// First attempts direct file copy, then falls back to MediaStore if needed
   Future<bool> _moveToPublicDirectory(File tempFile, String fileName, String audiobookId) async {
     try {
       if (!await _isAndroid10OrHigher()) {
@@ -122,36 +144,71 @@ class DownloadManager {
         return true;
       }
 
-      // For Android 10+, use MediaStore to save to public directory
-      // Create subfolder for this specific audiobook
-      final originalAppFolder = MediaStore.appFolder;
-      MediaStore.appFolder = "Aradia/$audiobookId";
-      
       // Ensure the temp file has the correct name with extension
       final tempFileWithCorrectName = File('${tempFile.parent.path}/$fileName');
       File fileToMove = tempFile;
       if (tempFile.path != tempFileWithCorrectName.path) {
         fileToMove = await tempFile.rename(tempFileWithCorrectName.path);
+        AppLogger.debug('Renamed temp file to: ${fileToMove.path}');
       }
-      
-      final mediaStore = MediaStore();
-      final savedUri = await mediaStore.saveFile(
-        tempFilePath: fileToMove.path,
-        dirType: DirType.download,
-        dirName: DirName.download,
-      );
-      
-      // Restore original app folder
-      MediaStore.appFolder = originalAppFolder;
 
-      if (savedUri != null) {
-        // Delete the temporary file after successful move
-        if (await fileToMove.exists()) {
-          await fileToMove.delete();
-        }
-        return true;
+      // Target public directory
+      final publicDir = Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
+      if (!await publicDir.exists()) {
+        await publicDir.create(recursive: true);
       }
-      return false;
+      final targetFile = File('${publicDir.path}/$fileName');
+
+      // HYBRID APPROACH: Try direct file copy first
+      try {
+        AppLogger.debug('Attempting direct file copy from ${fileToMove.path} to ${targetFile.path}');
+        await fileToMove.copy(targetFile.path);
+        
+        // Verify the file was copied successfully with correct extension
+        if (await targetFile.exists()) {
+          AppLogger.debug('Direct file copy successful: ${targetFile.path}');
+          // Delete the temporary file after successful copy
+          if (await fileToMove.exists()) {
+            await fileToMove.delete();
+          }
+          return true;
+        }
+      } catch (directCopyError) {
+        AppLogger.debug('Direct file copy failed: $directCopyError, falling back to MediaStore');
+      }
+
+      // FALLBACK: Use MediaStore if direct copy fails
+      final originalAppFolder = MediaStore.appFolder;
+      MediaStore.appFolder = "Aradia/$audiobookId";
+      
+      try {
+        final mediaStore = MediaStore();
+        final savedUri = await mediaStore.saveFile(
+          tempFilePath: fileToMove.path,
+          dirType: DirType.download,
+          dirName: DirName.download,
+        );
+        
+        // Restore original app folder
+        MediaStore.appFolder = originalAppFolder;
+
+        if (savedUri != null) {
+          AppLogger.debug('MediaStore save successful: $savedUri');
+          // Delete the temporary file after successful move
+          if (await fileToMove.exists()) {
+            await fileToMove.delete();
+          }
+          return true;
+        }
+        
+        AppLogger.debug('MediaStore save returned null URI');
+        return false;
+      } catch (mediaStoreError) {
+        // Restore original app folder in case of error
+        MediaStore.appFolder = originalAppFolder;
+        AppLogger.debug('MediaStore save failed: $mediaStoreError');
+        return false;
+      }
     } catch (e) {
       AppLogger.debug('Error moving file to public directory: $e');
       return false;
@@ -218,9 +275,13 @@ class DownloadManager {
           return;
         }
 
-        final String fileTitle =
+        final String rawFileTitle =
             fileData['title'] as String? ?? 'track_${i + 1}';
+        // Sanitize filename to remove invalid characters
+        final String fileTitle = _sanitizeFilename(rawFileTitle);
         final String fileName = '$fileTitle.mp3';
+        
+        AppLogger.debug('Processing file: rawTitle="$rawFileTitle", sanitized="$fileTitle", fileName="$fileName"');
         final String url = fileData['url'] as String;
         final bool isYouTubeUrl =
             url.contains('youtube.com') || url.contains('youtu.be');
@@ -256,6 +317,7 @@ class DownloadManager {
 
             // Use the download directory we determined earlier
             outputFile = File('$currentFileDirectoryPath/$fileName');
+            AppLogger.debug('YouTube download: Creating file at ${outputFile.path}');
             fileStream = outputFile.openWrite();
 
             final int totalBytesForFile = audioStreamInfo.size.totalBytes;
@@ -334,6 +396,7 @@ class DownloadManager {
           final downloadDirectory = await _getDownloadDirectory(audiobookId);
           
           // Use the full directory path with BaseDirectory.root for all Android versions
+          AppLogger.debug('Direct download: Creating task with filename="$fileName" in directory="${downloadDirectory.path}"');
           final task = DownloadTask(
             taskId: uniqueFileTaskId,
             url: url,
@@ -365,6 +428,24 @@ class DownloadManager {
                 // Move file to public directory if on Android 10+
                 if (await _isAndroid10OrHigher()) {
                   final tempFile = File('${downloadDirectory.path}/$fileName');
+                  AppLogger.debug('Direct download completed: Checking temp file at ${tempFile.path}, exists: ${await tempFile.exists()}');
+                  
+                  // Check what files actually exist in the directory
+                  final tempDir = Directory(downloadDirectory.path);
+                  if (await tempDir.exists()) {
+                    final files = await tempDir.list().toList();
+                    AppLogger.debug('Files in temp directory: ${files.map((f) => f.path).join(', ')}');
+                    
+                    // If the expected file doesn't exist, try to find a file without extension
+                    if (!await tempFile.exists()) {
+                      final fileWithoutExt = File('${downloadDirectory.path}/$fileTitle');
+                      if (await fileWithoutExt.exists()) {
+                        AppLogger.debug('Found file without extension: ${fileWithoutExt.path}, renaming to ${tempFile.path}');
+                        await fileWithoutExt.rename(tempFile.path);
+                      }
+                    }
+                  }
+                  
                   final moveSuccess = await _moveToPublicDirectory(tempFile, fileName, audiobookId);
                   if (!moveSuccess) {
                     throw Exception('Failed to move file to public directory: $fileName');
