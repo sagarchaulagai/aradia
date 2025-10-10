@@ -33,6 +33,8 @@ void main() async {
 
   await initHive();
 
+  await AppLogger.initialize();
+
   final audioHandlerProvider = AudioHandlerProvider();
   final weSlideController = WeSlideController();
   final themeNotifier = ThemeNotifier();
