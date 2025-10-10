@@ -291,11 +291,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   Future<void> _openDownloadedAudiobook(
-      BuildContext context, String audiobookId, String audiobookTitle) async {
+      String audiobookId, String audiobookTitle) async {
     try {
       // Read metadata from the public Downloads/Aradia directory
       final publicDir = '/storage/emulated/0/Download/Aradia/$audiobookId';
-      final metadataFilePath = '$publicDir/audiobook_metadata.json';
+      final metadataFilePath = '$publicDir/audiobook.txt';
       final metadataFile = File(metadataFilePath);
 
       late final Audiobook audiobook;
@@ -305,20 +305,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
         audiobook = Audiobook.fromMap(
             jsonDecode(content) as Map<String, dynamic>);
       } else {
-        final oldMetadataFile = File('$publicDir/audiobook.txt');
-        if (await oldMetadataFile.exists()) {
-          final content = await oldMetadataFile.readAsString();
-          audiobook = Audiobook.fromMap(
-              jsonDecode(content) as Map<String, dynamic>);
-        } else {
-          AppLogger.debug(
-              'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
-          audiobook = Audiobook.fromMap({
-            'id': audiobookId,
-            'title': audiobookTitle,
-            'origin': 'download',
-          });
-        }
+        AppLogger.debug(
+            'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
+        audiobook = Audiobook.fromMap({
+          'id': audiobookId,
+          'title': audiobookTitle,
+          'origin': 'download',
+        });
       }
 
       AppLogger.debug('Playing downloaded audiobook: ${audiobook.title}');
@@ -476,7 +469,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           : null,
               onTap: isCompleted
                   ? () => _openDownloadedAudiobook(
-                      context, audiobookId, audiobookTitle)
+                      audiobookId, audiobookTitle)
                   : null,
               trailing: _buildTrailingActions(
                 context: context,
