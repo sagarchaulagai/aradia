@@ -59,53 +59,25 @@ class PermissionHelper {
     return await openAppSettings();
   }
 
-  /// Comprehensive download permission handler for different Android API levels
+  /// Download permission handler - only requests notification permission for Android 13+
+  /// Since we're downloading to app's external storage, no storage permissions needed
   /// Returns true if all required permissions are granted
   static Future<bool> requestDownloadPermissions() async {
-    if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
 
       if (sdkInt >= 33) {
-        // Android 13+ - Request granular media permissions
-        var photos = await Permission.photos.status;
-        var audio = await Permission.audio.status;
-        var videos = await Permission.videos.status;
-
-        if (photos.isDenied || audio.isDenied || videos.isDenied) {
-          final results = await [
-            Permission.photos,
-            Permission.audio,
-            Permission.videos
-          ].request();
-          return results.values.every((status) => status.isGranted);
-        }
-        return photos.isGranted && audio.isGranted && videos.isGranted;
-      } else if (sdkInt >= 30) {
-        // Android 11-12 - Request storage and manage external storage
-        final storage = await Permission.storage.status;
-        final manageStorage = await Permission.manageExternalStorage.status;
-
-        if (storage.isDenied) await Permission.storage.request();
-        if (manageStorage.isDenied) {
-          await Permission.manageExternalStorage.request();
-          if (await Permission.manageExternalStorage.status.isDenied) {
-            await openAppSettings();
-          }
-        }
-        return await Permission.storage.status.isGranted &&
-            await Permission.manageExternalStorage.status.isGranted;
-      } else {
-        // Android 10 and below - Request storage permission
-        final storage = await Permission.storage.status;
-        if (storage.isDenied) {
-          final result = await Permission.storage.request();
+        // Android 13+ - Only request notification permission for download notifications
+        final notification = await Permission.notification.status;
+        if (notification.isDenied) {
+          final result = await Permission.notification.request();
           return result.isGranted;
         }
-        return storage.isGranted;
+        return notification.isGranted;
       }
-    }
-    return true; // iOS or other platforms
+      // Android 12 and below - No permissions needed for app external storage
+      return true;
+  
   }
 
   /// Shows a user-friendly permission dialog for download permissions
@@ -118,51 +90,59 @@ class PermissionHelper {
       return true;
     }
 
-    // Show dialog to explain why we need permissions
+    // Show dialog to explain why we need notification permissions (Android 13+ only)
     if (!context.mounted) return false;
 
-    final shouldOpenSettings = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.download_rounded,
-              color: AppColors.primaryColor,
-              size: 28,
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+
+    if (sdkInt >= 33) {
+      final shouldOpenSettings = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.notifications_rounded,
+                color: AppColors.primaryColor,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text('Notification Permission Required'),
+            ],
+          ),
+          content: const Text(
+            'To show download progress notifications, we need notification permission.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
             ),
-            const SizedBox(width: 12),
-            const Text('Storage Permission Required'),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Open Settings'),
+            ),
           ],
         ),
-        content: const Text(
-          'For the app to function properly, we need access to your device storage.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Open Settings'),
-          ),
-        ],
-      ),
-    );
+      );
 
-    if (shouldOpenSettings == true) {
-      await openAppSettings();
+      if (shouldOpenSettings == true) {
+        await openAppSettings();
+      }
+
+      return false;
     }
 
-    return false;
+    // For Android 12 and below, no permissions needed
+    return true;
   }
 
   /// Handles checking and requesting install packages permission with a dialog UI

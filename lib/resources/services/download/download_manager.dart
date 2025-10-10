@@ -33,21 +33,24 @@ class DownloadManager {
     AudioStreamClient? audioStreamClient;
 
     try {
-      if (!await checkAndRequestPermissions()) {
-        throw Exception('Storage permissions not granted.');
-      }
+      // Check notification permissions - download will work without them, but no notifications
+      final hasNotificationPermission = await checkAndRequestPermissions();
 
       _downloader.configure(
           androidConfig: [(Config.useExternalStorage, Config.always)]);
-      _downloader.configureNotification(
-        running:
-            TaskNotification('Downloading $audiobookTitle', 'File: {filename}'),
-        progressBar: true,
-        complete: TaskNotification(
-            'Download complete: $audiobookTitle', 'File: {filename}'),
-        error: TaskNotification(
-            'Download error: $audiobookTitle', 'File: {filename}'),
-      );
+      
+      // Only configure notifications if we have permission
+      if (hasNotificationPermission) {
+        _downloader.configureNotification(
+          running:
+              TaskNotification('Downloading $audiobookTitle', 'File: {filename}'),
+          progressBar: true,
+          complete: TaskNotification(
+              'Download complete: $audiobookTitle', 'File: {filename}'),
+          error: TaskNotification(
+              'Download error: $audiobookTitle', 'File: {filename}'),
+        );
+      }
 
       if (_activeDownloads[audiobookId] == true) return;
       _activeDownloads[audiobookId] = true;
