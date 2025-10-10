@@ -66,8 +66,16 @@ class PermissionHelper {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
 
-      if (sdkInt >= 30) {
-        // Android 10+ (API 29+) - No storage permissions needed for MediaStore
+      if (sdkInt >= 33) {
+        // Android 13+ (API 33+) - Request notification permission for download notifications
+        final notification = await Permission.notification.status;
+        if (notification.isDenied) {
+          final result = await Permission.notification.request();
+          return result.isGranted;
+        }
+        return notification.isGranted;
+      } else if (sdkInt >= 30) {
+        // Android 10-12 (API 30-32) - No storage permissions needed for MediaStore
         // Files will be downloaded to temp directory then moved via MediaStore
         return true;
       } else {
@@ -96,6 +104,11 @@ class PermissionHelper {
     // Show dialog to explain why we need permissions
     if (!context.mounted) return false;
 
+    // Determine which permission is needed based on Android version
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+    final isNotificationPermission = sdkInt >= 33;
+
     final shouldOpenSettings = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -105,16 +118,18 @@ class PermissionHelper {
         title: Row(
           children: [
             Icon(
-              Icons.download_rounded,
+              isNotificationPermission ? Icons.notifications_rounded : Icons.download_rounded,
               color: AppColors.primaryColor,
               size: 28,
             ),
             const SizedBox(width: 12),
-            const Text('Storage Permission Required'),
+            Text(isNotificationPermission ? 'Notification Permission Required' : 'Storage Permission Required'),
           ],
         ),
-        content: const Text(
-          'For the app to function properly, we need access to your device storage.',
+        content: Text(
+          isNotificationPermission 
+            ? 'To show download progress and completion notifications, we need notification permission.'
+            : 'For the app to function properly, we need access to your device storage.',
         ),
         actions: [
           TextButton(

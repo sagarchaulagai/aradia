@@ -26,6 +26,8 @@ class DownloadManager {
   static const int _veryLargeFileThresholdBytes = 50 * 1024 * 1024;
 
   /// Check if the current Android version is API 29 (Android 10) or higher
+  /// If it is higher then we use temporary directory for downloads
+  /// using MediaStore to move files to public directory
   Future<bool> _isAndroid10OrHigher() async {
     if (!Platform.isAndroid) return false;
     final androidInfo = await DeviceInfoPlugin().androidInfo;
@@ -35,7 +37,7 @@ class DownloadManager {
   /// Get the appropriate download directory based on Android version
   Future<Directory> _getDownloadDirectory(String audiobookId) async {
     if (await _isAndroid10OrHigher()) {
-      // For Android 10+, use temporary directory first
+      // For Android 10+, we will use temporary directory first
       final tempDir = await getTemporaryDirectory();
       final downloadDir = Directory('${tempDir.path}/downloads/$audiobookId');
       if (!await downloadDir.exists()) {
