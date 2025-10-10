@@ -13,11 +13,7 @@ final class AudiobookDetailsLoaded extends AudiobookDetailsState {
   AudiobookDetailsLoaded(this.audiobookFiles);
 }
 
-final class AudiobookDetailsError extends AudiobookDetailsState {
-  final String message;
-
-  AudiobookDetailsError(this.message);
-}
+final class AudiobookDetailsError extends AudiobookDetailsState {}
 
 final class AudiobookDetailsFavourite extends AudiobookDetailsState {
   final bool isFavourite;

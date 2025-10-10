@@ -243,11 +243,9 @@ class MyAudioHandler extends BaseAudioHandler {
             song.url?.contains('youtu.be') == true;
 
         // Pick one art string: prefer per-track, else audiobook fallback
-        String? artStr = song.highQCoverImage ?? audiobook.lowQCoverImage;
-        if(audiobook.origin == "download"){
-          artStr = audiobook.lowQCoverImage;
-        }
+        final artStr = song.highQCoverImage ?? audiobook.lowQCoverImage;
         final art = _artUriFrom(artStr);
+
         final item = MediaItem(
           id: song.track.toString(),
           album: audiobook.title,

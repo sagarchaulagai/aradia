@@ -6,214 +6,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:aradia/utils/permission_helper.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:media_store_plus/media_store_plus.dart';
 
 class DownloadManager {
   static final DownloadManager _instance = DownloadManager._internal();
   factory DownloadManager() => _instance;
-  DownloadManager._internal() {
-    // Initialize MediaStore app folder for Android 10+
-    if (Platform.isAndroid) {
-      MediaStore.appFolder = "Aradia";
-    }
-  }
+  DownloadManager._internal();
 
   final FileDownloader _downloader = FileDownloader();
   final Box<dynamic> downloadStatusBox = Hive.box('download_status_box');
   final Map<String, bool> _activeDownloads = {};
 
   static const int _veryLargeFileThresholdBytes = 50 * 1024 * 1024;
-
-  /// Sanitize filename by removing invalid characters and ensuring proper extension
-  String _sanitizeFilename(String filename) {
-    // Remove or replace invalid characters for filenames
-    String sanitized = filename
-        .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')  // Replace invalid chars with underscore
-        .replaceAll(RegExp(r'\s+'), ' ')           // Normalize whitespace
-        .trim();                                   // Remove leading/trailing spaces
-    
-    // Ensure filename is not empty
-    if (sanitized.isEmpty) {
-      sanitized = 'audio_file';
-    }
-    
-    // Limit filename length to prevent issues
-    if (sanitized.length > 100) {
-      sanitized = sanitized.substring(0, 100);
-    }
-    
-    return sanitized;
-  }
-
-  /// Check if the current Android version is API 29 (Android 10) or higher
-  /// If it is higher then we use temporary directory for downloads
-  /// using MediaStore to move files to public directory
-  Future<bool> _isAndroid10OrHigher() async {
-    if (!Platform.isAndroid) return false;
-    final androidInfo = await DeviceInfoPlugin().androidInfo;
-    return androidInfo.version.sdkInt >= 29;
-  }
-
-  /// Get the appropriate download directory based on Android version
-  Future<Directory> _getDownloadDirectory(String audiobookId) async {
-    if (await _isAndroid10OrHigher()) {
-      // For Android 10+, we will use temporary directory first
-      final tempDir = await getTemporaryDirectory();
-      final downloadDir = Directory('${tempDir.path}/downloads/$audiobookId');
-      if (!await downloadDir.exists()) {
-        await downloadDir.create(recursive: true);
-      }
-      return downloadDir;
-    } else {
-      // For Android 9 and below, use public Downloads/Aradia directory
-      final publicDir = Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
-      if (!await publicDir.exists()) {
-        await publicDir.create(recursive: true);
-      }
-      return publicDir;
-    }
-  }
-
-  /// Get the final public directory where files are stored after download
-  /// This is used for reading files during playback
-  static Future<Directory> getPublicDownloadDirectory(String audiobookId) async {
-    return Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
-  }
-
-  /// Get the metadata directory for saving audiobook.txt and files.txt
-  /// For Android 10+, save to temp first, then move to public
-  /// For Android 9-, save directly to public
-  Future<Directory> getMetadataDirectory(String audiobookId) async {
-    if (await _isAndroid10OrHigher()) {
-      // For Android 10+, save metadata to temp directory first
-      final tempDir = await getTemporaryDirectory();
-      final metadataDir = Directory('${tempDir.path}/downloads/$audiobookId');
-      if (!await metadataDir.exists()) {
-        await metadataDir.create(recursive: true);
-      }
-      return metadataDir;
-    } else {
-      // For Android 9 and below, save directly to public directory
-      final publicDir = Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
-      if (!await publicDir.exists()) {
-        await publicDir.create(recursive: true);
-      }
-      return publicDir;
-    }
-  }
-
-  /// Move metadata files (audiobook.txt, files.txt) to public directory
-  Future<bool> _moveMetadataToPublicDirectory(String audiobookId) async {
-    try {
-      if (!await _isAndroid10OrHigher()) {
-        // For Android 9 and below, files are already in the correct location
-        return true;
-      }
-
-      final tempDir = await getTemporaryDirectory();
-      final tempMetadataDir = Directory('${tempDir.path}/downloads/$audiobookId');
-      
-      // Move audiobook.txt
-      final tempAudiobookFile = File('${tempMetadataDir.path}/audiobook.txt');
-      if (await tempAudiobookFile.exists()) {
-        final moveSuccess = await _moveToPublicDirectory(tempAudiobookFile, 'audiobook.txt', audiobookId);
-        if (!moveSuccess) return false;
-      }
-      
-      // Move files.txt
-      final tempFilesFile = File('${tempMetadataDir.path}/files.txt');
-      if (await tempFilesFile.exists()) {
-        final moveSuccess = await _moveToPublicDirectory(tempFilesFile, 'files.txt', audiobookId);
-        if (!moveSuccess) return false;
-      }
-      
-      return true;
-    } catch (e) {
-      AppLogger.debug('Error moving metadata to public directory: $e');
-      return false;
-    }
-  }
-
-  /// Move file from temporary location to public Downloads/Aradia directory using hybrid approach
-  /// First attempts direct file copy, then falls back to MediaStore if needed
-  Future<bool> _moveToPublicDirectory(File tempFile, String fileName, String audiobookId) async {
-    try {
-      if (!await _isAndroid10OrHigher()) {
-        // For Android 9 and below, file is already in the correct location
-        return true;
-      }
-
-      // Ensure the temp file has the correct name with extension
-      final tempFileWithCorrectName = File('${tempFile.parent.path}/$fileName');
-      File fileToMove = tempFile;
-      if (tempFile.path != tempFileWithCorrectName.path) {
-        fileToMove = await tempFile.rename(tempFileWithCorrectName.path);
-        AppLogger.debug('Renamed temp file to: ${fileToMove.path}');
-      }
-
-      // Target public directory
-      final publicDir = Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
-      if (!await publicDir.exists()) {
-        await publicDir.create(recursive: true);
-      }
-      final targetFile = File('${publicDir.path}/$fileName');
-
-      // HYBRID APPROACH: Try direct file copy first
-      try {
-        AppLogger.debug('Attempting direct file copy from ${fileToMove.path} to ${targetFile.path}');
-        await fileToMove.copy(targetFile.path);
-        
-        // Verify the file was copied successfully with correct extension
-        if (await targetFile.exists()) {
-          AppLogger.debug('Direct file copy successful: ${targetFile.path}');
-          // Delete the temporary file after successful copy
-          if (await fileToMove.exists()) {
-            await fileToMove.delete();
-          }
-          return true;
-        }
-      } catch (directCopyError) {
-        AppLogger.debug('Direct file copy failed: $directCopyError, falling back to MediaStore');
-      }
-
-      // FALLBACK: Use MediaStore if direct copy fails
-      final originalAppFolder = MediaStore.appFolder;
-      MediaStore.appFolder = "Aradia/$audiobookId";
-      
-      try {
-        final mediaStore = MediaStore();
-        final savedUri = await mediaStore.saveFile(
-          tempFilePath: fileToMove.path,
-          dirType: DirType.download,
-          dirName: DirName.download,
-        );
-        
-        // Restore original app folder
-        MediaStore.appFolder = originalAppFolder;
-
-        if (savedUri != null) {
-          AppLogger.debug('MediaStore save successful: $savedUri');
-          // Delete the temporary file after successful move
-          if (await fileToMove.exists()) {
-            await fileToMove.delete();
-          }
-          return true;
-        }
-        
-        AppLogger.debug('MediaStore save returned null URI');
-        return false;
-      } catch (mediaStoreError) {
-        // Restore original app folder in case of error
-        MediaStore.appFolder = originalAppFolder;
-        AppLogger.debug('MediaStore save failed: $mediaStoreError');
-        return false;
-      }
-    } catch (e) {
-      AppLogger.debug('Error moving file to public directory: $e');
-      return false;
-    }
-  }
 
   Future<bool> checkAndRequestPermissions() async {
     return await PermissionHelper.requestDownloadPermissions();
@@ -275,20 +78,13 @@ class DownloadManager {
           return;
         }
 
-        final String rawFileTitle =
+        final String fileTitle =
             fileData['title'] as String? ?? 'track_${i + 1}';
-        // Sanitize filename to remove invalid characters
-        final String fileTitle = _sanitizeFilename(rawFileTitle);
         final String fileName = '$fileTitle.mp3';
-        
-        AppLogger.debug('Processing file: rawTitle="$rawFileTitle", sanitized="$fileTitle", fileName="$fileName"');
         final String url = fileData['url'] as String;
         final bool isYouTubeUrl =
             url.contains('youtube.com') || url.contains('youtu.be');
-        
-        // Get appropriate download directory based on Android version
-        final downloadDirectory = await _getDownloadDirectory(audiobookId);
-        String currentFileDirectoryPath = downloadDirectory.path;
+        String currentFileDirectoryPath = 'downloads/$audiobookId';
 
         if (isYouTubeUrl) {
           File? outputFile;
@@ -315,9 +111,14 @@ class DownloadManager {
                 ? mp4AudioStreams.last
                 : manifest.audioOnly.withHighestBitrate();
 
-            // Use the download directory we determined earlier
-            outputFile = File('$currentFileDirectoryPath/$fileName');
-            AppLogger.debug('YouTube download: Creating file at ${outputFile.path}');
+            final appDocDir = await getExternalStorageDirectory();
+            final fullDirectoryPath =
+                Directory('${appDocDir?.path}/$currentFileDirectoryPath');
+            if (!await fullDirectoryPath.exists()) {
+              await fullDirectoryPath.create(recursive: true);
+            }
+
+            outputFile = File('${fullDirectoryPath.path}/$fileName');
             fileStream = outputFile.openWrite();
 
             final int totalBytesForFile = audioStreamInfo.size.totalBytes;
@@ -360,13 +161,6 @@ class DownloadManager {
             await fileStream.flush();
             await fileStream.close();
             fileStream = null;
-            
-            // Move file to public directory if on Android 10+
-            final moveSuccess = await _moveToPublicDirectory(outputFile, fileName, audiobookId);
-            if (!moveSuccess) {
-              throw Exception('Failed to move file to public directory: $fileName');
-            }
-            
             completedFiles++;
           } catch (e, s) {
             await fileStream?.close();
@@ -391,18 +185,12 @@ class DownloadManager {
         } else {
           final String uniqueFileTaskId =
               '$audiobookId-$i-${Uri.encodeComponent(fileTitle)}';
-          
-          // Get the actual download directory and configure task accordingly
-          final downloadDirectory = await _getDownloadDirectory(audiobookId);
-          
-          // Use the full directory path with BaseDirectory.root for all Android versions
-          AppLogger.debug('Direct download: Creating task with filename="$fileName" in directory="${downloadDirectory.path}"');
-          final task = DownloadTask(
+          DownloadTask task = DownloadTask(
             taskId: uniqueFileTaskId,
             url: url,
             filename: fileName,
-            directory: downloadDirectory.path,
-            baseDirectory: BaseDirectory.root,
+            directory: currentFileDirectoryPath,
+            baseDirectory: BaseDirectory.applicationDocuments,
             updates: Updates.statusAndProgress,
             allowPause: true,
           );
@@ -423,34 +211,8 @@ class DownloadManager {
                 'audiobookId': audiobookId,
                 'isYouTube': false,
               });
-            }).then((result) async {
+            }).then((result) {
               if (result.status == TaskStatus.complete) {
-                // Move file to public directory if on Android 10+
-                if (await _isAndroid10OrHigher()) {
-                  final tempFile = File('${downloadDirectory.path}/$fileName');
-                  AppLogger.debug('Direct download completed: Checking temp file at ${tempFile.path}, exists: ${await tempFile.exists()}');
-                  
-                  // Check what files actually exist in the directory
-                  final tempDir = Directory(downloadDirectory.path);
-                  if (await tempDir.exists()) {
-                    final files = await tempDir.list().toList();
-                    AppLogger.debug('Files in temp directory: ${files.map((f) => f.path).join(', ')}');
-                    
-                    // If the expected file doesn't exist, try to find a file without extension
-                    if (!await tempFile.exists()) {
-                      final fileWithoutExt = File('${downloadDirectory.path}/$fileTitle');
-                      if (await fileWithoutExt.exists()) {
-                        AppLogger.debug('Found file without extension: ${fileWithoutExt.path}, renaming to ${tempFile.path}');
-                        await fileWithoutExt.rename(tempFile.path);
-                      }
-                    }
-                  }
-                  
-                  final moveSuccess = await _moveToPublicDirectory(tempFile, fileName, audiobookId);
-                  if (!moveSuccess) {
-                    throw Exception('Failed to move file to public directory: $fileName');
-                  }
-                }
                 completedFiles++;
               } else if (result.status == TaskStatus.failed ||
                   result.status == TaskStatus.canceled) {
@@ -478,12 +240,6 @@ class DownloadManager {
       }
 
       if (completedFiles == totalFiles) {
-        // Move metadata files to public directory for Android 10+
-        final metadataMoveSuccess = await _moveMetadataToPublicDirectory(audiobookId);
-        if (!metadataMoveSuccess) {
-          AppLogger.debug('Warning: Failed to move metadata files to public directory');
-        }
-        
         _activeDownloads.remove(audiobookId);
         await downloadStatusBox.put('status_$audiobookId', {
           'isDownloading': false,
@@ -543,59 +299,14 @@ class DownloadManager {
 
   Future<void> _cleanupPartialDownload(String audiobookId) async {
     try {
-      if (await _isAndroid10OrHigher()) {
-        // Clean up temporary directory
-        final tempDir = await getTemporaryDirectory();
-        final downloadDir = Directory('${tempDir.path}/downloads/$audiobookId');
-        if (await downloadDir.exists()) {
-          await downloadDir.delete(recursive: true);
-        }
+      final baseDir = await getExternalStorageDirectory();
+      final downloadDir = Directory('${baseDir?.path}/downloads/$audiobookId');
+      if (await downloadDir.exists()) {
+        await downloadDir.delete(recursive: true);
       }
-      
-      // Always clean up public directory for both Android versions
-      // This ensures complete cleanup regardless of Android version
-      await _cleanupPublicDirectory(audiobookId);
     } catch (e) {
       AppLogger.debug('Cleanup Error: $e');
     }
-  }
-
-  /// Clean up the public Downloads/Aradia directory
-  Future<void> _cleanupPublicDirectory(String audiobookId) async {
-    try {
-      final publicDir = Directory('/storage/emulated/0/Download/Aradia/$audiobookId');
-      if (await publicDir.exists()) {
-        await publicDir.delete(recursive: true);
-        AppLogger.debug('Deleted public directory: ${publicDir.path}');
-      }
-    } catch (e) {
-      AppLogger.debug('Error deleting public directory: $e');
-    }
-  }
-
-  /// Delete a completed download and all its files
-  /// This method can be called from UI to delete completed downloads
-  Future<void> deleteDownload(String audiobookId) async {
-    // Cancel any active downloads first
-    if (_activeDownloads[audiobookId] == true) {
-      cancelDownload(audiobookId);
-      return;
-    }
-    
-    // Clean up all directories and files
-    await _cleanupPartialDownload(audiobookId);
-    
-    // Remove from status box
-    await downloadStatusBox.delete('status_$audiobookId');
-    
-    // Remove any task entries
-    for (var key in downloadStatusBox.keys.toList()) {
-      if (key.toString().startsWith('task_$audiobookId-')) {
-        await downloadStatusBox.delete(key);
-      }
-    }
-    
-    AppLogger.debug('Completely deleted download: $audiobookId');
   }
 
   void cancelDownload(String audiobookId) async {

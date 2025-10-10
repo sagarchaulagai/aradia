@@ -59,7 +59,7 @@ class PermissionHelper {
     return await openAppSettings();
   }
 
-  /// Download permission handler for different Android API levels
+  /// Comprehensive download permission handler for different Android API levels
   /// Returns true if all required permissions are granted
   static Future<bool> requestDownloadPermissions() async {
     if (Platform.isAndroid) {
@@ -67,19 +67,36 @@ class PermissionHelper {
       final sdkInt = androidInfo.version.sdkInt;
 
       if (sdkInt >= 33) {
-        // Android 13+ (API 33+) - Request notification permission for download notifications
-        final notification = await Permission.notification.status;
-        if (notification.isDenied) {
-          final result = await Permission.notification.request();
-          return result.isGranted;
+        // Android 13+ - Request granular media permissions
+        var photos = await Permission.photos.status;
+        var audio = await Permission.audio.status;
+        var videos = await Permission.videos.status;
+
+        if (photos.isDenied || audio.isDenied || videos.isDenied) {
+          final results = await [
+            Permission.photos,
+            Permission.audio,
+            Permission.videos
+          ].request();
+          return results.values.every((status) => status.isGranted);
         }
-        return notification.isGranted;
+        return photos.isGranted && audio.isGranted && videos.isGranted;
       } else if (sdkInt >= 30) {
-        // Android 10-12 (API 30-32) - No storage permissions needed for MediaStore
-        // Files will be downloaded to temp directory then moved via MediaStore
-        return true;
+        // Android 11-12 - Request storage and manage external storage
+        final storage = await Permission.storage.status;
+        final manageStorage = await Permission.manageExternalStorage.status;
+
+        if (storage.isDenied) await Permission.storage.request();
+        if (manageStorage.isDenied) {
+          await Permission.manageExternalStorage.request();
+          if (await Permission.manageExternalStorage.status.isDenied) {
+            await openAppSettings();
+          }
+        }
+        return await Permission.storage.status.isGranted &&
+            await Permission.manageExternalStorage.status.isGranted;
       } else {
-        // Android 9 and below (API 28 and below) - Request WRITE_EXTERNAL_STORAGE
+        // Android 10 and below - Request storage permission
         final storage = await Permission.storage.status;
         if (storage.isDenied) {
           final result = await Permission.storage.request();
@@ -104,11 +121,6 @@ class PermissionHelper {
     // Show dialog to explain why we need permissions
     if (!context.mounted) return false;
 
-    // Determine which permission is needed based on Android version
-    final androidInfo = await DeviceInfoPlugin().androidInfo;
-    final sdkInt = androidInfo.version.sdkInt;
-    final isNotificationPermission = sdkInt >= 33;
-
     final shouldOpenSettings = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -118,18 +130,16 @@ class PermissionHelper {
         title: Row(
           children: [
             Icon(
-              isNotificationPermission ? Icons.notifications_rounded : Icons.download_rounded,
+              Icons.download_rounded,
               color: AppColors.primaryColor,
               size: 28,
             ),
             const SizedBox(width: 12),
-            Text(isNotificationPermission ? 'Notification Permission Required' : 'Storage Permission Required'),
+            const Text('Storage Permission Required'),
           ],
         ),
-        content: Text(
-          isNotificationPermission 
-            ? 'To show download progress and completion notifications, we need notification permission.'
-            : 'For the app to function properly, we need access to your device storage.',
+        content: const Text(
+          'For the app to function properly, we need access to your device storage.',
         ),
         actions: [
           TextButton(

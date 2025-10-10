@@ -67,13 +67,13 @@ class AudiobookDetailsBloc
       }
 
       audiobookFiles.fold((l) {
-        emit(AudiobookDetailsError(l));
+        emit(AudiobookDetailsError());
       }, (r) {
         emit(AudiobookDetailsLoaded([...r]));
       });
     } catch (e) {
       AppLogger.debug('Error coming from fetchAudiobookDetails bloc: $e');
-      emit(AudiobookDetailsError(e.toString()));
+      emit(AudiobookDetailsError());
     }
   }
 

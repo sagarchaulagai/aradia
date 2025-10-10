@@ -432,13 +432,13 @@ class _AudiobookDetailsState extends State<AudiobookDetails> {
                 ),
               );
             } else if (state is AudiobookDetailsError) {
-              return Center(
-                child: Text("Error loading audiobook details ${state.message}"),
+              return const Center(
+                child: Text('Error loading audiobook details 1'),
               );
             }
 
             return const Center(
-              child: Text('Error loading audiobook details'),
+              child: Text('Error loading audiobook details 2'),
             );
           },
         ),

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/services/download/download_manager.dart';
+import 'package:path_provider/path_provider.dart';
 
 class DownloadsPage extends StatefulWidget {
   const DownloadsPage({super.key});
@@ -24,8 +25,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Future<void> _openDownloadFolder() async {
     try {
-      // Point to the public Downloads/Aradia directory where files are actually stored
-      final downloadsPath = '/storage/emulated/0/Download/Aradia';
+      // Consistently use the directory our DownloadManager saves to
+      final directory = await getExternalStorageDirectory();
+      final downloadsPath = '${directory?.path}/downloads';
       final downloadsDir = Directory(downloadsPath);
 
       if (!await downloadsDir.exists()) {
@@ -80,8 +82,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
 
     if (confirmed == true) {
-      // Use deleteDownload for proper cleanup of completed downloads
-      await _downloadManager.deleteDownload(audiobookId);
+      _downloadManager
+          .cancelDownload(audiobookId); // This handles cleanup and Hive
       if (mounted) {
         ScaffoldMessenger.of(this.context).showSnackBar(
           SnackBar(content: Text('"$title" has been deleted.')),
@@ -291,11 +293,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   Future<void> _openDownloadedAudiobook(
-      String audiobookId, String audiobookTitle) async {
+      BuildContext context, String audiobookId, String audiobookTitle) async {
     try {
-      // Read metadata from the public Downloads/Aradia directory
-      final publicDir = '/storage/emulated/0/Download/Aradia/$audiobookId';
-      final metadataFilePath = '$publicDir/audiobook.txt';
+      final appDir = await getExternalStorageDirectory();
+      final metadataFilePath =
+          '${appDir?.path}/downloads/$audiobookId/audiobook_metadata.json';
       final metadataFile = File(metadataFilePath);
 
       late final Audiobook audiobook;
@@ -305,13 +307,21 @@ class _DownloadsPageState extends State<DownloadsPage> {
         audiobook = Audiobook.fromMap(
             jsonDecode(content) as Map<String, dynamic>);
       } else {
-        AppLogger.debug(
-            'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
-        audiobook = Audiobook.fromMap({
-          'id': audiobookId,
-          'title': audiobookTitle,
-          'origin': 'download',
-        });
+        final oldMetadataFile =
+            File('${appDir?.path}/downloads/$audiobookId/audiobook.txt');
+        if (await oldMetadataFile.exists()) {
+          final content = await oldMetadataFile.readAsString();
+          audiobook = Audiobook.fromMap(
+              jsonDecode(content) as Map<String, dynamic>);
+        } else {
+          AppLogger.debug(
+              'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
+          audiobook = Audiobook.fromMap({
+            'id': audiobookId,
+            'title': audiobookTitle,
+            'origin': 'download',
+          });
+        }
       }
 
       AppLogger.debug('Playing downloaded audiobook: ${audiobook.title}');
@@ -469,7 +479,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           : null,
               onTap: isCompleted
                   ? () => _openDownloadedAudiobook(
-                      audiobookId, audiobookTitle)
+                      context, audiobookId, audiobookTitle)
                   : null,
               trailing: _buildTrailingActions(
                 context: context,

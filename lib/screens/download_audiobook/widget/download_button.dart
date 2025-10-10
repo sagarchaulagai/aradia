@@ -9,6 +9,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/services/download/download_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:aradia/utils/permission_helper.dart';
 
 class DownloadButton extends StatefulWidget {
@@ -79,12 +80,22 @@ class _DownloadButtonState extends State<DownloadButton> {
         .toList();
 
     try {
-      // Get the appropriate metadata directory based on Android version
-      final downloadManager = DownloadManager();
-      final metadataDir = await downloadManager.getMetadataDirectory(widget.audiobook.id);
-      
+      // we will save audiobook and files in the
+      final appDir = await getExternalStorageDirectory();
+
+      // Create parent downloads directory if it doesn't exist
+      final downloadsDir = Directory('${appDir?.path}/downloads');
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      final downloadDir =
+          Directory('${appDir?.path}/downloads/${widget.audiobook.id}');
+      if (!await downloadDir.exists()) {
+        await downloadDir.create();
+      }
       // Now create a file name audiobook.txt and save the audiobook details
-      final audiobookFile = File('${metadataDir.path}/audiobook.txt');
+      final audiobookFile = File('${downloadDir.path}/audiobook.txt');
       // Create a modified copy of the audiobook with origin set to 'download'
       final modifiedAudiobook =
           Map<String, dynamic>.from(widget.audiobook.toMap())
@@ -92,7 +103,7 @@ class _DownloadButtonState extends State<DownloadButton> {
       await audiobookFile.writeAsString(jsonEncode(modifiedAudiobook));
 
       // Now create a file name files.txt and save the audiobook files
-      final filesFile = File('${metadataDir.path}/files.txt');
+      final filesFile = File('${downloadDir.path}/files.txt');
       await filesFile.writeAsString(
         jsonEncode(files),
       );
