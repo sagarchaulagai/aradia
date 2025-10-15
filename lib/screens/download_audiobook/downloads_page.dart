@@ -296,9 +296,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
       BuildContext context, String audiobookId, String audiobookTitle) async {
     try {
       final appDir = await getExternalStorageDirectory();
-      final metadataFilePath =
-          '${appDir?.path}/downloads/$audiobookId/audiobook_metadata.json';
-      final metadataFile = File(metadataFilePath);
+      final metadataFile =
+          File('${appDir?.path}/downloads/$audiobookId/audiobook.txt');
 
       late final Audiobook audiobook;
 
@@ -307,26 +306,18 @@ class _DownloadsPageState extends State<DownloadsPage> {
         audiobook = Audiobook.fromMap(
             jsonDecode(content) as Map<String, dynamic>);
       } else {
-        final oldMetadataFile =
-            File('${appDir?.path}/downloads/$audiobookId/audiobook.txt');
-        if (await oldMetadataFile.exists()) {
-          final content = await oldMetadataFile.readAsString();
-          audiobook = Audiobook.fromMap(
-              jsonDecode(content) as Map<String, dynamic>);
-        } else {
-          AppLogger.debug(
-              'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
-          audiobook = Audiobook.fromMap({
-            'id': audiobookId,
-            'title': audiobookTitle,
-            'origin': 'download',
-          });
-        }
+        AppLogger.debug(
+            'Warning: Metadata file not found for $audiobookId. Playing with minimal data.');
+        audiobook = Audiobook.fromMap({
+          'id': audiobookId,
+          'title': audiobookTitle,
+          'origin': 'download',
+        });
       }
 
       AppLogger.debug('Playing downloaded audiobook: ${audiobook.title}');
       if (!mounted) return;
-      context.push(
+      this.context.push(
         '/audiobook-details',
         extra: {
           'audiobook': audiobook,
@@ -338,7 +329,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     } catch (e) {
       AppLogger.debug('Error preparing to play audiobook $audiobookId: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(this.context).showSnackBar(
         SnackBar(content: Text('Error playing: ${e.toString()}')),
       );
     }

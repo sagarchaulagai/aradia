@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 const String _base = "https://archive.org/download";
