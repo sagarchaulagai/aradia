@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:aradia/utils/app_logger.dart';
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,13 +19,8 @@ class AudiobookFile {
   final int? size;
   final String? highQCoverImage;
 
-  /// NEW: optional chapter slicing for a single physical file
   final int? startMs;    // chapter start (ms from file start)
   final int? durationMs; // chapter duration (ms); null => to EOF
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // Constructors for existing sources
-  // ────────────────────────────────────────────────────────────────────────────
 
   AudiobookFile.fromJson(Map json)
       : identifier = json["identifier"]?.toString(),
@@ -63,7 +59,6 @@ class AudiobookFile {
         startMs = null,
         durationMs = null;
 
-  /// NEW: convenient factory for a chapter slice of a single-file book
   static AudiobookFile chapterSlice({
     required String identifier,
     required String url,
@@ -87,10 +82,6 @@ class AudiobookFile {
       "durationMs": durationMs,
     });
   }
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // Parsing helpers
-  // ────────────────────────────────────────────────────────────────────────────
 
   static int _parseTrack(dynamic value) {
     if (value == null) return 0;
@@ -161,17 +152,11 @@ class AudiobookFile {
     return audiobookFiles;
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // Disk discovery helpers (unchanged behavior)
-  // ────────────────────────────────────────────────────────────────────────────
-
   static Future<Either<String, List<AudiobookFile>>> fromDownloadedFiles(
       String audiobookId) async {
     try {
       final appDir = await getExternalStorageDirectory();
       final downloadDir = Directory('${appDir?.path}/downloads/$audiobookId');
-
-      // Get all MP3 files in the directory sorted by date
       List<FileSystemEntity> files = downloadDir
           .listSync()
           .where((file) => file.path.endsWith('.mp3'))
@@ -186,10 +171,9 @@ class AudiobookFile {
       List<AudiobookFile> audiobookFiles = <AudiobookFile>[];
 
       for (var i = 0; i < files.length; i++) {
-        final player = AudioPlayer();
         try {
-          await player.setFilePath(files[i].path);
-          final duration = player.duration?.inSeconds.toDouble() ?? 0.0;
+          final metadata = await MetadataRetriever.fromFile(File(files[i].path));
+          final duration = metadata.trackDuration?.toDouble() ?? 0.0;
 
           audiobookFiles.add(AudiobookFile.fromMap({
             "identifier": audiobookId,
@@ -197,13 +181,24 @@ class AudiobookFile {
             "name": files[i].path.split('/').last,
             "track": i + 1,
             "size": files[i].statSync().size,
-            "length": duration,
+            "length": duration / 1000, // Convert milliseconds to seconds
             "url": files[i].path,
             "highQCoverImage":
             'https://archive.org/services/get-item-image.php?identifier=$audiobookId',
           }));
-        } finally {
-          await player.dispose();
+        } catch (e) {
+          AppLogger.debug('Error getting metadata for ${files[i].path}: $e');
+          audiobookFiles.add(AudiobookFile.fromMap({
+            "identifier": audiobookId,
+            "title": files[i].path.split('/').last.split('.').first,
+            "name": files[i].path.split('/').last,
+            "track": i + 1,
+            "size": files[i].statSync().size,
+            "length": 0.0,
+            "url": files[i].path,
+            "highQCoverImage":
+            'https://archive.org/services/get-item-image.php?identifier=$audiobookId',
+          }));
         }
       }
 
@@ -276,7 +271,6 @@ class AudiobookFile {
     }
   }
 
-  // TODO Fix the toMap and fromMap so that we can use it by Hive without the error
   AudiobookFile.fromMap(Map<dynamic, dynamic> map)
       : identifier = map["identifier"],
         title = map["title"],
