@@ -160,73 +160,80 @@ class LocalAudiobookService {
       String relativePath = pathParts.last;
       List<String> pathPartsAfterRootFolder = relativePath.split("/");
       if (pathPartsAfterRootFolder.length == 2) {
-        AppLogger.info('Found level 0 file: $filePath');
-        level0FilesPaths.add(filePath);
+        // Only add audio files to level 0 processing
+        if (await isAudioFile(filePath)) {
+          AppLogger.info('Found level 0 audio file: $filePath');
+          level0FilesPaths.add(filePath);
+        } else {
+          AppLogger.info('Skipping non-audio file: $filePath');
+        }
       }
     }
     // Process each audio file as a standalone audiobook
     for (String filePath in level0FilesPaths) {
-      if (await isAudioFile(filePath)) {
+      try {
+        AppLogger.info('Processing standalone audiobook: $filePath');
+
+        // Extract metadata from the audio file (this will cache it internally)
+        AppLogger.info('About to call getAudioMetadata for: $filePath');
+        Metadata metadata;
         try {
-          AppLogger.info('Processing standalone audiobook: $filePath');
-
-          // Cache the audio file to read metadata
-          String? cachePath = await Saf(rootFolderPath).singleCache(
+          metadata = await getAudioMetadata(filePath)
+              .timeout(const Duration(seconds: 60));
+          AppLogger.info('Metadata extraction completed for: $filePath');
+        } catch (timeoutError) {
+          AppLogger.error('Metadata extraction timed out for: $filePath');
+          // Create basic metadata as fallback
+          metadata = Metadata(
+            trackName: path.basenameWithoutExtension(filePath),
+            albumName: path.basenameWithoutExtension(filePath),
+            albumArtistName: 'Unknown',
+            trackDuration: null,
+            albumArt: null,
             filePath: filePath,
-            directory: rootFolderPath,
           );
-
-          if (cachePath == null) {
-            AppLogger.error('Failed to cache audio file: $filePath');
-            continue;
-          }
-
-          AppLogger.info('Successfully cached file: $filePath -> $cachePath');
-
-          // Extract metadata from the cached file
-          final metadata = await getAudioMetadata(cachePath);
-
-          // Get title and author from metadata
-          String title = metadata.albumName ??
-              metadata.trackName ??
-              path.basenameWithoutExtension(filePath);
-          String author = metadata.albumArtistName ??
-              metadata.trackArtistNames?.join(', ') ??
-              'Unknown';
-
-          // Look for cover image with same name as audio file
-          String? coverImagePath =
-              await findCoverImageForAudioFile(filePath, rootFolderPath);
-
-          // If no cover image found, try to extract from metadata
-          if (coverImagePath == null && metadata.albumArt != null) {
-            coverImagePath = await saveAlbumArtFromMetadata(
-                metadata.albumArt!, path.basenameWithoutExtension(filePath));
-          }
-
-          // Create the audiobook object
-          final audiobook = LocalAudiobook(
-            id: filePath, // Use file path as unique ID
-            title: title,
-            author: author,
-            folderPath: rootFolderPath,
-            coverImagePath: coverImagePath,
-            audioFiles: [filePath], // Single file for standalone audiobook
-            totalDuration: metadata.trackDuration != null
-                ? Duration(milliseconds: metadata.trackDuration!)
-                : null,
-            dateAdded: DateTime.now(),
-            lastModified: DateTime.now(),
-            description: metadata.authorName ?? metadata.writerName,
-            genre: metadata.genre,
-          );
-
-          audiobooks.add(audiobook);
-          AppLogger.info('Created audiobook: $title by $author');
-        } catch (e) {
-          AppLogger.error('Error processing audiobook $filePath: $e');
-          continue;
         }
+
+        // Get title and author from metadata
+        String title = metadata.albumName ??
+            metadata.trackName ??
+            path.basenameWithoutExtension(filePath);
+        String author = metadata.albumArtistName ??
+            metadata.trackArtistNames?.join(', ') ??
+            'Unknown';
+
+        // Look for cover image with same name as audio file
+        String? coverImagePath =
+            await findCoverImageForAudioFile(filePath, rootFolderPath);
+
+        // If no cover image found, try to extract from metadata
+        if (coverImagePath == null && metadata.albumArt != null) {
+          coverImagePath = await saveAlbumArtFromMetadata(
+              metadata.albumArt!, path.basenameWithoutExtension(filePath));
+        }
+
+        // Create the audiobook object
+        final audiobook = LocalAudiobook(
+          id: filePath, // Use file path as unique ID
+          title: title,
+          author: author,
+          folderPath: rootFolderPath,
+          coverImagePath: coverImagePath,
+          audioFiles: [filePath], // Single file for standalone audiobook
+          totalDuration: metadata.trackDuration != null
+              ? Duration(milliseconds: metadata.trackDuration!)
+              : null,
+          dateAdded: DateTime.now(),
+          lastModified: DateTime.now(),
+          description: metadata.authorName ?? metadata.writerName,
+          genre: metadata.genre,
+        );
+
+        audiobooks.add(audiobook);
+        AppLogger.info('Created audiobook: $title by $author');
+      } catch (e) {
+        AppLogger.error('Error processing audiobook $filePath: $e');
+        continue;
       }
     }
     return audiobooks;
@@ -426,10 +433,82 @@ class LocalAudiobookService {
     return audiobooks;
   }
 
-  // Method to get metadata of an audio file
+  // Method to get metadata of an audio file using SAF
   static Future<Metadata> getAudioMetadata(String filePath) async {
-    final metadata = await MetadataRetriever.fromFile(File(filePath));
-    return metadata;
+    AppLogger.info('Starting metadata extraction for: $filePath');
+
+    // For SAF, we always need to cache the file first, then read metadata from the cached file
+    final rootFolderPath = await getRootFolderPath();
+    if (rootFolderPath == null) {
+      throw Exception('Root folder path is null');
+    }
+
+    try {
+      // Try using sync method first to cache all files, then find our specific file
+      AppLogger.info('Attempting SAF sync cache for: $filePath');
+
+      // Use sync method to cache all files
+      Saf saf = Saf(rootFolderPath);
+      bool? result = await saf.sync().timeout(const Duration(seconds: 60));
+
+      if (result == true) {
+        // Find the cached file by looking for the filename
+        String fileName = path.basename(filePath);
+        String cacheDir = await _getCacheDirectory();
+        String cachedFilePath =
+            path.join(cacheDir, 'audiobooks_cache', fileName);
+
+        if (await File(cachedFilePath).exists()) {
+          AppLogger.info('File found in sync cache: $cachedFilePath');
+          // Read metadata from the cached file
+          final metadata =
+              await MetadataRetriever.fromFile(File(cachedFilePath))
+                  .timeout(const Duration(seconds: 10));
+          AppLogger.info(
+              'Successfully read metadata from cached file: $cachedFilePath');
+          return metadata;
+        }
+      }
+
+      // Fallback to singleCache if sync fails
+      AppLogger.info('Sync cache failed, trying singleCache for: $filePath');
+      String? cachePath = await Saf(rootFolderPath)
+          .singleCache(
+            filePath: filePath,
+            directory: rootFolderPath,
+          )
+          .timeout(const Duration(seconds: 30));
+
+      if (cachePath == null) {
+        throw Exception('Failed to cache file: $filePath');
+      }
+
+      AppLogger.info(
+          'File cached successfully, reading metadata from: $cachePath');
+      // Read metadata from the cached file
+      final metadata = await MetadataRetriever.fromFile(File(cachePath))
+          .timeout(const Duration(seconds: 10));
+      AppLogger.info('Successfully read metadata from cached file: $cachePath');
+      return metadata;
+    } catch (e) {
+      AppLogger.error('Metadata reading failed for $filePath: $e');
+      // Return empty metadata as fallback
+      AppLogger.info('Returning fallback metadata for: $filePath');
+      return Metadata(
+        trackName: path.basenameWithoutExtension(filePath),
+        albumName: path.basenameWithoutExtension(filePath),
+        albumArtistName: 'Unknown',
+        trackDuration: null,
+        albumArt: null,
+        filePath: filePath,
+      );
+    }
+  }
+
+  // Helper method to get cache directory
+  static Future<String> _getCacheDirectory() async {
+    final externalDir = await getExternalStorageDirectory();
+    return externalDir?.path ?? '';
   }
 
   // Method to check if file is an audio file
@@ -471,7 +550,12 @@ class LocalAudiobookService {
         final files = await Saf.getFilesPathFor(rootFolderPath);
         if (files != null && files.contains(potentialCoverPath)) {
           AppLogger.info('Found cover image: $potentialCoverPath');
-          return potentialCoverPath;
+
+          // Copy the cover image to local storage and return the local path
+          String? localCoverPath = await _copyCoverImageToLocalStorage(
+              potentialCoverPath, audioFileName, rootFolderPath);
+
+          return localCoverPath;
         }
       }
 
@@ -501,9 +585,8 @@ class LocalAudiobookService {
         await coverImagesDir.create(recursive: true);
       }
 
-      // Create unique filename
-      final fileName =
-          '${baseName}_${DateTime.now().millisecondsSinceEpoch}.png';
+      // Create unique filename using baseName only (no timestamp to prevent duplicates)
+      final fileName = '${_sanitizeFileName(baseName)}.png';
       final filePath = path.join(coverImagesDir.path, fileName);
 
       // Write the album art data to file
@@ -516,6 +599,79 @@ class LocalAudiobookService {
       AppLogger.error('Error saving album art for $baseName: $e');
       return null;
     }
+  }
+
+  // Method to copy cover image from SAF path to local storage
+  static Future<String?> _copyCoverImageToLocalStorage(String sourceImagePath,
+      String audiobookName, String rootFolderPath) async {
+    try {
+      AppLogger.info('Copying cover image: $sourceImagePath');
+
+      // Get external storage directory
+      final externalDir = await getExternalStorageDirectory();
+      if (externalDir == null) {
+        AppLogger.error('Failed to get external storage directory');
+        return null;
+      }
+
+      // Create localCoverImages directory
+      final coverImagesDir =
+          Directory(path.join(externalDir.path, 'localCoverImages'));
+      if (!await coverImagesDir.exists()) {
+        await coverImagesDir.create(recursive: true);
+      }
+
+      // Create unique filename using audiobook name
+      String originalExtension = path.extension(sourceImagePath);
+      String fileName = '${_sanitizeFileName(audiobookName)}$originalExtension';
+      String localFilePath = path.join(coverImagesDir.path, fileName);
+
+      // Check if file already exists (to prevent duplicates)
+      if (await File(localFilePath).exists()) {
+        AppLogger.info('Cover image already exists: $localFilePath');
+        return localFilePath;
+      }
+
+      // Cache the source image using SAF
+      String? cachedImagePath = await Saf(rootFolderPath)
+          .singleCache(
+            filePath: sourceImagePath,
+            directory: rootFolderPath,
+          )
+          .timeout(const Duration(seconds: 30));
+
+      if (cachedImagePath == null) {
+        AppLogger.error('Failed to cache source image: $sourceImagePath');
+        return null;
+      }
+
+      // Copy from cached file to local storage
+      final sourceFile = File(cachedImagePath);
+
+      if (await sourceFile.exists()) {
+        await sourceFile.copy(localFilePath);
+        AppLogger.info('Successfully copied cover image to: $localFilePath');
+        return localFilePath;
+      } else {
+        AppLogger.error('Cached source file does not exist: $cachedImagePath');
+        return null;
+      }
+    } catch (e) {
+      AppLogger.error('Error copying cover image for $audiobookName: $e');
+      return null;
+    }
+  }
+
+  // Helper method to sanitize filename for safe storage
+  static String _sanitizeFileName(String fileName) {
+    // Remove or replace invalid characters for file names
+    return fileName
+        .replaceAll(RegExp(r'[<>:"/\\|?*]'),
+            '_') // Replace invalid chars with underscore
+        .replaceAll(' ', '_') // Replace spaces with underscore
+        .replaceAll(
+            RegExp(r'_+'), '_') // Replace multiple underscores with single
+        .toLowerCase();
   }
 
   // Helper method to capitalize words (e.g., "art of war" -> "Art Of War")
@@ -545,39 +701,51 @@ class LocalAudiobookService {
         return null;
       }
 
+      String? selectedImagePath;
+
       // If only one image, use it
       if (imageFiles.length == 1) {
         AppLogger.info('Found single cover image: ${imageFiles.first}');
-        return imageFiles.first;
-      }
+        selectedImagePath = imageFiles.first;
+      } else {
+        // If multiple images, look for specific names in order
+        List<String> preferredNames = [
+          'cover',
+          'folder',
+          'audiobook',
+          'front',
+          'album',
+          'art',
+          'artwork',
+          'book'
+        ];
 
-      // If multiple images, look for specific names in order
-      List<String> preferredNames = [
-        'cover',
-        'folder',
-        'audiobook',
-        'front',
-        'album',
-        'art',
-        'artwork',
-        'book'
-      ];
-
-      for (String preferredName in preferredNames) {
-        for (String imageFile in imageFiles) {
-          String fileName =
-              path.basenameWithoutExtension(imageFile).toLowerCase();
-          if (fileName == preferredName) {
-            AppLogger.info('Found preferred cover image: $imageFile');
-            return imageFile;
+        for (String preferredName in preferredNames) {
+          for (String imageFile in imageFiles) {
+            String fileName =
+                path.basenameWithoutExtension(imageFile).toLowerCase();
+            if (fileName == preferredName) {
+              AppLogger.info('Found preferred cover image: $imageFile');
+              selectedImagePath = imageFile;
+              break;
+            }
           }
+          if (selectedImagePath != null) break;
+        }
+
+        // If no preferred name found, use the first image
+        if (selectedImagePath == null) {
+          AppLogger.info(
+              'No preferred cover name found, using first image: ${imageFiles.first}');
+          selectedImagePath = imageFiles.first;
         }
       }
 
-      // If no preferred name found, return the first image
-      AppLogger.info(
-          'No preferred cover name found, using first image: ${imageFiles.first}');
-      return imageFiles.first;
+      // Copy the cover image to local storage and return the local path
+      String? localCoverPath = await _copyCoverImageToLocalStorage(
+          selectedImagePath, folderName, rootFolderPath);
+
+      return localCoverPath;
     } catch (e) {
       AppLogger.error('Error finding cover image in folder $folderName: $e');
       return null;
@@ -588,20 +756,8 @@ class LocalAudiobookService {
   static Future<String?> extractCoverFromAudioMetadata(
       String audioFilePath, String rootFolderPath, String baseName) async {
     try {
-      // Cache the audio file to read metadata
-      String? cachePath = await Saf(rootFolderPath).singleCache(
-        filePath: audioFilePath,
-        directory: rootFolderPath,
-      );
-
-      if (cachePath == null) {
-        AppLogger.error(
-            'Failed to cache audio file for metadata: $audioFilePath');
-        return null;
-      }
-
-      // Extract metadata
-      final metadata = await getAudioMetadata(cachePath);
+      // Extract metadata (this will cache the file internally)
+      final metadata = await getAudioMetadata(audioFilePath);
 
       // If album art exists, save it
       if (metadata.albumArt != null) {
@@ -623,17 +779,15 @@ class LocalAudiobookService {
       int totalMilliseconds = 0;
 
       for (String audioFile in audioFiles) {
-        // Cache the audio file
-        String? cachePath = await Saf(rootFolderPath).singleCache(
-          filePath: audioFile,
-          directory: rootFolderPath,
-        );
-
-        if (cachePath != null) {
-          final metadata = await getAudioMetadata(cachePath);
+        try {
+          // Get metadata (this will cache the file internally)
+          final metadata = await getAudioMetadata(audioFile);
           if (metadata.trackDuration != null) {
             totalMilliseconds += metadata.trackDuration!;
           }
+        } catch (e) {
+          AppLogger.error('Error getting metadata for $audioFile: $e');
+          // Continue with other files
         }
       }
 

@@ -3,6 +3,7 @@ import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/services/local/local_audiobook_service.dart';
 import 'package:aradia/utils/app_events.dart';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:aradia/widgets/local_audiobook_item.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,6 +51,10 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   Future<void> _loadAudiobooks() async {
     try {
       final loadedAudiobooks = await LocalAudiobookService.refreshAudiobooks();
+      for (LocalAudiobook audiobook in loadedAudiobooks) {
+        AppLogger.info(
+            'Audiobook: ${audiobook.title} by ${audiobook.author} ${audiobook.coverImagePath}');
+      }
       setState(() {
         audiobooks = loadedAudiobooks;
       });
@@ -67,9 +72,12 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
 
   Future<void> _selectRootFolder() async {
     try {
-      // Request dynamic directory permission using SAF
-      bool? permissionGranted = await Saf.getDynamicDirectoryPermission(
+      // Request directory permission using SAF with proper URI persistence
+      // We need to create a Saf instance first
+      Saf saf = Saf("Audiobooks"); // Use a default path for the instance
+      bool? permissionGranted = await saf.getDirectoryPermission(
         grantWritePermission: true,
+        isDynamic: true,
       );
 
       if (permissionGranted == true) {
