@@ -60,9 +60,11 @@ dependencies:
   logger: ^2.6.1
   meta: ^1.16.0
   flutter_inappwebview: ^6.1.5
+  # saf:
+  #   git:
+  #     url: https://github.com/sagarchaulagai/saf.git
   saf:
-    git:
-      url: https://github.com/sagarchaulagai/saf.git
+    path: C:\Programs\saf
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2

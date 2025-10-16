@@ -1,4 +1,3 @@
-// lib/widgets/local_audiobook_item.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -827,14 +826,16 @@ class CoverImageRemote {
       final searchUri = Uri.parse(
         'https://duckduckgo.com/?q=$encodedQuery&iax=images&ia=images',
       );
-      final searchResponse = await http.get(searchUri, headers: _duckDuckGoHeaders);
+      final searchResponse =
+          await http.get(searchUri, headers: _duckDuckGoHeaders);
       if (searchResponse.statusCode != 200) {
         return [];
       }
 
       final vqd = _extractDuckDuckGoVqd(searchResponse.body);
       if (vqd == null || vqd.isEmpty) {
-        AppLogger.debug('DuckDuckGo vqd token missing for query: $query', 'CoverImageRemote');
+        AppLogger.debug('DuckDuckGo vqd token missing for query: $query',
+            'CoverImageRemote');
         return [];
       }
 
@@ -877,7 +878,8 @@ class CoverImageRemote {
         }
 
         final score = _squarenessScore(width, height);
-        scored.add(_ScoredCover(url: normalized, score: score, originalIndex: i));
+        scored
+            .add(_ScoredCover(url: normalized, score: score, originalIndex: i));
       }
 
       if (scored.isEmpty) {

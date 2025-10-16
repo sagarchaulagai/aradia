@@ -3,11 +3,10 @@ import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/services/local/local_audiobook_service.dart';
 import 'package:aradia/utils/app_events.dart';
-import 'package:aradia/utils/permission_helper.dart';
 import 'package:aradia/widgets/local_audiobook_item.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:saf/saf.dart';
 
 class LocalImportsSection extends StatefulWidget {
   const LocalImportsSection({super.key});
@@ -67,28 +66,53 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   }
 
   Future<void> _selectRootFolder() async {
-    // Request storage permissions first
-    final hasPermission =
-        await PermissionHelper.handleDownloadPermissionWithDialog(context);
-    if (!hasPermission) return;
-
     try {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      // Request dynamic directory permission using SAF
+      bool? permissionGranted = await Saf.getDynamicDirectoryPermission(
+        grantWritePermission: true,
+      );
 
-      if (selectedDirectory != null) {
-        await LocalAudiobookService.setRootFolderPath(selectedDirectory);
-        setState(() {
-          rootFolderPath = selectedDirectory;
-        });
+      if (permissionGranted == true) {
+        // Get the list of persisted permission directories
+        List<String>? persistedDirectories =
+            await Saf.getPersistedPermissionDirectories();
 
-        // Load audiobooks from the selected folder
-        await _loadAudiobooks();
+        if (persistedDirectories != null && persistedDirectories.isNotEmpty) {
+          // Use the most recently granted directory
+          String selectedDirectory = persistedDirectories.last;
 
+          await LocalAudiobookService.setRootFolderPath(selectedDirectory);
+          setState(() {
+            rootFolderPath = selectedDirectory;
+          });
+
+          // Load audiobooks from the selected folder
+          await _loadAudiobooks();
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Root folder set successfully!'),
+                backgroundColor: AppColors.primaryColor,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No directory was selected'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Root folder set successfully!'),
-              backgroundColor: AppColors.primaryColor,
+              content: Text('Directory access permission denied'),
+              backgroundColor: Colors.red,
             ),
           );
         }
@@ -132,7 +156,8 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
               if (rootFolderPath != null)
                 IconButton(
                   onPressed: _refreshAudiobooks,
-                  icon: const Icon(Icons.refresh, color: AppColors.primaryColor),
+                  icon:
+                      const Icon(Icons.refresh, color: AppColors.primaryColor),
                   tooltip: 'Refresh audiobooks',
                 ),
             ],
@@ -140,13 +165,14 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
         ),
 
         if (isLoading)
-          const Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
+          const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryColor))
         else if (rootFolderPath == null)
           _buildSelectFolderCard()
         else if (audiobooks.isEmpty)
-            _buildEmptyState()
-          else
-            _buildAudiobooksList(),
+          _buildEmptyState()
+        else
+          _buildAudiobooksList(),
       ],
     );
   }

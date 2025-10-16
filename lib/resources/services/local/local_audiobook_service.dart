@@ -1,37 +1,17 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:hive/hive.dart';
-import 'package:path/path.dart' as path;
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/utils/app_logger.dart';
-import 'package:aradia/utils/media_helper.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:saf/saf.dart';
+import 'package:saf/src/storage_access_framework/api.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class LocalAudiobookService {
   static const String _rootFolderKey = 'local_audiobooks_root_folder';
   static const String _audiobooksBoxName = 'local_audiobooks';
-
-  // Supported audio file extensions
-  static const List<String> _supportedAudioExtensions = [
-    '.mp3',
-    '.m4a',
-    '.m4b',
-    '.aac',
-    '.wav',
-    '.flac',
-    '.ogg',
-    '.opus',
-  ];
-
-  // Supported image file extensions for cover images
-  static const List<String> _supportedImageExtensions = [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.webp',
-    '.bmp',
-  ];
 
   // ────────────────────────────────────────────────────────────────────────────
   // Settings (root path)
@@ -92,181 +72,6 @@ class LocalAudiobookService {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // SCANNER: Implements your rules + metadata extraction
-  // ────────────────────────────────────────────────────────────────────────────
-
-  /// Public: scan the entire tree according to the rules and return all books.
-  ///
-  /// Rules:
-  /// • Root (level 0): each audio file directly in root is a standalone book.
-  /// • Any subfolder (level ≥ 1):
-  ///    - If NO subfolders and HAS audio → the folder is a book; its files are tracks.
-  ///    - If HAS subfolders → direct audio files are standalone books; recurse into subfolders.
-  static Future<List<LocalAudiobook>> scanForAudiobooks() async {
-    final rootPath = await getRootFolderPath();
-    if (rootPath == null) return [];
-
-    final rootDir = Directory(rootPath);
-    if (!await rootDir.exists()) return [];
-
-    final List<LocalAudiobook> results = [];
-
-    try {
-      // 1) ROOT LEVEL: every audio file directly under root is a standalone book
-      final rootChildren = await _listEntries(rootDir);
-      final rootFiles = rootChildren.whereType<File>().toList();
-      final rootAudios = rootFiles.where((f) => _isAudio(f.path)).toList();
-      final rootImages = rootFiles.where((f) => _isImage(f.path)).toList();
-
-      for (final audio in rootAudios) {
-        final audioPath = audio.path;
-
-        // Extract embedded tags/cover
-        final meta = await _readFileMeta(audio);
-
-        // Prefer embedded title/artist; fall back sensibly
-        final derivedTitle =
-        (meta.title?.isNotEmpty == true) ? meta.title! : _stem(audioPath);
-        final derivedAuthor =
-        (meta.artist?.isNotEmpty == true) ? meta.artist! : 'Unknown';
-
-        // Prefer same-stem/priority image in folder; else embedded album art
-        String? cover = _pickCoverForSingleFile(audio, rootImages);
-        if (cover == null && meta.albumArt != null) {
-          cover = await _saveAlbumArt(meta.albumArt!,
-              stemHint: _stem(audioPath));
-        }
-
-        results.add(
-          LocalAudiobook(
-            id: 'root_${derivedTitle}_${DateTime.now().millisecondsSinceEpoch}',
-            title: derivedTitle,
-            author: derivedAuthor,
-            folderPath: rootDir.path,
-            coverImagePath: cover,
-            audioFiles: [audioPath], // single-file book
-            dateAdded: DateTime.now(),
-            lastModified: DateTime.now(),
-          ),
-        );
-      }
-
-      // 2) Recurse into each subdirectory using the folder rules
-      final rootDirs = rootChildren.whereType<Directory>().toList();
-      for (final d in rootDirs) {
-        results.addAll(await _scanFolder(d));
-      }
-    } catch (e) {
-      AppLogger.error('Error scanning for audiobooks: $e');
-    }
-
-    return results;
-  }
-
-  /// Internal: recursively scan a folder with the level ≥ 1 rules.
-  ///
-  /// If folder has NO subfolders and HAS audio -> folder is a book; files = tracks.
-  /// If folder HAS subfolders -> direct audio files are standalone books; subfolders are recursed.
-  static Future<List<LocalAudiobook>> _scanFolder(Directory folder) async {
-    final List<LocalAudiobook> found = [];
-
-    try {
-      final children = await _listEntries(folder);
-      final subDirs = children.whereType<Directory>().toList();
-      final files = children.whereType<File>().toList();
-      final audioFiles = files.where((f) => _isAudio(f.path)).toList();
-      final imageFiles = files.where((f) => _isImage(f.path)).toList();
-
-      final folderName = path.basename(folder.path);
-      final parentName = path.basename(folder.parent.path);
-      final now = DateTime.now();
-
-      if (subDirs.isEmpty) {
-        // FOLDER = BOOK; audio inside = tracks
-        if (audioFiles.isNotEmpty) {
-          audioFiles.sort((a, b) => a.path.compareTo(b.path));
-
-          // Try to infer author & cover from embedded tags across tracks
-          String? inferredAuthor;
-          String? cover = _pickCoverForFolderBook(imageFiles); // folder images first
-
-          // Look into the first track(s) that have useful metadata
-          for (final f in audioFiles) {
-            final meta = await _readFileMeta(f);
-            if (inferredAuthor == null && (meta.artist?.isNotEmpty == true)) {
-              inferredAuthor = meta.artist;
-            }
-            if (cover == null && meta.albumArt != null) {
-              final saved = await _saveAlbumArt(meta.albumArt!,
-                  stemHint: _stem(f.path));
-              cover = saved ?? cover;
-            }
-            if (inferredAuthor != null && cover != null) break;
-          }
-
-          final finalAuthor = (inferredAuthor?.isNotEmpty == true)
-              ? inferredAuthor!
-              : (parentName.isEmpty ? 'Unknown' : parentName);
-
-          found.add(
-            LocalAudiobook(
-              id: 'folder_${parentName}_${folderName}_${now.millisecondsSinceEpoch}',
-              title: folderName, // folder remains the book title
-              author: finalAuthor,
-              folderPath: folder.path,
-              coverImagePath: cover,
-              audioFiles: audioFiles.map((f) => f.path).toList(), // tracks
-              dateAdded: now,
-              lastModified: now,
-            ),
-          );
-        }
-      } else {
-        // HAS SUBFOLDERS:
-        //  • direct audio files here are standalone books
-        //  • each subfolder is processed recursively
-        for (final audio in audioFiles) {
-          final meta = await _readFileMeta(audio);
-
-          final title = (meta.title?.isNotEmpty == true)
-              ? meta.title!
-              : _stem(audio.path);
-          final author = (meta.artist?.isNotEmpty == true)
-              ? meta.artist!
-              : (folderName.isEmpty ? 'Unknown' : folderName);
-
-          String? cover = _pickCoverForSingleFile(audio, imageFiles);
-          if (cover == null && meta.albumArt != null) {
-            cover = await _saveAlbumArt(meta.albumArt!,
-                stemHint: _stem(audio.path));
-          }
-
-          found.add(
-            LocalAudiobook(
-              id: 'file_${folderName}_${title}_${now.millisecondsSinceEpoch}',
-              title: title,
-              author: author,
-              folderPath: folder.path,
-              coverImagePath: cover,
-              audioFiles: [audio.path], // single-file book
-              dateAdded: now,
-              lastModified: now,
-            ),
-          );
-        }
-
-        for (final sub in subDirs) {
-          found.addAll(await _scanFolder(sub));
-        }
-      }
-    } catch (e) {
-      AppLogger.error('Error scanning audiobook folder ${folder.path}: $e');
-    }
-
-    return found;
-  }
-
-  // ────────────────────────────────────────────────────────────────────────────
   // Refresh: rescans and replaces the Hive box contents
   // ────────────────────────────────────────────────────────────────────────────
   static Future<List<LocalAudiobook>> refreshAudiobooks() async {
@@ -285,309 +90,559 @@ class LocalAudiobookService {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Move support (unchanged)
+  // SCANNER: Implements your rules + metadata extraction
   // ────────────────────────────────────────────────────────────────────────────
-  static Future<bool> moveAudiobookFolder(
-      LocalAudiobook audiobook,
-      String newAuthor,
-      String newTitle,
-      ) async {
-    try {
-      final rootPath = await getRootFolderPath();
-      if (rootPath == null) return false;
 
-      final currentDir = Directory(audiobook.folderPath);
-      if (!await currentDir.exists()) {
-        AppLogger.error('Source directory does not exist: ${audiobook.folderPath}');
-        return false;
+  /// Public: scan the entire tree according to the rules and return all books.
+  ///
+  /// Rules:
+  /// • Root (level 0): each audio file directly in root is a standalone book.
+  /// • Any subfolder (level ≥ 1):
+  ///    - If NO subfolders and HAS audio → the folder is a book; its files are tracks.
+  ///    - If HAS subfolders → direct audio files are standalone books; recurse into subfolders.
+  static Future<List<LocalAudiobook>> scanForAudiobooks() async {
+    final rootFolderPath = await getRootFolderPath();
+    if (rootFolderPath == null) {
+      AppLogger.error('Root folder path is null');
+      return [];
+    }
+
+    List<String>? allFilesInsideRootFolder =
+        await Saf.getFilesPathFor(rootFolderPath);
+
+    if (allFilesInsideRootFolder == null) {
+      AppLogger.error('Failed to get files from root folder');
+      return [];
+    }
+
+    AppLogger.info(
+        'Found ${allFilesInsideRootFolder.length} files in root folder');
+
+    // Process all levels of audiobooks
+    List<LocalAudiobook> allAudiobooks = [];
+
+    // Level 0: Standalone audiobooks (files directly in root)
+    List<LocalAudiobook> level0Audiobooks =
+        await processLevel0Audiobooks(rootFolderPath, allFilesInsideRootFolder);
+    allAudiobooks.addAll(level0Audiobooks);
+
+    // Level 1: Single subfolder audiobooks
+    List<LocalAudiobook> level1Audiobooks =
+        await processLevel1Audiobooks(rootFolderPath, allFilesInsideRootFolder);
+    allAudiobooks.addAll(level1Audiobooks);
+
+    // Level 2: Two subfolder audiobooks
+    List<LocalAudiobook> level2Audiobooks =
+        await processLevel2Audiobooks(rootFolderPath, allFilesInsideRootFolder);
+    allAudiobooks.addAll(level2Audiobooks);
+
+    return allAudiobooks;
+  }
+
+  static Future<List<LocalAudiobook>> processLevel0Audiobooks(
+      String rootFolderPath,
+      List<String> pathOfAllFilesInsideRootFolder) async {
+    List<LocalAudiobook> audiobooks = [];
+
+    // Check if we have permission to access the root folder
+    bool? hasPermission = await Saf.isPersistedPermissionDirectoryFor(
+        makeUriString(path: rootFolderPath, isTreeUri: true));
+
+    if (hasPermission != true) {
+      AppLogger.error('No permission to access root folder: $rootFolderPath');
+      return audiobooks;
+    }
+
+    // Here i split path of all files by "/" and get all the paths after rootFolderPath
+    List<String> level0FilesPaths = [];
+    for (String filePath in pathOfAllFilesInsideRootFolder) {
+      List<String> pathParts = filePath.split(rootFolderPath);
+      String relativePath = pathParts.last;
+      List<String> pathPartsAfterRootFolder = relativePath.split("/");
+      if (pathPartsAfterRootFolder.length == 2) {
+        AppLogger.info('Found level 0 file: $filePath');
+        level0FilesPaths.add(filePath);
       }
-
-      final newPath = path.join(rootPath, newAuthor, newTitle);
-      final newDir = Directory(newPath);
-
-      if (currentDir.path == newDir.path) {
-        return true;
-      }
-
-      await newDir.create(recursive: true);
-
-      final List<File> filesToMove = [];
-      await for (final entity in currentDir.list(followLinks: false)) {
-        if (entity is File && await entity.exists()) {
-          filesToMove.add(entity);
-        }
-      }
-
-      for (final file in filesToMove) {
+    }
+    // Process each audio file as a standalone audiobook
+    for (String filePath in level0FilesPaths) {
+      if (await isAudioFile(filePath)) {
         try {
-          final newFilePath = path.join(newPath, path.basename(file.path));
-          final fileBytes = await file.readAsBytes();
-          final newFile = File(newFilePath);
-          await newFile.writeAsBytes(fileBytes);
-          AppLogger.debug('Copied ${file.path} to $newFilePath');
+          AppLogger.info('Processing standalone audiobook: $filePath');
+
+          // Cache the audio file to read metadata
+          String? cachePath = await Saf(rootFolderPath).singleCache(
+            filePath: filePath,
+            directory: rootFolderPath,
+          );
+
+          if (cachePath == null) {
+            AppLogger.error('Failed to cache audio file: $filePath');
+            continue;
+          }
+
+          AppLogger.info('Successfully cached file: $filePath -> $cachePath');
+
+          // Extract metadata from the cached file
+          final metadata = await getAudioMetadata(cachePath);
+
+          // Get title and author from metadata
+          String title = metadata.albumName ??
+              metadata.trackName ??
+              path.basenameWithoutExtension(filePath);
+          String author = metadata.albumArtistName ??
+              metadata.trackArtistNames?.join(', ') ??
+              'Unknown';
+
+          // Look for cover image with same name as audio file
+          String? coverImagePath =
+              await findCoverImageForAudioFile(filePath, rootFolderPath);
+
+          // If no cover image found, try to extract from metadata
+          if (coverImagePath == null && metadata.albumArt != null) {
+            coverImagePath = await saveAlbumArtFromMetadata(
+                metadata.albumArt!, path.basenameWithoutExtension(filePath));
+          }
+
+          // Create the audiobook object
+          final audiobook = LocalAudiobook(
+            id: filePath, // Use file path as unique ID
+            title: title,
+            author: author,
+            folderPath: rootFolderPath,
+            coverImagePath: coverImagePath,
+            audioFiles: [filePath], // Single file for standalone audiobook
+            totalDuration: metadata.trackDuration != null
+                ? Duration(milliseconds: metadata.trackDuration!)
+                : null,
+            dateAdded: DateTime.now(),
+            lastModified: DateTime.now(),
+            description: metadata.authorName ?? metadata.writerName,
+            genre: metadata.genre,
+          );
+
+          audiobooks.add(audiobook);
+          AppLogger.info('Created audiobook: $title by $author');
         } catch (e) {
-          AppLogger.error('Error copying file ${file.path}: $e');
+          AppLogger.error('Error processing audiobook $filePath: $e');
           continue;
         }
       }
+    }
+    return audiobooks;
+  }
 
-      for (final file in filesToMove) {
-        try {
-          if (await file.exists()) {
-            await file.delete();
-            AppLogger.debug('Deleted original file: ${file.path}');
-          }
-        } catch (e) {
-          AppLogger.error('Error deleting original file ${file.path}: $e');
+  // Process Level 1 Audiobooks: Single subfolder audiobooks
+  // Example: /Audiobooks/artofwar/artofwar_part1.mp3, /Audiobooks/artofwar/artofwar_part2.mp3
+  static Future<List<LocalAudiobook>> processLevel1Audiobooks(
+      String rootFolderPath,
+      List<String> pathOfAllFilesInsideRootFolder) async {
+    List<LocalAudiobook> audiobooks = [];
+
+    // Check if we have permission to access the root folder
+    bool? hasPermission = await Saf.isPersistedPermissionDirectoryFor(
+        makeUriString(path: rootFolderPath, isTreeUri: true));
+
+    if (hasPermission != true) {
+      AppLogger.error('No permission to access root folder: $rootFolderPath');
+      return audiobooks;
+    }
+
+    // Group files by their first subfolder (level 1)
+    Map<String, List<String>> folderGroups = {};
+
+    for (String filePath in pathOfAllFilesInsideRootFolder) {
+      List<String> pathParts = filePath.split(rootFolderPath);
+      String relativePath = pathParts.last;
+      List<String> pathPartsAfterRootFolder = relativePath.split("/");
+
+      // Level 1: rootFolder/subfolder/file (3 parts after root)
+      if (pathPartsAfterRootFolder.length == 3) {
+        String subfolder = pathPartsAfterRootFolder[1];
+        if (!folderGroups.containsKey(subfolder)) {
+          folderGroups[subfolder] = [];
+        }
+        folderGroups[subfolder]!.add(filePath);
+      }
+    }
+
+    // Process each subfolder as a potential audiobook
+    for (String subfolder in folderGroups.keys) {
+      List<String> filesInFolder = folderGroups[subfolder]!;
+
+      // Filter audio files
+      List<String> audioFiles = [];
+      for (String filePath in filesInFolder) {
+        if (await isAudioFile(filePath)) {
+          audioFiles.add(filePath);
         }
       }
+
+      if (audioFiles.isEmpty) continue;
 
       try {
-        if (await currentDir.exists() && await _isDirectoryEmpty(currentDir)) {
-          await currentDir.delete();
-          AppLogger.debug('Deleted empty directory: ${currentDir.path}');
-          final parentDir = currentDir.parent;
-          if (await parentDir.exists() && await _isDirectoryEmpty(parentDir)) {
-            await parentDir.delete();
-            AppLogger.debug('Deleted empty parent directory: ${parentDir.path}');
+        AppLogger.info('Processing Level 1 audiobook: $subfolder');
+
+        // Title is the subfolder name (capitalized)
+        String title = _capitalizeWords(subfolder);
+        String author = 'Unknown';
+
+        // Find cover image in the subfolder
+        String? coverImagePath = await findCoverImageInFolder(
+            filesInFolder, subfolder, rootFolderPath);
+
+        // If no cover found, try to extract from first audio file metadata
+        if (coverImagePath == null && audioFiles.isNotEmpty) {
+          coverImagePath = await extractCoverFromAudioMetadata(
+              audioFiles.first, rootFolderPath, subfolder);
+        }
+
+        // Calculate total duration from all audio files
+        Duration? totalDuration =
+            await calculateTotalDuration(audioFiles, rootFolderPath);
+
+        // Create the audiobook object
+        final audiobook = LocalAudiobook(
+          id: path.join(rootFolderPath, subfolder), // Use folder path as ID
+          title: title,
+          author: author,
+          folderPath: path.join(rootFolderPath, subfolder),
+          coverImagePath: coverImagePath,
+          audioFiles: audioFiles,
+          totalDuration: totalDuration,
+          dateAdded: DateTime.now(),
+          lastModified: DateTime.now(),
+        );
+
+        audiobooks.add(audiobook);
+        AppLogger.info('Created Level 1 audiobook: $title');
+      } catch (e) {
+        AppLogger.error('Error processing Level 1 audiobook $subfolder: $e');
+        continue;
+      }
+    }
+
+    return audiobooks;
+  }
+
+  // Process Level 2 Audiobooks: Two subfolder audiobooks
+  // Example: /Audiobooks/SunTzu/artofwar/artofwar_part1.mp3, /Audiobooks/SunTzu/artofwar/artofwar_part2.mp3
+  static Future<List<LocalAudiobook>> processLevel2Audiobooks(
+      String rootFolderPath,
+      List<String> pathOfAllFilesInsideRootFolder) async {
+    List<LocalAudiobook> audiobooks = [];
+
+    // Check if we have permission to access the root folder
+    bool? hasPermission = await Saf.isPersistedPermissionDirectoryFor(
+        makeUriString(path: rootFolderPath, isTreeUri: true));
+
+    if (hasPermission != true) {
+      AppLogger.error('No permission to access root folder: $rootFolderPath');
+      return audiobooks;
+    }
+
+    // Group files by their author/book combination (level 2)
+    Map<String, Map<String, List<String>>> authorBookGroups = {};
+
+    for (String filePath in pathOfAllFilesInsideRootFolder) {
+      List<String> pathParts = filePath.split(rootFolderPath);
+      String relativePath = pathParts.last;
+      List<String> pathPartsAfterRootFolder = relativePath.split("/");
+
+      // Level 2: rootFolder/author/book/file (4 parts after root)
+      if (pathPartsAfterRootFolder.length == 4) {
+        String author = pathPartsAfterRootFolder[1];
+        String book = pathPartsAfterRootFolder[2];
+
+        if (!authorBookGroups.containsKey(author)) {
+          authorBookGroups[author] = {};
+        }
+        if (!authorBookGroups[author]!.containsKey(book)) {
+          authorBookGroups[author]![book] = [];
+        }
+        authorBookGroups[author]![book]!.add(filePath);
+      }
+    }
+
+    // Process each author/book combination as a potential audiobook
+    for (String author in authorBookGroups.keys) {
+      for (String book in authorBookGroups[author]!.keys) {
+        List<String> filesInBook = authorBookGroups[author]![book]!;
+
+        // Filter audio files
+        List<String> audioFiles = [];
+        for (String filePath in filesInBook) {
+          if (await isAudioFile(filePath)) {
+            audioFiles.add(filePath);
           }
         }
-      } catch (e) {
-        AppLogger.debug('Could not remove old directory: $e');
-      }
 
-      return true;
-    } catch (e) {
-      AppLogger.error('Error moving audiobook folder: $e');
-      return false;
-    }
-  }
+        if (audioFiles.isEmpty) continue;
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ────────────────────────────────────────────────────────────────────────────
+        try {
+          AppLogger.info('Processing Level 2 audiobook: $author/$book');
 
-  static Future<List<FileSystemEntity>> _listEntries(Directory d) async {
-    final items = <FileSystemEntity>[];
-    await for (final e in d.list(followLinks: false)) {
-      items.add(e);
-    }
-    return items;
-  }
+          // Title is the book name (capitalized), Author is the author name (capitalized)
+          String title = _capitalizeWords(book);
+          String authorName = _capitalizeWords(author);
 
-  static bool _isAudio(String p) {
-    final ext = path.extension(p).toLowerCase();
-    return _supportedAudioExtensions.contains(ext);
-  }
+          // Find cover image in the book folder
+          String? coverImagePath =
+              await findCoverImageInFolder(filesInBook, book, rootFolderPath);
 
-  static bool _isImage(String p) {
-    final ext = path.extension(p).toLowerCase();
-    return _supportedImageExtensions.contains(ext);
-  }
+          // If no cover found, try to extract from first audio file metadata
+          if (coverImagePath == null && audioFiles.isNotEmpty) {
+            coverImagePath = await extractCoverFromAudioMetadata(
+                audioFiles.first, rootFolderPath, book);
+          }
 
-  static String _joinArtists(List<String> names) {
-    // De-dupe & tidy
-    final seen = <String>{};
-    final cleaned = <String>[];
-    for (final n in names) {
-      final c = _clean(n);
-      if (c != null && !seen.contains(c)) {
-        seen.add(c);
-        cleaned.add(c);
-      }
-    }
-    return cleaned.join(', ');
-  }
+          // Calculate total duration from all audio files
+          Duration? totalDuration =
+              await calculateTotalDuration(audioFiles, rootFolderPath);
 
-  static String _stem(String p) {
-    final base = path.basename(p);
-    final i = base.lastIndexOf('.');
-    return i > 0 ? base.substring(0, i) : base;
-  }
+          // Create the audiobook object
+          final audiobook = LocalAudiobook(
+            id: path.join(rootFolderPath, author, book), // Use full path as ID
+            title: title,
+            author: authorName,
+            folderPath: path.join(rootFolderPath, author, book),
+            coverImagePath: coverImagePath,
+            audioFiles: audioFiles,
+            totalDuration: totalDuration,
+            dateAdded: DateTime.now(),
+            lastModified: DateTime.now(),
+          );
 
-  /// Folder-book cover: prefer cover/folder/front/artwork.* then first image
-  static String? _pickCoverForFolderBook(List<File> images) {
-    if (images.isEmpty) return null;
-
-    // 1) Priority basenames in this exact order (Voice)
-    final priorities = [
-      'cover',
-      'folder',
-      'audiobook',
-      'front',
-      'album',
-      'art',
-      'artwork',
-      'book',
-    ];
-
-    // Exact match on basename (no extension)
-    for (final key in priorities) {
-      final hit = images.firstWhere(
-            (f) => path.basenameWithoutExtension(f.path).toLowerCase() == key,
-        orElse: () => File(''),
-      );
-      if (hit.path.isNotEmpty) return hit.path;
-    }
-
-    // Loose contains (handles cover (1).jpg etc.)
-    for (final key in priorities) {
-      final hit = images.firstWhere(
-            (f) => path.basenameWithoutExtension(f.path).toLowerCase().contains(key),
-        orElse: () => File(''),
-      );
-      if (hit.path.isNotEmpty) return hit.path;
-    }
-
-    // Fallback: first image
-    return images.first.path;
-  }
-
-  static String? _pickCoverForSingleFile(File audio, List<File> imagesInFolder) {
-    if (imagesInFolder.isEmpty) return null;
-
-    // 1) Same-stem first (Voice does this)
-    final stem = _stem(audio.path).toLowerCase();
-    final sameStem = imagesInFolder.firstWhere(
-          (f) => _stem(f.path).toLowerCase() == stem,
-      orElse: () => File(''),
-    );
-    if (sameStem.path.isNotEmpty) return sameStem.path;
-
-    // 2) Priority list (exact -> contains)
-    final priorities = [
-      'cover','folder','audiobook','front','album','art','artwork','book'
-    ];
-
-    for (final key in priorities) {
-      final exact = imagesInFolder.firstWhere(
-            (f) => path.basenameWithoutExtension(f.path).toLowerCase() == key,
-        orElse: () => File(''),
-      );
-      if (exact.path.isNotEmpty) return exact.path;
-    }
-    for (final key in priorities) {
-      final loose = imagesInFolder.firstWhere(
-            (f) => path.basenameWithoutExtension(f.path).toLowerCase().contains(key),
-        orElse: () => File(''),
-      );
-      if (loose.path.isNotEmpty) return loose.path;
-    }
-
-    // 3) First image
-    return imagesInFolder.first.path;
-  }
-
-  static Future<bool> _isDirectoryEmpty(Directory dir) async {
-    try {
-      return await dir.list(followLinks: false).isEmpty;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  // Read tags/cover for a single audio file
-  static Future<_FileMeta> _readFileMeta(File audioFile) async {
-    try {
-      // NOTE: flutter_media_metadata API is static: MetadataRetriever.fromFile(File)
-      final m = await MetadataRetriever.fromFile(audioFile);
-
-      // Title
-      final title = _clean(m.trackName);
-
-      // Artist preference: trackArtistNames (list) -> albumArtistName -> authorName
-      String? artist;
-      if (m.trackArtistNames != null && m.trackArtistNames!.isNotEmpty) {
-        artist = _joinArtists(m.trackArtistNames!);
-      } else {
-        artist = _clean(m.albumArtistName) ?? _clean(m.authorName);
-      }
-
-      // in _readFileMeta
-      return _FileMeta(
-        title: title,
-        artist: artist,
-        trackNumber: m.trackNumber,
-        albumArt: m.albumArt,
-        // OPTIONAL: If you want to propagate genre up into LocalAudiobook:
-        // add: genre: _clean(m.genre),
-      );
-    } catch (e) {
-      AppLogger.debug('Meta extract failed for ${audioFile.path}: $e');
-      return const _FileMeta();
-    }
-  }
-
-  static String? _clean(String? s) {
-    if (s == null) return null;
-    final t = s.trim();
-    return t.isEmpty ? null : t;
-  }
-
-  // Persist embedded album art to an accessible file (so UI can load it)
-  static Future<String?> _saveAlbumArt(Uint8List artBytes, {String stemHint = 'cover'}) async {
-    try {
-      final extDir = await getExternalStorageDirectory();
-      if (extDir == null) return null;
-
-      final coverDir = Directory(path.join(extDir.path, 'localCoverImages'));
-      if (!await coverDir.exists()) {
-        await coverDir.create(recursive: true);
-      }
-
-      // Try to infer extension (very small check like Voice does through frame mime)
-      String ext = '.jpg';
-      if (artBytes.length > 8) {
-        // PNG signature
-        const pngSig = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-        bool isPng = true;
-        for (int i = 0; i < pngSig.length; i++) {
-          if (artBytes[i] != pngSig[i]) { isPng = false; break; }
+          audiobooks.add(audiobook);
+          AppLogger.info('Created Level 2 audiobook: $title by $authorName');
+        } catch (e) {
+          AppLogger.error(
+              'Error processing Level 2 audiobook $author/$book: $e');
+          continue;
         }
-        if (isPng) ext = '.png';
+      }
+    }
+
+    return audiobooks;
+  }
+
+  // Method to get metadata of an audio file
+  static Future<Metadata> getAudioMetadata(String filePath) async {
+    final metadata = await MetadataRetriever.fromFile(File(filePath));
+    return metadata;
+  }
+
+  // Method to check if file is an audio file
+  static Future<bool> isAudioFile(String filePath) async {
+    return filePath.endsWith('.mp3') ||
+        filePath.endsWith('.m4a') ||
+        filePath.endsWith('.m4b') ||
+        filePath.endsWith('.aac') ||
+        filePath.endsWith('.wav') ||
+        filePath.endsWith('.flac') ||
+        filePath.endsWith('.ogg') ||
+        filePath.endsWith('.opus');
+  }
+
+  // Method to check if file is an image file
+  static Future<bool> isImageFile(String filePath) async {
+    return filePath.endsWith('.jpg') ||
+        filePath.endsWith('.jpeg') ||
+        filePath.endsWith('.png') ||
+        filePath.endsWith('.webp') ||
+        filePath.endsWith('.bmp');
+  }
+
+  // Method to find cover image with same name as audio file
+  static Future<String?> findCoverImageForAudioFile(
+      String audioFilePath, String rootFolderPath) async {
+    try {
+      final audioFileName = path.basenameWithoutExtension(audioFilePath);
+      final audioFileDir = path.dirname(audioFilePath);
+
+      // List of supported image extensions
+      final imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.bmp'];
+
+      for (String ext in imageExtensions) {
+        final potentialCoverPath =
+            path.join(audioFileDir, '$audioFileName$ext');
+
+        // Check if the file exists using SAF
+        final files = await Saf.getFilesPathFor(rootFolderPath);
+        if (files != null && files.contains(potentialCoverPath)) {
+          AppLogger.info('Found cover image: $potentialCoverPath');
+          return potentialCoverPath;
+        }
       }
 
-      final safeName = stemHint.isEmpty ? 'cover' : stemHint;
-      final outPath = path.join(
-        coverDir.path,
-        '${safeName}_${DateTime.now().millisecondsSinceEpoch}$ext',
+      AppLogger.info('No cover image found for: $audioFileName');
+      return null;
+    } catch (e) {
+      AppLogger.error('Error finding cover image for $audioFilePath: $e');
+      return null;
+    }
+  }
+
+  // Method to save album art from metadata as PNG
+  static Future<String?> saveAlbumArtFromMetadata(
+      Uint8List albumArtData, String baseName) async {
+    try {
+      // Get external storage directory
+      final externalDir = await getExternalStorageDirectory();
+      if (externalDir == null) {
+        AppLogger.error('Failed to get external storage directory');
+        return null;
+      }
+
+      // Create localCoverImages directory
+      final coverImagesDir =
+          Directory(path.join(externalDir.path, 'localCoverImages'));
+      if (!await coverImagesDir.exists()) {
+        await coverImagesDir.create(recursive: true);
+      }
+
+      // Create unique filename
+      final fileName =
+          '${baseName}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final filePath = path.join(coverImagesDir.path, fileName);
+
+      // Write the album art data to file
+      final file = File(filePath);
+      await file.writeAsBytes(albumArtData);
+
+      AppLogger.info('Saved album art: $filePath');
+      return filePath;
+    } catch (e) {
+      AppLogger.error('Error saving album art for $baseName: $e');
+      return null;
+    }
+  }
+
+  // Helper method to capitalize words (e.g., "art of war" -> "Art Of War")
+  static String _capitalizeWords(String text) {
+    if (text.isEmpty) return text;
+
+    return text.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
+  // Find cover image in a folder with specific logic
+  static Future<String?> findCoverImageInFolder(List<String> filesInFolder,
+      String folderName, String rootFolderPath) async {
+    try {
+      // Filter image files
+      List<String> imageFiles = [];
+      for (String filePath in filesInFolder) {
+        if (await isImageFile(filePath)) {
+          imageFiles.add(filePath);
+        }
+      }
+
+      if (imageFiles.isEmpty) {
+        AppLogger.info('No image files found in folder: $folderName');
+        return null;
+      }
+
+      // If only one image, use it
+      if (imageFiles.length == 1) {
+        AppLogger.info('Found single cover image: ${imageFiles.first}');
+        return imageFiles.first;
+      }
+
+      // If multiple images, look for specific names in order
+      List<String> preferredNames = [
+        'cover',
+        'folder',
+        'audiobook',
+        'front',
+        'album',
+        'art',
+        'artwork',
+        'book'
+      ];
+
+      for (String preferredName in preferredNames) {
+        for (String imageFile in imageFiles) {
+          String fileName =
+              path.basenameWithoutExtension(imageFile).toLowerCase();
+          if (fileName == preferredName) {
+            AppLogger.info('Found preferred cover image: $imageFile');
+            return imageFile;
+          }
+        }
+      }
+
+      // If no preferred name found, return the first image
+      AppLogger.info(
+          'No preferred cover name found, using first image: ${imageFiles.first}');
+      return imageFiles.first;
+    } catch (e) {
+      AppLogger.error('Error finding cover image in folder $folderName: $e');
+      return null;
+    }
+  }
+
+  // Extract cover from audio file metadata
+  static Future<String?> extractCoverFromAudioMetadata(
+      String audioFilePath, String rootFolderPath, String baseName) async {
+    try {
+      // Cache the audio file to read metadata
+      String? cachePath = await Saf(rootFolderPath).singleCache(
+        filePath: audioFilePath,
+        directory: rootFolderPath,
       );
 
-      final f = File(outPath);
-      await f.writeAsBytes(artBytes, flush: true);
-      return outPath;
-    } catch (e) {
-      AppLogger.debug('Saving album art failed: $e');
-      return null;
-    }
-  }
-
-
-  // Duration calc placeholder (unchanged for now)
-  static Future<Duration?> calculateTotalDuration(List<String> audioFiles) async {
-    try {
-      double totalSeconds = 0.0;
-      for (final p in audioFiles) {
-        final f = File(p);
-        if (!await f.exists()) continue;
-        final seconds = await MediaHelper.getAudioDuration(
-            f); // you already use this elsewhere
-        if (seconds != null) totalSeconds += seconds;
+      if (cachePath == null) {
+        AppLogger.error(
+            'Failed to cache audio file for metadata: $audioFilePath');
+        return null;
       }
-      if (totalSeconds <= 0) return null;
-      return Duration(milliseconds: (totalSeconds * 1000).round());
-    } catch (_) {
+
+      // Extract metadata
+      final metadata = await getAudioMetadata(cachePath);
+
+      // If album art exists, save it
+      if (metadata.albumArt != null) {
+        return await saveAlbumArtFromMetadata(metadata.albumArt!, baseName);
+      }
+
+      AppLogger.info('No album art found in metadata for: $baseName');
+      return null;
+    } catch (e) {
+      AppLogger.error('Error extracting cover from metadata for $baseName: $e');
       return null;
     }
   }
-}
 
-// Internal helper container for metadata
-class _FileMeta {
-  final String? title;
-  final String? artist;
-  final int? trackNumber;
-  final Uint8List? albumArt;
+  // Calculate total duration from multiple audio files
+  static Future<Duration?> calculateTotalDuration(
+      List<String> audioFiles, String rootFolderPath) async {
+    try {
+      int totalMilliseconds = 0;
 
-  const _FileMeta({this.title, this.artist, this.trackNumber, this.albumArt});
+      for (String audioFile in audioFiles) {
+        // Cache the audio file
+        String? cachePath = await Saf(rootFolderPath).singleCache(
+          filePath: audioFile,
+          directory: rootFolderPath,
+        );
+
+        if (cachePath != null) {
+          final metadata = await getAudioMetadata(cachePath);
+          if (metadata.trackDuration != null) {
+            totalMilliseconds += metadata.trackDuration!;
+          }
+        }
+      }
+
+      return totalMilliseconds > 0
+          ? Duration(milliseconds: totalMilliseconds)
+          : null;
+    } catch (e) {
+      AppLogger.error('Error calculating total duration: $e');
+      return null;
+    }
+  }
 }
