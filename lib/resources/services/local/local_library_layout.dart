@@ -1,16 +1,10 @@
-// lib/resources/services/local_library_layout.dart
-import 'dart:io';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:path/path.dart' as p;
 
-/// If you ever change your local rules (root = books, subfolders = tracks,
-/// pictures amidst tracks = covers, etc.) do it here and the whole app follows.
 class LocalLibraryLayout {
   const LocalLibraryLayout._();
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Path helpers (shared across the app)
   static String decodePath(String s) {
     if (s.isEmpty) return s;
     try {
@@ -23,8 +17,8 @@ class LocalLibraryLayout {
 
   static bool looksLocal(String s) =>
       s.startsWith('file://') ||
-          s.startsWith('/') ||
-          (s.contains(':/') && !s.startsWith('http'));
+      s.startsWith('/') ||
+      (s.contains(':/') && !s.startsWith('http'));
 
   static String? asLocalPath(String? s) {
     if (s == null || s.isEmpty) return null;
@@ -71,7 +65,11 @@ class LocalLibraryLayout {
 
   /// Allowed image extensions (case-insensitive).
   static const Set<String> kImageExtensions = {
-    '.jpg', '.jpeg', '.png', '.webp', '.bmp'
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.webp',
+    '.bmp'
   };
 
   /// Filenames we consider “more likely to be the intended cover”, checked in
@@ -85,136 +83,32 @@ class LocalLibraryLayout {
     'book',
   ];
 
-  /// Whether to ignore “hidden” files like `.DS_Store`, `._foo.jpg`, etc.
-  static bool _isHidden(String base) {
-    // dotfiles and Apple resource forks
-    return base.startsWith('.') || base.startsWith('._');
-  }
-
-  /// Returns a list of image files inside [folder]. If [recursive] is true,
-  /// also scans one level of subfolders (handy if tracks live in subfolders).
-  static Future<List<File>> listImagesInFolder(
-      String folder, {
-        bool recursive = false,
-      }) async {
-    final dir = Directory(decodePath(folder));
-    if (!await dir.exists()) return const [];
-
-    final out = <File>[];
-    final lister = dir.list(recursive: recursive, followLinks: false);
-
-    await for (final ent in lister) {
-      if (ent is! File) continue;
-      final ext = p.extension(ent.path).toLowerCase();
-      if (!kImageExtensions.contains(ext)) continue;
-
-      final base = p.basenameWithoutExtension(ent.path).toLowerCase();
-      if (_isHidden(base)) continue;
-
-      out.add(ent);
+  /// Convert Directory path to URI String with proper handling of spaces and special characters
+  /// This is a fixed version of the SAF package's makeUriString function
+  static String makeSafUriFromPath(String inputPath) {
+    // Normalize and get relative path (strip '/storage/emulated/0/' if present)
+    String rel = inputPath;
+    const androidPrefix = '/storage/emulated/0/';
+    if (rel.startsWith(androidPrefix)) {
+      rel = rel.substring(androidPrefix.length);
     }
-    return out;
-  }
+    rel = rel.replaceAll(RegExp(r'^/+'), ''); // remove any leading slashes
 
-  /// Score an image by (1) preferred basename priority, then (2) file size.
-  /// Lower score wins; we subtract size so bigger files are preferred.
-  static int _basenamePriority(String base) {
-    final name = base.toLowerCase();
-    final idx = kPreferredCoverBasenames.indexOf(name);
-    return idx >= 0 ? idx : 1000; // non-preferred go to the back
-  }
-
-  static Future<int> _fileSizeOrZero(File f) async {
-    try {
-      final stat = await f.stat();
-      return stat.size;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  /// Pick the most likely cover in [folder]. If none found, returns null.
-  ///
-  /// Strategy:
-  /// 1) Prefer files whose basename matches kPreferredCoverBasenames (e.g.
-  ///    cover.jpg/folder.png/front.webp), in that order.
-  /// 2) If multiple candidates tie, prefer the *largest* file (approx for quality).
-  /// 3) If nothing matches the preferred names, pick the *largest* image file.
-  static Future<String?> findEmbeddedCoverInFolder(
-      String folder, {
-        bool recursive = false,
-      }) async {
-    final images = await listImagesInFolder(folder, recursive: recursive);
-    if (images.isEmpty) return null;
-
-    // Candidates grouped by basename priority
-    final byPriority = <int, List<File>>{};
-    for (final f in images) {
-      final base = p.basenameWithoutExtension(f.path);
-      final pri = _basenamePriority(base);
-      (byPriority[pri] ??= <File>[]).add(f);
+    // Split into segments and encode each segment separately
+    final segments = rel.split('/').where((s) => s.isNotEmpty).toList();
+    if (segments.isEmpty) {
+      throw ArgumentError('Path is empty after normalization');
     }
 
-    // Check preferred-name buckets from best to worst
-    final sortedKeys = byPriority.keys.toList()..sort();
-    for (final pri in sortedKeys) {
-      final bucket = byPriority[pri]!;
-      if (bucket.isEmpty) continue;
+    // Top-level folder used for tree URI (first segment)
+    final treeRoot = Uri.encodeComponent(segments.first);
 
-      // If this bucket is the "non-preferred" one (>=1000) but we later find
-      // nothing else, we will still select its largest file; for preferred
-      // buckets we also pick the largest file inside the bucket.
-      File? best;
-      int bestSize = -1;
-      for (final f in bucket) {
-        final size = await _fileSizeOrZero(f);
-        if (size > bestSize) {
-          best = f;
-          bestSize = size;
-        }
-      }
-      if (best != null && pri < 1000) {
-        return best.path; // return early for a preferred name
-      }
-    }
+    // For document part encode each segment and join with literal %2F
+    final encodedSegments =
+        segments.map((s) => Uri.encodeComponent(s)).join('%2F');
 
-    // No preferred-name hits → pick the largest image overall.
-    File? largest;
-    int largestSize = -1;
-    for (final f in images) {
-      final size = await _fileSizeOrZero(f);
-      if (size > largestSize) {
-        largest = f;
-        largestSize = size;
-      }
-    }
-    return largest?.path;
-  }
-
-  /// Convenience: find a folder-embedded cover for a given LocalAudiobook.
-  /// - For single-file books: scans the file's parent folder
-  /// - For multi-file books: scans the audiobook's folderPath
-  /// Set [recursive] to true if your tracks are nested; default false for speed.
-  static Future<String?> findEmbeddedCoverForLocal(
-      LocalAudiobook a, {
-        bool recursive = false,
-      }) async {
-    if (isSingleFileBook(a)) {
-      final file = decodePath(a.audioFiles.first);
-      final parent = p.dirname(file);
-      return findEmbeddedCoverInFolder(parent, recursive: recursive);
-    }
-    final folder = decodePath(a.folderPath);
-    return findEmbeddedCoverInFolder(folder, recursive: recursive);
-  }
-
-  /// Convenience: try to find a folder-embedded cover given a history item.
-  static Future<String?> findEmbeddedCoverForHistory(
-      HistoryOfAudiobookItem item, {
-        bool recursive = false,
-      }) async {
-    final folder = bookFolderFromHistory(item);
-    if (folder == null || folder.isEmpty) return null;
-    return findEmbeddedCoverInFolder(folder, recursive: recursive);
+    const base = 'content://com.android.externalstorage.documents/';
+    final treeUri = '${base}tree/primary%3A$treeRoot';
+    return '$treeUri/document/primary%3A$encodedSegments';
   }
 }

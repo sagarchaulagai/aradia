@@ -13,14 +13,15 @@ import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/resources/services/chapter_parser.dart';
 import 'package:aradia/resources/services/local/cover_image_service.dart';
+import 'package:aradia/resources/services/local/local_audiobook_service.dart';
 import 'package:aradia/resources/services/local/local_library_layout.dart';
-import 'package:aradia/utils/media_helper.dart';
 
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:saf/saf.dart';
 import 'package:we_slide/we_slide.dart';
 
 import '../../../utils/app_logger.dart';
@@ -292,6 +293,7 @@ class LocalAudiobookItem extends StatelessWidget {
     // If single-file book, try chapter slices
     if (files.length == 1) {
       final filePath = LocalLibraryLayout.decodePath(files.first);
+      AppLogger.info('filePath: $filePath', "LocalAudiobookItem");
       final lower = filePath.toLowerCase();
       final isChapterable = lower.endsWith('.m4b') ||
           lower.endsWith('.mp4') ||
@@ -300,31 +302,61 @@ class LocalAudiobookItem extends StatelessWidget {
 
       if (isChapterable) {
         try {
-          final f = File(filePath);
-          final cues = await ChapterParser.parseFile(f);
-          if (cues.length > 1) {
-            for (int i = 0; i < cues.length; i++) {
-              final start = cues[i].startMs;
-              final int? durationMs = (i + 1 < cues.length)
-                  ? (cues[i + 1].startMs - start).clamp(1, 1 << 31)
-                  : null;
+          // Get root folder path for SAF operations
+          final rootFolderPath =
+              await LocalAudiobookService.getRootFolderPath();
+          if (rootFolderPath == null) {
+            AppLogger.error(
+                'Root folder path is null, cannot cache file for chapter parsing');
+            // Fall through to default single-track handling
+          } else {
+            // Cache the file using SAF singleCache method
+            AppLogger.info('Caching file for chapter parsing: $filePath');
+            String? cachedFilePath = await Saf(rootFolderPath)
+                .singleCache(
+                  filePath: filePath,
+                  directory: rootFolderPath,
+                )
+                .timeout(const Duration(seconds: 30));
 
-              out.add(
-                AudiobookFile.chapterSlice(
-                  identifier: key,
-                  url: filePath,
-                  parentTitle: audiobook.title,
-                  track: i + 1,
-                  chapterTitle: cues[i].title,
-                  startMs: start,
-                  durationMs: durationMs,
-                  highQCoverImage: resolvedCover,
-                ),
-              );
+            if (cachedFilePath != null) {
+              AppLogger.info('File cached successfully: $cachedFilePath');
+              final f = File(cachedFilePath);
+              final cues = await ChapterParser.parseFile(f);
+              if (cues.length > 1) {
+                AppLogger.info('Found ${cues.length} chapters in file');
+                for (int i = 0; i < cues.length; i++) {
+                  final start = cues[i].startMs;
+                  final int? durationMs = (i + 1 < cues.length)
+                      ? (cues[i + 1].startMs - start).clamp(1, 1 << 31)
+                      : null;
+
+                  out.add(
+                    AudiobookFile.chapterSlice(
+                      identifier: key,
+                      url: filePath, // Use original path, not cached path
+                      parentTitle: audiobook.title,
+                      track: i + 1,
+                      chapterTitle: cues[i].title,
+                      startMs: start,
+                      durationMs: durationMs,
+                      highQCoverImage: resolvedCover,
+                    ),
+                  );
+                }
+                return out; // done
+              } else {
+                AppLogger.info(
+                    'No chapters found in file, falling back to single-track handling');
+              }
+            } else {
+              AppLogger.error(
+                  'Failed to cache file for chapter parsing: $filePath');
+              // Fall through to default single-track handling
             }
-            return out; // done
           }
-        } catch (_) {
+        } catch (e) {
+          AppLogger.error('Error parsing chapters for file $filePath: $e');
           // fall through to default single-track handling
         }
       }
@@ -335,23 +367,15 @@ class LocalAudiobookItem extends StatelessWidget {
       final index = entry.key;
       final filePath = LocalLibraryLayout.decodePath(entry.value);
       final fileName = filePath.split('/').last.split('\\').last;
-
-      double? duration;
-      try {
-        final file = File(filePath);
-        if (await file.exists()) {
-          duration = await MediaHelper.getAudioDuration(file);
-        }
-      } catch (_) {
-        duration = null;
-      }
+      final uri = LocalLibraryLayout.makeSafUriFromPath(filePath);
+      double? duration = audiobook.totalDuration?.inSeconds.toDouble();
 
       out.add(AudiobookFile.fromMap({
         'identifier': key,
         'track': index + 1,
         'title': fileName.replaceAll(RegExp(r'\.[^.]*$'), ''),
         'name': fileName,
-        'url': filePath,
+        'url': uri,
         'length': duration,
         'size': null,
         'highQCoverImage': resolvedCover,

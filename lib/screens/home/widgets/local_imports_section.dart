@@ -75,16 +75,14 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
       // Request directory permission using SAF with proper URI persistence
       // We need to create a Saf instance first
       Saf saf = Saf("Audiobooks"); // Use a default path for the instance
-      bool? permissionGranted = await saf.getDirectoryPermission(
-        grantWritePermission: true,
-        isDynamic: true,
-      );
-
-      if (permissionGranted == true) {
+      bool? permissionGranted =
+          await saf.getDirectoryPermission(isDynamic: false);
+      AppLogger.info('Permission granted: $permissionGranted');
+      if (permissionGranted != null && permissionGranted) {
         // Get the list of persisted permission directories
         List<String>? persistedDirectories =
             await Saf.getPersistedPermissionDirectories();
-
+        AppLogger.info('Persisted directories: $persistedDirectories');
         if (persistedDirectories != null && persistedDirectories.isNotEmpty) {
           // Use the most recently granted directory
           String selectedDirectory = persistedDirectories.last;
