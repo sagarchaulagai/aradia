@@ -49,7 +49,6 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   }
 
   Future<void> _loadAudiobooks() async {
-    setState(() => isLoading = true);
     try {
       final loadedAudiobooks = await LocalAudiobookService.refreshAudiobooks();
       for (LocalAudiobook audiobook in loadedAudiobooks) {
@@ -88,6 +87,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
           });
 
           // Load audiobooks from the selected folder
+          setState(() => isLoading = true);
           await _loadAudiobooks();
 
           if (mounted) {

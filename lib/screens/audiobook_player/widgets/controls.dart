@@ -161,7 +161,7 @@ class _ControlsState extends State<Controls> {
                   ? widget.onCancelTimer
                   : () => widget.onTimerPressed(context),
               icon: Icon(
-                widget.isTimerActive ? Ionicons.timer_outline : Ionicons.timer,
+                widget.isTimerActive ? Icons.snooze : Icons.snooze_outlined,
                 color: widget.isTimerActive
                     ? Colors.deepOrange
                     : (Theme.of(context).brightness == Brightness.dark
@@ -203,7 +203,8 @@ class _ControlsState extends State<Controls> {
               builder: (context, snapshot) {
                 final isPlaying = snapshot.data?.playing ?? false;
                 final playbackState = snapshot.data;
-                final processingState = (playbackState?.processingState ?? AudioProcessingState.idle);
+                final processingState = (playbackState?.processingState ??
+                    AudioProcessingState.idle);
                 if (processingState == AudioProcessingState.loading ||
                     processingState == AudioProcessingState.buffering) {
                   return const CircularProgressIndicator(

@@ -203,6 +203,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
   }
 
   void showTimerOptions(BuildContext context) {
+    ThemeNotifier themeNotifier =
+        Provider.of<ThemeNotifier>(context, listen: false);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -210,7 +212,9 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
-        color: Colors.white,
+        color: themeNotifier.themeMode == ThemeMode.dark
+            ? Colors.grey[800]!
+            : Colors.white,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -219,7 +223,6 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
               ),
             ),
             const SizedBox(height: 15),
@@ -265,8 +268,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
   ElevatedButton _endOfTrackTimerButton(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.orange[200],
-        foregroundColor: Colors.black,
+        backgroundColor: AppColors.primaryColor.withValues(alpha: 0.8),
+        foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),

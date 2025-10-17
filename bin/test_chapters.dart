@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:aradia/resources/services/chapter_parser.dart';
+import 'package:aradia/resources/services/local/chapter_parser.dart';
 
 Future<void> main(List<String> args) async {
   if (args.isEmpty) {

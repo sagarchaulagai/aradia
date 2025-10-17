@@ -116,7 +116,7 @@ class MyAudioHandler extends BaseAudioHandler {
       _broadcastState(_player.playbackEvent);
     });
 
-    // 🔔 swap art immediately if the active audiobook’s cover mapping changes
+    // swap art immediately if the active audiobook’s cover mapping changes
     _coverSub = coverArtBus.stream.listen((key) {
       if (key.isEmpty) return;
       if (_activeAudiobookId == null) return;
@@ -243,7 +243,9 @@ class MyAudioHandler extends BaseAudioHandler {
             song.url?.contains('youtu.be') == true;
 
         // Pick one art string: prefer per-track, else audiobook fallback
-        String? artStr = audiobook.origin == "download" ? audiobook.lowQCoverImage : (song.highQCoverImage ?? audiobook.lowQCoverImage);
+        String? artStr = audiobook.origin == "download"
+            ? audiobook.lowQCoverImage
+            : (song.highQCoverImage ?? audiobook.lowQCoverImage);
         final art = _artUriFrom(artStr);
 
         final item = MediaItem(

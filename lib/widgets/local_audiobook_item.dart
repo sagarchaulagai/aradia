@@ -12,7 +12,7 @@ import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';
-import 'package:aradia/resources/services/chapter_parser.dart';
+import 'package:aradia/resources/services/local/chapter_parser.dart';
 import 'package:aradia/resources/services/local/cover_image_service.dart';
 import 'package:aradia/resources/services/local/local_audiobook_service.dart';
 
