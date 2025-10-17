@@ -64,7 +64,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
     // Optimize list building
     final audiobookFilesData =
-    playingAudiobookDetailsBox.get('audiobookFiles') as List;
+        playingAudiobookDetailsBox.get('audiobookFiles') as List;
     audiobookFiles = audiobookFilesData
         .map((fileData) => AudiobookFile.fromMap(fileData))
         .toList();
@@ -72,7 +72,9 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     audioHandlerProvider = Provider.of<AudioHandlerProvider>(context);
     // Do NOT reinitialize here. If the handler is empty (fresh app start),
     // calling play() will cold-restore from Hive via _restoreQueueFromBoxIfEmpty().
-    if (audioHandlerProvider.audioHandler.getAudioSourcesFromPlaylist().isEmpty) {
+    if (audioHandlerProvider.audioHandler
+        .getAudioSourcesFromPlaylist()
+        .isEmpty) {
       audioHandlerProvider.audioHandler.restoreIfNeeded();
     }
 
@@ -82,8 +84,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     if (kDebugMode) {
       AppLogger.debug('audiobookFiles: ${audiobookFiles.length}');
       if (audiobookFiles.isNotEmpty) {
-        AppLogger.debug(
-            'audiobookFiles: ${audiobookFiles[0].highQCoverImage}');
+        AppLogger.debug('audiobookFiles: ${audiobookFiles[0].highQCoverImage}');
       }
     }
   }
@@ -91,7 +92,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
   Future<void> startTimer(Duration duration) async {
     // Check if this is an end-of-track timer
     if (duration == TimerDurations.endOfTrack) {
-      _startEndOfTrackTimer();
+      await _startEndOfTrackTimer();
       return;
     }
 
@@ -103,7 +104,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     );
 
     final result =
-    await FlutterBackground.initialize(androidConfig: androidConfig);
+        await FlutterBackground.initialize(androidConfig: androidConfig);
     if (result) {
       await FlutterBackground.enableBackgroundExecution();
 
@@ -123,54 +124,69 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     }
   }
 
-  void _startEndOfTrackTimer() {
+  Future<void> _startEndOfTrackTimer() async {
     _isEndOfTrackTimerActive = true;
     Duration? lastKnownDuration;
     Duration? lastKnownPosition;
 
-    // Listen to the audio handler's position stream for real-time updates
-    _positionSubscription = audioHandlerProvider.audioHandler
-        .getPositionStream()
-        .listen((positionData) {
-      if (_isEndOfTrackTimerActive && positionData.duration > Duration.zero) {
-        // Only update timer if there's a significant change in position or duration
-        final positionChanged = lastKnownPosition == null ||
-            (positionData.position - lastKnownPosition!).abs() >
-                const Duration(seconds: 2);
-        final durationChanged = lastKnownDuration != positionData.duration;
+    // Enable background execution for end-of-track timer too
+    const androidConfig = FlutterBackgroundAndroidConfig(
+      notificationTitle: "End of Track Timer Running",
+      notificationText:
+          "The timer will pause playback at the end of current track.",
+      notificationImportance: AndroidNotificationImportance.max,
+    );
 
-        if (positionChanged || durationChanged) {
-          lastKnownPosition = positionData.position;
-          lastKnownDuration = positionData.duration;
+    final result =
+        await FlutterBackground.initialize(androidConfig: androidConfig);
+    if (result) {
+      await FlutterBackground.enableBackgroundExecution();
 
-          // Calculate remaining time in current track
-          final remainingTime = positionData.duration - positionData.position;
+      // Listen to the audio handler's position stream for real-time updates
+      _positionSubscription = audioHandlerProvider.audioHandler
+          .getPositionStream()
+          .listen((positionData) {
+        if (_isEndOfTrackTimerActive && positionData.duration > Duration.zero) {
+          // Only update timer if there's a significant change in position or duration
+          final positionChanged = lastKnownPosition == null ||
+              (positionData.position - lastKnownPosition!).abs() >
+                  const Duration(seconds: 2);
+          final durationChanged = lastKnownDuration != positionData.duration;
 
-          if (remainingTime > Duration.zero) {
-            // Restart timer with updated remaining time
-            _sleepTimer.start(
-              duration: remainingTime,
-              onExpired: () {
-                audioHandlerProvider.audioHandler.pause();
-                _isEndOfTrackTimerActive = false;
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Track ended! Audiobook paused.')),
-                  );
-                }
-              },
-            );
+          if (positionChanged || durationChanged) {
+            lastKnownPosition = positionData.position;
+            lastKnownDuration = positionData.duration;
+
+            // Calculate remaining time in current track
+            final remainingTime = positionData.duration - positionData.position;
+
+            if (remainingTime > Duration.zero) {
+              // Restart timer with updated remaining time
+              _sleepTimer.start(
+                duration: remainingTime,
+                onExpired: () {
+                  audioHandlerProvider.audioHandler.pause();
+                  _isEndOfTrackTimerActive = false;
+                  FlutterBackground.disableBackgroundExecution();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Track ended! Audiobook paused.')),
+                    );
+                  }
+                },
+              );
+            }
           }
         }
-      }
-    });
+      });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Timer set to pause at end of current track.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Timer set to pause at end of current track.')),
+        );
+      }
     }
   }
 
@@ -253,8 +269,8 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
           borderRadius: BorderRadius.circular(15),
         ),
       ),
-      onPressed: () {
-        startTimer(TimerDurations.endOfTrack);
+      onPressed: () async {
+        await startTimer(TimerDurations.endOfTrack);
         Navigator.pop(context);
       },
       child: const Row(
@@ -279,15 +295,15 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         borderRadius: BorderRadius.circular(6),
         child: isLocal
             ? Image.file(
-          File(art!.toFilePath()),
-          fit: BoxFit.cover,
-        )
+                File(art!.toFilePath()),
+                fit: BoxFit.cover,
+              )
             : CachedNetworkImage(
-          imageUrl: art?.toString() ?? '',
-          fit: BoxFit.cover,
-          errorWidget: (_, __, ___) =>
-          const Icon(Icons.broken_image, color: Colors.white54),
-        ),
+                imageUrl: art?.toString() ?? '',
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) =>
+                    const Icon(Icons.broken_image, color: Colors.white54),
+              ),
       ),
     );
   }
@@ -298,18 +314,18 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
       borderRadius: BorderRadius.circular(20),
       child: isLocal
           ? Image.file(
-        File(art!.toFilePath()),
-        fit: BoxFit.cover,
-        height: size,
-        width: size,
-      )
+              File(art!.toFilePath()),
+              fit: BoxFit.cover,
+              height: size,
+              width: size,
+            )
           : CachedNetworkImage(
-        imageUrl: art?.toString() ?? '',
-        fit: BoxFit.cover,
-        height: size,
-        width: size,
-        errorWidget: (_, __, ___) => const Icon(Icons.error),
-      ),
+              imageUrl: art?.toString() ?? '',
+              fit: BoxFit.cover,
+              height: size,
+              width: size,
+              errorWidget: (_, __, ___) => const Icon(Icons.error),
+            ),
     );
   }
 
@@ -341,10 +357,11 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         }
 
         // Titles to render in the app bar and in the large title below the cover.
-        final headerTitle =
-        isSingleTrack ? (mediaItem.album ?? mediaItem.title) : mediaItem.title;
-        final headerSubtitle =
-        isSingleTrack ? (_authorFromBox ?? mediaItem.artist ?? 'Unknown')
+        final headerTitle = isSingleTrack
+            ? (mediaItem.album ?? mediaItem.title)
+            : mediaItem.title;
+        final headerSubtitle = isSingleTrack
+            ? (_authorFromBox ?? mediaItem.artist ?? 'Unknown')
             : (mediaItem.artist ?? 'Unknown');
         final contentTitle = headerTitle; // keep the big center title in sync
 
@@ -416,10 +433,10 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).brightness ==
-                                Brightness.dark
-                                ? Colors.black.withValues(alpha: 0.5)
-                                : Colors.grey.withValues(alpha: 0.5),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.black.withValues(alpha: 0.5)
+                                    : Colors.grey.withValues(alpha: 0.5),
                             spreadRadius: 3,
                             blurRadius: 10,
                             offset: const Offset(0, 5),
