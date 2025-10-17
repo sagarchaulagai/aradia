@@ -1180,9 +1180,11 @@ packages:
   saf:
     dependency: "direct main"
     description:
-      path: "C:\\Programs\\saf"
-      relative: false
-    source: path
+      path: "."
+      ref: d0ecbf965408ac3627a28251d125485df2db356e
+      resolved-ref: d0ecbf965408ac3627a28251d125485df2db356e
+      url: "https://github.com/sagarchaulagai/saf.git"
+    source: git
     version: "1.0.3+4"
   shelf:
     dependency: transitive
