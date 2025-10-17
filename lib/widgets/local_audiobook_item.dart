@@ -334,7 +334,8 @@ class LocalAudiobookItem extends StatelessWidget {
                   out.add(
                     AudiobookFile.chapterSlice(
                       identifier: key,
-                      url: filePath, // Use original path, not cached path
+                      url: LocalLibraryLayout.makeSafUriFromPath(
+                          filePath), // Use original path, not cached path
                       parentTitle: audiobook.title,
                       track: i + 1,
                       chapterTitle: cues[i].title,
