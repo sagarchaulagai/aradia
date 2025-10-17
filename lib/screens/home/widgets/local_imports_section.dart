@@ -49,6 +49,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   }
 
   Future<void> _loadAudiobooks() async {
+    setState(() => isLoading = true);
     try {
       final loadedAudiobooks = await LocalAudiobookService.refreshAudiobooks();
       for (LocalAudiobook audiobook in loadedAudiobooks) {
@@ -68,23 +69,17 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
         );
       }
     }
+    setState(() => isLoading = false);
   }
 
   Future<void> _selectRootFolder() async {
     try {
-      // Request directory permission using SAF with proper URI persistence
-      // We need to create a Saf instance first
-      Saf saf = Saf("Audiobooks"); // Use a default path for the instance
-      bool? permissionGranted =
-          await saf.getDirectoryPermission(isDynamic: false);
-      AppLogger.info('Permission granted: $permissionGranted');
-      if (permissionGranted != null && permissionGranted) {
-        // Get the list of persisted permission directories
+      Saf.releasePersistedPermissions();
+      bool? isGranted = await Saf.getDynamicDirectoryPermission();
+      if (isGranted == true) {
         List<String>? persistedDirectories =
             await Saf.getPersistedPermissionDirectories();
-        AppLogger.info('Persisted directories: $persistedDirectories');
         if (persistedDirectories != null && persistedDirectories.isNotEmpty) {
-          // Use the most recently granted directory
           String selectedDirectory = persistedDirectories.last;
 
           await LocalAudiobookService.setRootFolderPath(selectedDirectory);
