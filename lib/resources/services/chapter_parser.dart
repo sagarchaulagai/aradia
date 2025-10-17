@@ -55,8 +55,9 @@ class ChapterParser {
 
   static List<ChapterCue> _parseMp3Id3Chapters(Uint8List data) {
     if (data.length < 10) return const [];
-    if (!(data[0] == 0x49 && data[1] == 0x44 && data[2] == 0x33))
+    if (!(data[0] == 0x49 && data[1] == 0x44 && data[2] == 0x33)) {
       return const [];
+    }
 
     final version = data[3]; // 2,3,4
     final tagSize = _syncsafeToInt(data.sublist(6, 10));
@@ -210,7 +211,9 @@ class ChapterParser {
 
   static int _u64(Uint8List b, int o) {
     int v = 0;
-    for (int i = 0; i < 8; i++) v = (v << 8) | b[o + i];
+    for (int i = 0; i < 8; i++) {
+      v = (v << 8) | b[o + i];
+    }
     return v;
   }
 
@@ -541,7 +544,9 @@ class _Mp4ChapterTrack {
       p += 4;
       final out = <int>[];
       if (sampleSize != 0) {
-        for (int i = 0; i < count; i++) out.add(sampleSize);
+        for (int i = 0; i < count; i++) {
+          out.add(sampleSize);
+        }
       } else {
         for (int i = 0; i < count; i++) {
           if (p + 4 > b.length) break;
@@ -557,8 +562,9 @@ class _Mp4ChapterTrack {
   static bool _endsWith(List<String> path, List<String> suffix) {
     if (suffix.length > path.length) return false;
     for (int i = 0; i < suffix.length; i++) {
-      if (path[path.length - 1 - i] != suffix[suffix.length - 1 - i])
+      if (path[path.length - 1 - i] != suffix[suffix.length - 1 - i]) {
         return false;
+      }
     }
     return true;
   }
@@ -566,7 +572,9 @@ class _Mp4ChapterTrack {
   static List<int> _expandStts(List<(int count, int delta)> stts) {
     final out = <int>[];
     for (final e in stts) {
-      for (int i = 0; i < e.$1; i++) out.add(e.$2);
+      for (int i = 0; i < e.$1; i++) {
+        out.add(e.$2);
+      }
     }
     return out;
   }
@@ -621,7 +629,9 @@ int _u32(Uint8List b, int o) =>
     (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
 int _u64(Uint8List b, int o) {
   int v = 0;
-  for (int i = 0; i < 8; i++) v = (v << 8) | b[o + i];
+  for (int i = 0; i < 8; i++) {
+    v = (v << 8) | b[o + i];
+  }
   return v;
 }
 

@@ -1,14 +1,14 @@
 // Centralized cover-art mapping + lookup with a tiny in-memory cache and an
 // event bus so UIs / the audio handler can react to changes immediately.
 // File/folder semantics (what counts as a "book key") are delegated to
-// LocalLibraryLayout so you can tweak rules in ONE place.
+// MediaHelper so you can tweak rules in ONE place.
 
 import 'dart:async';
 import 'dart:io';
 
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
-import 'package:aradia/resources/services/local/local_library_layout.dart';
+import 'package:aradia/utils/media_helper.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:path/path.dart' as p;
@@ -18,7 +18,7 @@ import 'package:path_provider/path_provider.dart';
 // Cover art event bus
 // Subscribers (player, history, tiles) can listen and refresh when a cover
 // changes for a specific book key.
-// payload: the canonical book key (see LocalLibraryLayout.bookKeyForLocal)
+// payload: the canonical book key (see MediaHelper.bookKeyForLocal)
 class CoverArtBus {
   static final CoverArtBus _i = CoverArtBus._();
   CoverArtBus._();
@@ -103,18 +103,17 @@ class CoverImageStore {
 // Public helpers (keep existing names to avoid touching call sites)
 
 /// Canonical per-book key for local audiobooks.
-/// Delegates to LocalLibraryLayout so the rule is defined in one place.
-String coverKeyForLocal(LocalAudiobook a) =>
-    LocalLibraryLayout.bookKeyForLocal(a);
+/// Delegates to MediaHelper so the rule is defined in one place.
+String coverKeyForLocal(LocalAudiobook a) => MediaHelper.bookKeyForLocal(a);
 
 /// Convert any path/URI to a local filesystem path if possible; null for URLs.
-String? asLocalPath(String? s) => LocalLibraryLayout.asLocalPath(s);
+String? asLocalPath(String? s) => MediaHelper.asLocalPath(s);
 
 /// Decode a path/URI consistently (safe for keys and values).
-String decodePath(String s) => LocalLibraryLayout.decodePath(s);
+String decodePath(String s) => MediaHelper.decodePath(s);
 
 /// Heuristic for "is local (not http/https)".
-bool looksLocal(String s) => s.isNotEmpty && LocalLibraryLayout.looksLocal(s);
+bool looksLocal(String s) => s.isNotEmpty && MediaHelper.looksLocal(s);
 
 /// A small helper so widgets can render images without branching.
 /// Usage:
@@ -227,13 +226,13 @@ Future<String?> resolveCoverForHistory(HistoryOfAudiobookItem item) async {
   if (byId != null) return byId;
 
   // 2) Legacy keys from the first track
-  final firstPath = LocalLibraryLayout.firstTrackLocalPath(item);
+  final firstPath = MediaHelper.firstTrackLocalPath(item);
   if (firstPath != null && firstPath.isNotEmpty) {
     final byFile = await getMappedCoverImage(firstPath);
     if (byFile != null) return byFile;
 
     final folder =
-        LocalLibraryLayout.bookFolderFromHistory(item) ?? p.dirname(firstPath);
+        MediaHelper.bookFolderFromHistory(item) ?? p.dirname(firstPath);
     final byFolder = await getMappedCoverImage(folder);
     if (byFolder != null) return byFolder;
   }

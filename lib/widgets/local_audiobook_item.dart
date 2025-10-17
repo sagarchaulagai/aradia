@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:aradia/utils/media_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,7 +15,6 @@ import 'package:aradia/resources/services/audio_handler_provider.dart';
 import 'package:aradia/resources/services/chapter_parser.dart';
 import 'package:aradia/resources/services/local/cover_image_service.dart';
 import 'package:aradia/resources/services/local/local_audiobook_service.dart';
-import 'package:aradia/resources/services/local/local_library_layout.dart';
 
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
@@ -260,7 +260,7 @@ class LocalAudiobookItem extends StatelessWidget {
 
   // Convert LocalAudiobook to Audiobook format (ID uses centralized layout key)
   Future<Audiobook> _convertToAudiobook() async {
-    final key = LocalLibraryLayout.bookKeyForLocal(audiobook);
+    final key = MediaHelper.bookKeyForLocal(audiobook);
     final resolvedCover = await resolveCoverForLocal(audiobook);
 
     return Audiobook.fromMap({
@@ -285,14 +285,14 @@ class LocalAudiobookItem extends StatelessWidget {
   Future<List<AudiobookFile>> _convertToAudiobookFiles() async {
     final List<AudiobookFile> out = [];
     final files = audiobook.audioFiles;
-    final key = LocalLibraryLayout.bookKeyForLocal(audiobook);
+    final key = MediaHelper.bookKeyForLocal(audiobook);
 
     // Resolve one cover to reuse across all tracks
     final resolvedCover = await resolveCoverForLocal(audiobook);
 
     // If single-file book, try chapter slices
     if (files.length == 1) {
-      final filePath = LocalLibraryLayout.decodePath(files.first);
+      final filePath = MediaHelper.decodePath(files.first);
       AppLogger.info('filePath: $filePath', "LocalAudiobookItem");
       final lower = filePath.toLowerCase();
       final isChapterable = lower.endsWith('.m4b') ||
@@ -334,7 +334,7 @@ class LocalAudiobookItem extends StatelessWidget {
                   out.add(
                     AudiobookFile.chapterSlice(
                       identifier: key,
-                      url: LocalLibraryLayout.makeSafUriFromPath(
+                      url: MediaHelper.makeSafUriFromPath(
                           filePath), // Use original path, not cached path
                       parentTitle: audiobook.title,
                       track: i + 1,
@@ -366,9 +366,9 @@ class LocalAudiobookItem extends StatelessWidget {
     // Default: multi-file book or no chapter cues
     for (final entry in files.asMap().entries) {
       final index = entry.key;
-      final filePath = LocalLibraryLayout.decodePath(entry.value);
+      final filePath = MediaHelper.decodePath(entry.value);
       final fileName = filePath.split('/').last.split('\\').last;
-      final uri = LocalLibraryLayout.makeSafUriFromPath(filePath);
+      final uri = MediaHelper.makeSafUriFromPath(filePath);
       double? duration = audiobook.totalDuration?.inSeconds.toDouble();
 
       out.add(AudiobookFile.fromMap({
@@ -421,7 +421,7 @@ class _LocalAudiobookCoverSelectorState
   }
 
   Future<void> _loadCoverState() async {
-    final key = LocalLibraryLayout.bookKeyForLocal(widget.audiobook);
+    final key = MediaHelper.bookKeyForLocal(widget.audiobook);
     final mapped = await getMappedCoverImage(key);
     final def = await resolveDefaultCoverForLocal(widget.audiobook);
     if (!mounted) return;
@@ -501,7 +501,7 @@ class _LocalAudiobookCoverSelectorState
   Future<void> _useDefaultCover() async {
     setState(() => _isLoading = true);
     try {
-      final key = LocalLibraryLayout.bookKeyForLocal(widget.audiobook);
+      final key = MediaHelper.bookKeyForLocal(widget.audiobook);
 
       // Remove custom mapping (deletes file, clears cache, emits coverArtBus)
       await removeCoverMapping(key);

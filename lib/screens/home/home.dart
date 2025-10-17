@@ -316,6 +316,7 @@ class _HomeState extends State<Home> {
         fetchType: AudiobooksFetchType.genre,
         genre: genre,
         scrollController: _recommendedCtrl,
+        autoFetch: false,
       ),
     );
   }

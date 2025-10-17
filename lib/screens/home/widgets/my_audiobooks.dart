@@ -52,6 +52,7 @@ class MyAudiobooks extends StatefulWidget {
   final String? sortBy;
   final int initialPage;
   final int rowsPerPage;
+  final bool autoFetch;
 
   final ScrollController scrollController;
 
@@ -65,6 +66,7 @@ class MyAudiobooks extends StatefulWidget {
     required this.scrollController,
     this.initialPage = 1,
     this.rowsPerPage = 15,
+    this.autoFetch = true,
   });
 
   @override
@@ -80,7 +82,9 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
   void initState() {
     super.initState();
     _currentPage = widget.initialPage;
-    _fetchData();
+    if (widget.autoFetch) {
+      _fetchData();
+    }
     widget.scrollController.addListener(() {
       if (widget.scrollController.position.pixels ==
           widget.scrollController.position.maxScrollExtent) {
@@ -173,13 +177,14 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
               }
             },
             buildWhen: (previous, current) =>
-            _isSuccessState(current) ||
+                _isSuccessState(current) ||
                 _isLoadingState(current) ||
                 _isFailedState(current),
             builder: (context, state) {
               if (_isLoadingState(state) && audiobooks.isEmpty) {
                 return const Center(
-                  child: CircularProgressIndicator(color: AppColors.primaryColor),
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryColor),
                 );
               }
               if (_isFailedState(state) && audiobooks.isEmpty) {
@@ -189,7 +194,8 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
               return ListView.builder(
                 controller: widget.scrollController,
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8), // <-- same as FavouriteSection
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8), // <-- same as FavouriteSection
                 itemCount: audiobooks.length + 1,
                 itemBuilder: (context, index) {
                   if (index == audiobooks.length) {
@@ -198,7 +204,8 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
                       child: SizedBox(
                         width: 36,
                         height: 36,
-                        child: CircularProgressIndicator(color: AppColors.primaryColor),
+                        child: CircularProgressIndicator(
+                            color: AppColors.primaryColor),
                       ),
                     );
                   }
