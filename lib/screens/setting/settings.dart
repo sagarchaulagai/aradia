@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/utils/app_events.dart';
-import 'package:aradia/utils/permission_helper.dart';
 import 'package:aradia/resources/services/local/local_audiobook_service.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:saf/saf.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -134,28 +133,54 @@ class _SettingsState extends State<Settings> {
   }
 
   Future<void> _selectRootFolder() async {
-    // Request storage permissions first
-    final hasPermission =
-    await PermissionHelper.handleDownloadPermissionWithDialog(context);
-    if (!hasPermission) return;
-
     try {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      await Saf.releasePersistedPermissions();
 
-      if (selectedDirectory != null) {
-        await LocalAudiobookService.setRootFolderPath(selectedDirectory);
-        setState(() {
-          _rootFolderPath = selectedDirectory;
-        });
+      // Use SAF to get dynamic directory permission (user chooses folder)
+      bool? isGranted = await Saf.getDynamicDirectoryPermission();
 
-        // Notify other screens about the directory change
-        AppEvents.localDirectoryChanged.add(null);
+      if (isGranted == true) {
+        // Get the list of persisted permission directories
+        List<String>? persistedDirectories =
+            await Saf.getPersistedPermissionDirectories();
 
+        if (persistedDirectories != null && persistedDirectories.isNotEmpty) {
+          // Use the most recently granted directory
+          String selectedDirectory = persistedDirectories.last;
+
+          await LocalAudiobookService.setRootFolderPath(selectedDirectory);
+          setState(() {
+            _rootFolderPath = selectedDirectory;
+          });
+
+          // Notify other screens about the directory change
+          AppEvents.localDirectoryChanged.add(null);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Audiobooks directory updated successfully!'),
+                backgroundColor: AppColors.primaryColor,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No directory was selected'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Audiobooks directory updated successfully!'),
-              backgroundColor: AppColors.primaryColor,
+              content: Text(
+                  'Directory access permission denied or selection cancelled'),
+              backgroundColor: Colors.red,
             ),
           );
         }
