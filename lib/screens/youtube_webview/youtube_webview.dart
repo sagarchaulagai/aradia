@@ -14,7 +14,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:aradia/utils/permission_helper.dart';
 
 class YoutubeWebview extends StatefulWidget {
   const YoutubeWebview({super.key});
@@ -235,13 +234,28 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(
-      //     'YouTube Import',
-      //     style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
-      //   ),
-      //   centerTitle: true,
-      // ),
+      appBar: AppBar(
+        title: const Text(
+          'YouTube Import',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        leading: FutureBuilder<bool>(
+          future: _webViewController?.canGoBack() ?? Future.value(false),
+          builder: (context, snapshot) {
+            return IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () async {
+                if (snapshot.data == true) {
+                  _webViewController?.goBack();
+                } else {
+                  context.go('/home');
+                }
+              },
+            );
+          },
+        ),
+      ),
       body: Stack(
         children: [
           Column(
@@ -347,33 +361,10 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
           ),
         ],
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FutureBuilder<bool>(
-            future: _webViewController?.canGoBack() ?? Future.value(false),
-            builder: (context, snapshot) {
-              if (snapshot.data == true) {
-                return FloatingActionButton(
-                  heroTag: 'back',
-                  mini: true,
-                  backgroundColor:
-                      AppColors.primaryColor.withValues(alpha: 0.8),
-                  onPressed: () => _webViewController?.goBack(),
-                  child: const Icon(Icons.arrow_back, color: Colors.white),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          if (_currentUrl != null &&
+      floatingActionButton: _currentUrl != null &&
               (_currentUrl!.contains('youtube.com/watch') ||
-                  _currentUrl!.contains('youtube.com/playlist')))
-            const SizedBox(width: 8),
-          if (_currentUrl != null &&
-              (_currentUrl!.contains('youtube.com/watch') ||
-                  _currentUrl!.contains('youtube.com/playlist')))
-            FloatingActionButton(
+                  _currentUrl!.contains('youtube.com/playlist'))
+          ? FloatingActionButton(
               heroTag: 'import',
               backgroundColor: AppColors.primaryColor,
               onPressed: _isImporting
@@ -387,12 +378,10 @@ class _YoutubeWebviewState extends State<YoutubeWebview> {
                       color: Colors.white,
                     )
                   : _isCurrentContentImported
-                      ? const Icon(Icons.visibility, color: Colors.white)
-                      : const Icon(Icons.download_outlined,
-                          color: Colors.white),
-            ),
-        ],
-      ),
+                      ? const Icon(Icons.check_circle, color: Colors.white)
+                      : const Icon(Icons.add_to_queue, color: Colors.white),
+            )
+          : null,
     );
   }
 }
