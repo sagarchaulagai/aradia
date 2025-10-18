@@ -30,7 +30,7 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
     // Listen for directory changes from settings
     _directoryChangeSubscription =
         AppEvents.localDirectoryChanged.stream.listen((_) {
-      _loadRootFolder();
+      _loadRootFolderWithRefresh();
     });
   }
 
@@ -48,9 +48,25 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
     setState(() => isLoading = false);
   }
 
+  Future<void> _loadRootFolderWithRefresh() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    rootFolderPath = await LocalAudiobookService.getRootFolderPath();
+
+    if (rootFolderPath != null) {
+      // Do a smart refresh to scan the new directory
+      await _refreshAudiobooks();
+    }
+
+    setState(() => isLoading = false);
+  }
+
   Future<void> _loadAudiobooks() async {
     try {
-      final loadedAudiobooks = await LocalAudiobookService.refreshAudiobooks();
+      // Load instantly from Hive cache
+      final loadedAudiobooks = await LocalAudiobookService.getAllAudiobooks();
       for (LocalAudiobook audiobook in loadedAudiobooks) {
         AppLogger.info(
             'Audiobook: ${audiobook.title} by ${audiobook.author} ${audiobook.coverImagePath}');
@@ -86,9 +102,10 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
             rootFolderPath = selectedDirectory;
           });
 
-          // Load audiobooks from the selected folder
+          // Clear all caches for the new folder and load audiobooks
+          await LocalAudiobookService.clearAllCaches();
           setState(() => isLoading = true);
-          await _loadAudiobooks();
+          await _refreshAudiobooks();
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -132,7 +149,31 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
 
   Future<void> _refreshAudiobooks() async {
     setState(() => isLoading = true);
-    await _loadAudiobooks();
+    try {
+      // Use smart refresh that only processes changed files
+      AppLogger.info('Starting smart refresh...');
+      final loadedAudiobooks =
+          await LocalAudiobookService.smartRefreshAudiobooks();
+      AppLogger.info(
+          'Smart refresh completed, got ${loadedAudiobooks.length} audiobooks');
+      for (LocalAudiobook audiobook in loadedAudiobooks) {
+        AppLogger.info(
+            'Audiobook: ${audiobook.title} by ${audiobook.author} ${audiobook.coverImagePath}');
+      }
+      setState(() {
+        audiobooks = loadedAudiobooks;
+      });
+    } catch (e) {
+      AppLogger.error('Error in refresh: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error refreshing audiobooks: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
     setState(() => isLoading = false);
   }
 

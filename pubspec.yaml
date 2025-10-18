@@ -28,7 +28,7 @@ dependencies:
   flutter_media_metadata:
     git:
       url: https://github.com/sagarchaulagai/flutter_media_metadata.git
-      ref: master
+      ref: 7666c7b40f3d9281f1d766f885ecd17b19177901
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
   audio_service: ^0.18.15

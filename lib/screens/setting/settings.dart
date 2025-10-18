@@ -149,13 +149,16 @@ class _SettingsState extends State<Settings> {
           String selectedDirectory = persistedDirectories.last;
 
           await LocalAudiobookService.setRootFolderPath(selectedDirectory);
+
+          // Clear all caches for the new folder
+          await LocalAudiobookService.clearAllCaches();
+
           setState(() {
             _rootFolderPath = selectedDirectory;
           });
 
           // Notify other screens about the directory change
           AppEvents.localDirectoryChanged.add(null);
-
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -204,7 +207,6 @@ class _SettingsState extends State<Settings> {
       case ThemeMode.dark:
         return 'Dark';
       case ThemeMode.system:
-      default:
         return 'System default';
     }
   }
