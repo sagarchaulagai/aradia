@@ -369,7 +369,23 @@ class LocalAudiobookItem extends StatelessWidget {
       final filePath = MediaHelper.decodePath(entry.value);
       final fileName = filePath.split('/').last.split('\\').last;
       final uri = MediaHelper.makeSafUriFromPath(filePath);
-      double? duration = audiobook.totalDuration?.inSeconds.toDouble();
+
+      // Calculate individual file duration
+      double? duration;
+      try {
+        final rootFolderPath = await LocalAudiobookService.getRootFolderPath();
+        if (rootFolderPath != null) {
+          final metadata =
+              await MediaHelper.getAudioMetadata(filePath, rootFolderPath);
+          duration = metadata.trackDuration != null
+              ? metadata.trackDuration! /
+                  1000.0 // Convert milliseconds to seconds
+              : null;
+        }
+      } catch (e) {
+        AppLogger.error('Error getting duration for file $filePath: $e');
+        duration = null;
+      }
 
       out.add(AudiobookFile.fromMap({
         'identifier': key,

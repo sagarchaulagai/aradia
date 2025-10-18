@@ -300,7 +300,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         borderRadius: BorderRadius.circular(6),
         child: isLocal
             ? Image.file(
-                File(art!.toFilePath()),
+                File(art.toFilePath()),
                 fit: BoxFit.cover,
               )
             : CachedNetworkImage(
@@ -319,7 +319,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
       borderRadius: BorderRadius.circular(20),
       child: isLocal
           ? Image.file(
-              File(art!.toFilePath()),
+              File(art.toFilePath()),
               fit: BoxFit.cover,
               height: size,
               width: size,
@@ -340,13 +340,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     showDialog(
       context: context,
       builder: (context) => TrackSelectionDialog(
-        audiobookFiles: audiobookFiles,
         audioHandler: audioHandlerProvider.audioHandler,
-        currentTrackIndex:
-            audioHandlerProvider.audioHandler.queue.value.indexWhere(
-          (item) =>
-              item.id == audioHandlerProvider.audioHandler.mediaItem.value?.id,
-        ),
       ),
     );
   }
@@ -672,15 +666,11 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 }
 
 class TrackSelectionDialog extends StatefulWidget {
-  final List<AudiobookFile> audiobookFiles;
   final MyAudioHandler audioHandler;
-  final int currentTrackIndex;
 
   const TrackSelectionDialog({
     super.key,
-    required this.audiobookFiles,
     required this.audioHandler,
-    required this.currentTrackIndex,
   });
 
   @override
@@ -691,18 +681,42 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
   bool _showPosition = true;
   late List<Duration> _cumulativePositions;
   late ThemeNotifier themeNotifier;
+  late Box<dynamic> playingAudiobookDetailsBox;
+  List<AudiobookFile> _audiobookFiles = [];
+  int _currentTrackIndex = 0;
+
   @override
   void initState() {
     super.initState();
-    _calculateCumulativePositions();
+    playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
     themeNotifier = Provider.of<ThemeNotifier>(context, listen: false);
+    _loadCurrentData();
+  }
+
+  void _loadCurrentData() {
+    // Get current audiobook files from Hive
+    final audiobookFilesData =
+        playingAudiobookDetailsBox.get('audiobookFiles') as List?;
+    if (audiobookFilesData != null) {
+      _audiobookFiles = audiobookFilesData
+          .map((fileData) => AudiobookFile.fromMap(fileData))
+          .toList();
+    }
+
+    // Get current track index from audio handler
+    _currentTrackIndex = widget.audioHandler.queue.value.indexWhere(
+      (item) => item.id == widget.audioHandler.mediaItem.value?.id,
+    );
+    if (_currentTrackIndex == -1) _currentTrackIndex = 0;
+
+    _calculateCumulativePositions();
   }
 
   void _calculateCumulativePositions() {
     _cumulativePositions = [];
     Duration cumulative = Duration.zero;
 
-    for (final file in widget.audiobookFiles) {
+    for (final file in _audiobookFiles) {
       _cumulativePositions.add(cumulative);
       if (file.length != null) {
         cumulative += Duration(seconds: file.length!.toInt());
@@ -723,12 +737,16 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
   }
 
   String _getTrackDisplayText(int index) {
-    final file = widget.audiobookFiles[index];
+    if (index >= _audiobookFiles.length) return 'Track ${index + 1}';
+
+    final file = _audiobookFiles[index];
     final trackNumber = file.track ?? (index + 1);
     final title = file.title ?? 'Track $trackNumber';
 
     if (_showPosition) {
-      final position = _cumulativePositions[index];
+      final position = index < _cumulativePositions.length
+          ? _cumulativePositions[index]
+          : Duration.zero;
       return '$title - ${_formatDuration(position)}';
     } else {
       final length = file.length != null
@@ -740,153 +758,171 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: themeNotifier.themeMode == ThemeMode.dark
-                    ? Colors.black.withValues(alpha: 0.1)
-                    : Colors.grey[100],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+    return StreamBuilder<List<MediaItem>>(
+      stream: widget.audioHandler.queue,
+      builder: (context, queueSnapshot) {
+        // Reload data when queue changes
+        if (queueSnapshot.hasData) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _loadCurrentData();
+          });
+        }
+
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+              maxWidth: MediaQuery.of(context).size.width * 0.9,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: themeNotifier.themeMode == ThemeMode.dark
+                        ? Colors.black.withValues(alpha: 0.1)
+                        : Colors.grey[100],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.queue_music, color: Colors.deepOrange),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Chapters',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      // Toggle button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildToggleButton('Position', true),
+                            _buildToggleButton('Length', false),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.queue_music, color: Colors.deepOrange),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Chapters',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+
+                // Track list
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _audiobookFiles.length,
+                    itemBuilder: (context, index) {
+                      final isCurrentTrack = index == _currentTrackIndex;
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: isCurrentTrack ? Colors.deepOrange[50] : null,
+                          border: isCurrentTrack
+                              ? Border(
+                                  left: BorderSide(
+                                      color: Colors.deepOrange, width: 4))
+                              : null,
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: isCurrentTrack
+                                ? Colors.deepOrange
+                                : Colors.grey[300],
+                            child: Icon(
+                              isCurrentTrack
+                                  ? Icons.play_arrow
+                                  : Icons.music_note,
+                              color: isCurrentTrack
+                                  ? Colors.white
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                          title: Text(
+                            'Chapter ${_audiobookFiles[index].track ?? (index + 1)}',
+                            style: TextStyle(
+                              fontWeight: isCurrentTrack
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isCurrentTrack
+                                  ? Colors.deepOrange[800]
+                                  : null,
+                            ),
+                          ),
+                          subtitle: Text(
+                            _getTrackDisplayText(index),
+                            style: TextStyle(
+                              color: isCurrentTrack
+                                  ? Colors.deepOrange[600]
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                          trailing: isCurrentTrack
+                              ? const Icon(Icons.check_circle,
+                                  color: Colors.deepOrange)
+                              : null,
+                          onTap: () {
+                            if (index != _currentTrackIndex) {
+                              widget.audioHandler.skipToQueueItem(index);
+                            }
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
+                    },
                   ),
-                  // Toggle button
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildToggleButton('Position', true),
-                        _buildToggleButton('Length', false),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Track list
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: widget.audiobookFiles.length,
-                itemBuilder: (context, index) {
-                  final isCurrentTrack = index == widget.currentTrackIndex;
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: isCurrentTrack ? Colors.deepOrange[50] : null,
-                      border: isCurrentTrack
-                          ? Border(
-                              left: BorderSide(
-                                  color: Colors.deepOrange, width: 4))
-                          : null,
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: isCurrentTrack
-                            ? Colors.deepOrange
-                            : Colors.grey[300],
-                        child: Icon(
-                          isCurrentTrack ? Icons.play_arrow : Icons.music_note,
-                          color:
-                              isCurrentTrack ? Colors.white : Colors.grey[600],
-                        ),
-                      ),
-                      title: Text(
-                        'Chapter ${widget.audiobookFiles[index].track ?? (index + 1)}',
-                        style: TextStyle(
-                          fontWeight: isCurrentTrack
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isCurrentTrack ? Colors.deepOrange[800] : null,
-                        ),
-                      ),
-                      subtitle: Text(
-                        _getTrackDisplayText(index),
-                        style: TextStyle(
-                          color: isCurrentTrack
-                              ? Colors.deepOrange[600]
-                              : Colors.grey[600],
-                        ),
-                      ),
-                      trailing: isCurrentTrack
-                          ? const Icon(Icons.check_circle,
-                              color: Colors.deepOrange)
-                          : null,
-                      onTap: () {
-                        if (index != widget.currentTrackIndex) {
-                          widget.audioHandler.skipToQueueItem(index);
-                        }
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: themeNotifier.themeMode == ThemeMode.dark
-                    ? Colors.black.withValues(alpha: 0.1)
-                    : Colors.grey[50],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${widget.audiobookFiles.length} tracks',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
+
+                // Footer
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: themeNotifier.themeMode == ThemeMode.dark
+                        ? Colors.black.withValues(alpha: 0.1)
+                        : Colors.grey[50],
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${_audiobookFiles.length} tracks',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
