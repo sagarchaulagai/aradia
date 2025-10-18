@@ -693,6 +693,29 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
     _loadCurrentData();
   }
 
+  Duration _effectiveStart(int index) {
+    final f = _audiobookFiles[index];
+    if (f.startMs != null) return Duration(milliseconds: f.startMs!);
+    // fallback: accumulated (used by multi-file books)
+    // this will be overwritten in _calculateCumulativePositions anyway
+    return Duration.zero;
+  }
+
+  Duration _effectiveLength(int index) {
+    final f = _audiobookFiles[index];
+    if (f.durationMs != null) return Duration(milliseconds: f.durationMs!);
+    if (f.length != null) return Duration(seconds: f.length!.toInt());
+    // if last resort and we have the next chapter’s start, infer by diff
+    if (f.startMs != null && index + 1 < _audiobookFiles.length) {
+      final next = _audiobookFiles[index + 1];
+      if (next.startMs != null) {
+        final diffMs = next.startMs! - f.startMs!;
+        if (diffMs > 0) return Duration(milliseconds: diffMs);
+      }
+    }
+    return Duration.zero;
+  }
+
   void _loadCurrentData() {
     // Get current audiobook files from Hive
     final audiobookFilesData =
@@ -714,12 +737,21 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
 
   void _calculateCumulativePositions() {
     _cumulativePositions = [];
-    Duration cumulative = Duration.zero;
+    Duration running = Duration.zero;
 
-    for (final file in _audiobookFiles) {
-      _cumulativePositions.add(cumulative);
-      if (file.length != null) {
-        cumulative += Duration(seconds: file.length!.toInt());
+    for (int i = 0; i < _audiobookFiles.length; i++) {
+      final f = _audiobookFiles[i];
+
+      // Prefer explicit chapter start if present (single-file m4b chapters)
+      if (f.startMs != null) {
+        final start = Duration(milliseconds: f.startMs!);
+        _cumulativePositions.add(start);
+        // advance running as well so later tracks without startMs still look sane
+        running = start + _effectiveLength(i);
+      } else {
+        // multi-file fallback: use running total of file lengths
+        _cumulativePositions.add(running);
+        running += _effectiveLength(i);
       }
     }
   }
@@ -739,18 +771,15 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
   String _getTrackDurationText(int index) {
     if (index >= _audiobookFiles.length) return '';
 
-    final file = _audiobookFiles[index];
-
     if (_showPosition) {
-      final position = index < _cumulativePositions.length
+      final position = (index < _cumulativePositions.length)
           ? _cumulativePositions[index]
           : Duration.zero;
       return _formatDuration(position);
     } else {
-      final length = file.length != null
-          ? Duration(seconds: file.length!.toInt())
-          : Duration.zero;
-      return _formatDuration(length);
+      // show the chapter/file length
+      final len = _effectiveLength(index);
+      return _formatDuration(len);
     }
   }
 
