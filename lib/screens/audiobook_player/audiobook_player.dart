@@ -736,23 +736,21 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
     }
   }
 
-  String _getTrackDisplayText(int index) {
-    if (index >= _audiobookFiles.length) return 'Track ${index + 1}';
+  String _getTrackDurationText(int index) {
+    if (index >= _audiobookFiles.length) return '';
 
     final file = _audiobookFiles[index];
-    final trackNumber = file.track ?? (index + 1);
-    final title = file.title ?? 'Track $trackNumber';
 
     if (_showPosition) {
       final position = index < _cumulativePositions.length
           ? _cumulativePositions[index]
           : Duration.zero;
-      return '$title - ${_formatDuration(position)}';
+      return _formatDuration(position);
     } else {
       final length = file.length != null
           ? Duration(seconds: file.length!.toInt())
           : Duration.zero;
-      return '$title - ${_formatDuration(length)}';
+      return _formatDuration(length);
     }
   }
 
@@ -855,7 +853,8 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                             ),
                           ),
                           title: Text(
-                            'Chapter ${_audiobookFiles[index].track ?? (index + 1)}',
+                            _audiobookFiles[index].title ??
+                                'Track ${_audiobookFiles[index].track ?? (index + 1)}',
                             style: TextStyle(
                               fontWeight: isCurrentTrack
                                   ? FontWeight.bold
@@ -866,7 +865,7 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                             ),
                           ),
                           subtitle: Text(
-                            _getTrackDisplayText(index),
+                            _getTrackDurationText(index),
                             style: TextStyle(
                               color: isCurrentTrack
                                   ? Colors.deepOrange[600]
