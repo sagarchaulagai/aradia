@@ -609,15 +609,22 @@ class LocalAudiobookService {
         await processLevel0Audiobooks(rootFolderPath, allFilesInsideRootFolder);
     allAudiobooks.addAll(level0Audiobooks);
 
+    // delete cache
+    await Saf.clearCacheFor(rootFolderPath);
+
     // Level 1: Single subfolder audiobooks
     List<LocalAudiobook> level1Audiobooks =
         await processLevel1Audiobooks(rootFolderPath, allFilesInsideRootFolder);
     allAudiobooks.addAll(level1Audiobooks);
 
+    await Saf.clearCacheFor(rootFolderPath);
+
     // Level 2: Two subfolder audiobooks
     List<LocalAudiobook> level2Audiobooks =
         await processLevel2Audiobooks(rootFolderPath, allFilesInsideRootFolder);
     allAudiobooks.addAll(level2Audiobooks);
+
+    await Saf.clearCacheFor(rootFolderPath);
 
     // Save the scanned file list to cache
     await saveScannedFiles(allFilesInsideRootFolder);

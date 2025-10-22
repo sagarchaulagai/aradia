@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 
 import '../../../resources/designs/app_colors.dart';
+import 'characters_dialog.dart';
 
 class Controls extends StatefulWidget {
   final MyAudioHandler audioHandler;
@@ -115,6 +116,21 @@ class _ControlsState extends State<Controls> {
     );
   }
 
+  void _showCharactersDialog() {
+    final audiobookId = widget.audioHandler.getCurrentAudiobookId();
+    if (audiobookId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No audiobook is currently playing')),
+      );
+      return;
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => CharactersDialog(audiobookId: audiobookId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -139,6 +155,14 @@ class _ControlsState extends State<Controls> {
               onPressed: _changeVolume,
               icon: const Icon(Ionicons.volume_high),
               tooltip: 'Adjust Volume',
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+            IconButton(
+              onPressed: _showCharactersDialog,
+              icon: const Icon(Ionicons.people),
+              tooltip: 'Manage Characters',
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black,
