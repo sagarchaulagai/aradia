@@ -44,14 +44,14 @@ class _DownloadButtonState extends State<DownloadButton> {
     _isDownloaded = _downloadManager.isDownloaded(widget.audiobook.id);
   }
 
-  Future<void> _handleStoragePermission(BuildContext context) async {
+  Future<void> _handleNotificationPermission(BuildContext context) async {
     try {
-      final hasPermission =
-          await PermissionHelper.handleDownloadPermissionWithDialog(context);
-      if (hasPermission) {
-        // Permissions granted, start download
-        await _startDownload();
-      }
+      // Try to get notification permission, but don't block download if denied
+      await PermissionHelper.handleDownloadPermissionWithDialog(context);
+      
+      // Start download regardless of permission result
+      // (notifications just won't show if permission denied)
+      await _startDownload();
     } catch (e) {
       if (!mounted) return;
 
@@ -191,7 +191,7 @@ class _DownloadButtonState extends State<DownloadButton> {
     }
 
     return IconButton(
-      onPressed: () => _handleStoragePermission(context),
+      onPressed: () => _handleNotificationPermission(context),
       icon: const Icon(
         Ionicons.cloud_download,
         size: 50,

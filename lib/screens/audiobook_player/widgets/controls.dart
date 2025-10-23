@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 
 import '../../../resources/designs/app_colors.dart';
+import 'characters_dialog.dart';
 
 class Controls extends StatefulWidget {
   final MyAudioHandler audioHandler;
@@ -115,10 +116,51 @@ class _ControlsState extends State<Controls> {
     );
   }
 
+  void _showCharactersDialog() {
+    final audiobookId = widget.audioHandler.getCurrentAudiobookId();
+    if (audiobookId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No audiobook is currently playing')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => CharactersDialog(audiobookId: audiobookId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isCasting = widget.audioHandler.chromeCastService.isConnected;
+    
     return Column(
       children: [
+        if (isCasting)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.deepOrange.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.cast_connected, color: Colors.deepOrange, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'Casting',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.deepOrange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (widget.isTimerActive && widget.activeTimerDuration != null)
           Text(
             "Timer: ${widget.activeTimerDuration!.inMinutes}:${(widget.activeTimerDuration!.inSeconds % 60).toString().padLeft(2, '0')} remaining",
@@ -144,6 +186,14 @@ class _ControlsState extends State<Controls> {
                   : Colors.black,
             ),
             IconButton(
+              onPressed: _showCharactersDialog,
+              icon: const Icon(Ionicons.people),
+              tooltip: 'Manage Characters',
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+            IconButton(
               onPressed: widget.onToggleSkipSilence,
               icon: Icon(
                 widget.skipSilence ? Ionicons.flash : Ionicons.flash_outline,
@@ -161,7 +211,7 @@ class _ControlsState extends State<Controls> {
                   ? widget.onCancelTimer
                   : () => widget.onTimerPressed(context),
               icon: Icon(
-                widget.isTimerActive ? Ionicons.timer_outline : Ionicons.timer,
+                widget.isTimerActive ? Icons.snooze : Icons.snooze_outlined,
                 color: widget.isTimerActive
                     ? Colors.deepOrange
                     : (Theme.of(context).brightness == Brightness.dark
@@ -203,7 +253,8 @@ class _ControlsState extends State<Controls> {
               builder: (context, snapshot) {
                 final isPlaying = snapshot.data?.playing ?? false;
                 final playbackState = snapshot.data;
-                final processingState = (playbackState?.processingState ?? AudioProcessingState.idle);
+                final processingState = (playbackState?.processingState ??
+                    AudioProcessingState.idle);
                 if (processingState == AudioProcessingState.loading ||
                     processingState == AudioProcessingState.buffering) {
                   return const CircularProgressIndicator(
@@ -214,7 +265,7 @@ class _ControlsState extends State<Controls> {
                 return IconButton(
                   icon: Icon(
                     isPlaying ? Icons.pause : Icons.play_arrow,
-                    size: 40,
+                    size: 45,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
                         : Colors.black,

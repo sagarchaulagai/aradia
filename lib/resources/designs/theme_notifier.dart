@@ -29,6 +29,18 @@ class ThemeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Explicit setter used by Settings page radio controls.
+  void setTheme(ThemeMode mode) {
+    _themeMode = mode;
+    final value = switch (mode) {
+      ThemeMode.light => 'light',
+      ThemeMode.dark => 'dark',
+      _ => 'system',
+    };
+    _themeBox.put('theme_mode_box', value);
+    notifyListeners();
+  }
+
   // Optional: keep your existing toggle between light/dark.
   // If currently 'system', toggling will go to dark; toggle again → light.
   void toggleTheme() {

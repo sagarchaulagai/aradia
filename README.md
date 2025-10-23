@@ -19,6 +19,8 @@
 ## Join Our Discord Community
 [![Join our Discord Community](https://invidget.switchblade.xyz/QwTxRKC9UF)](https://discord.gg/QwTxRKC9UF)
 
+## ☕ Support the Project
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Y8Y61N3ERH)
 
 ## 📸 App Preview
 

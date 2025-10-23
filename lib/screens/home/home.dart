@@ -1,6 +1,8 @@
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:aradia/screens/home/widgets/favourite_section.dart';
 import 'package:aradia/screens/home/widgets/local_imports_section.dart';
+import 'package:aradia/screens/home/widgets/youtube_import_section.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +10,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/screens/home/bloc/home_bloc.dart';
 import 'package:aradia/screens/home/widgets/my_audiobooks.dart';
 import 'package:provider/provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:aradia/utils/permission_helper.dart';
 
 import '../../resources/latest_version_fetch.dart';
@@ -45,9 +46,6 @@ class _HomeState extends State<Home> {
   late final ScrollController _popularCtrl;
   late final ScrollController _trendingCtrl;
   late final ScrollController _recommendedCtrl;
-
-  // prevent repeated page-1 fetches caused by visibility changes while scrolling
-  bool _didRequestRecommended = false;
 
   @override
   void initState() {
@@ -162,18 +160,30 @@ class _HomeState extends State<Home> {
       ),
       body: CustomScrollView(
         slivers: [
+          // --- Welcome section ---
           SliverToBoxAdapter(
             child: WelcomeSection(theme: theme),
           ),
+          // --- Recently Played section ---
           SliverToBoxAdapter(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 290),
               child: const HistorySection(),
             ),
           ),
+          // --- Local imports section ---
           SliverToBoxAdapter(
             child: LocalImportsSection(),
           ),
+          // --- YouTube imports section ---
+          SliverToBoxAdapter(
+            child: YoutubeImportsSection(),
+          ),
+          // --- Favourite section ---
+          SliverToBoxAdapter(
+            child: FavouriteSection(),
+          ),
+          // --- Recommended genres section ---
           SliverToBoxAdapter(
             child: FutureBuilder<String>(
               future: _recommendedGenresFuture,
@@ -200,7 +210,7 @@ class _HomeState extends State<Home> {
             ),
           ),
 
-          // --- Featured sections (stable blocs/controllers) ---
+          // --- Featured sections (popular and trending this week) ---
           SliverToBoxAdapter(
             child: _buildFeaturedSections(),
           ),
@@ -285,24 +295,19 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Removed VisibilityDetector and replaced with autoFetch
+  // autoFetch is true so that the section will fetch the data when the page is loaded
+  // In future if we want to add visibility detection, we can add it here
+  // with autoFetch as false
   Widget _buildLazyLoadSection(
       BuildContext context, String title, String genre) {
-    return VisibilityDetector(
-      key: Key('rec-$genre'),
-      onVisibilityChanged: (VisibilityInfo info) {
-        // Fire ONCE: prevents reloading/clearing while scrolling
-        if (info.visibleFraction > 0.5 && !_didRequestRecommended) {
-          _didRequestRecommended = true;
-          _recommendedBloc.add(FetchAudiobooksByGenre(1, 15, genre, 'week'));
-        }
-      },
-      child: MyAudiobooks(
-        title: title,
-        homeBloc: _recommendedBloc,
-        fetchType: AudiobooksFetchType.genre,
-        genre: genre,
-        scrollController: _recommendedCtrl,
-      ),
+    return MyAudiobooks(
+      title: title,
+      homeBloc: _recommendedBloc,
+      fetchType: AudiobooksFetchType.genre,
+      genre: genre,
+      scrollController: _recommendedCtrl,
+      autoFetch: true,
     );
   }
 }
