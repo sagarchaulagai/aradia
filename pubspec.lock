@@ -772,10 +772,11 @@ packages:
   just_audio:
     dependency: "direct main"
     description:
-      name: just_audio
-      sha256: "9694e4734f515f2a052493d1d7e0d6de219ee0427c7c29492e246ff32a219908"
-      url: "https://pub.dev"
-    source: hosted
+      path: just_audio
+      ref: a6f8db8ded43bdff0e39766fbbdbab8f22cadc2c
+      resolved-ref: a6f8db8ded43bdff0e39766fbbdbab8f22cadc2c
+      url: "https://github.com/sagarchaulagai/just_audio.git"
+    source: git
     version: "0.10.5"
   just_audio_background:
     dependency: "direct main"

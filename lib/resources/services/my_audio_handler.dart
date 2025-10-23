@@ -18,7 +18,6 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 // Turn a local path or remote URL into a proper Uri for MediaItem.artUri.
 Uri? _artUriFrom(String? s) {
   if (s == null || s.isEmpty) return null;
-  // Use the same helper you already have in cover_image_service.dart
   final local = asLocalPath(s);
   return local != null ? Uri.file(local) : Uri.parse(s);
 }
@@ -27,7 +26,7 @@ class MyAudioHandler extends BaseAudioHandler {
   // Audio effects
   final AndroidEqualizer _equalizer = AndroidEqualizer();
   final AndroidLoudnessEnhancer _loudnessEnhancer = AndroidLoudnessEnhancer();
-  
+
   late final AudioPlayer _player;
 
   List<AudioSource>? _audioSources;
@@ -665,18 +664,12 @@ class MyAudioHandler extends BaseAudioHandler {
   /// gain: -15.0 to +15.0 dB
   Future<void> setEqualizerBand(int bandIndex, double gain) async {
     try {
-      if (!Platform.isAndroid) {
-        AppLogger.debug('Equalizer not available on this platform');
-        return;
-      }
-
       final clampedGain = gain.clamp(-15.0, 15.0);
       final parameters = await _equalizer.parameters;
       final bands = parameters.bands;
-      
+
       if (bandIndex >= 0 && bandIndex < bands.length) {
         await bands[bandIndex].setGain(clampedGain);
-        AppLogger.debug('Equalizer band $bandIndex set to $clampedGain dB');
       }
     } catch (e) {
       AppLogger.error('Error setting equalizer band: $e');
@@ -702,29 +695,16 @@ class MyAudioHandler extends BaseAudioHandler {
   /// balance: -1.0 (left) to +1.0 (right), 0.0 = center
   /// Note: Balance is implemented by adjusting volume per channel
   Future<void> setBalance(double balance) async {
-    final clampedBalance = balance.clamp(-1.0, 1.0);
-
     try {
-      // just_audio doesn't have built-in balance control
-      // We can simulate it by adjusting the overall volume
-      // For a full implementation, this would need native platform channels
-      AppLogger.debug('Balance set to: $clampedBalance (limited implementation)');
-      // Note: Full balance control requires platform-specific implementation
+      await _player.setBalance(balance);
     } catch (e) {
       AppLogger.error('Error setting balance: $e');
     }
   }
 
-  /// Set pitch adjustment
-  /// pitch: 0.5 to 2.0 (1.0 = normal)
-  /// Note: This uses speed adjustment which affects both tempo and pitch
   Future<void> setPitch(double pitch) async {
-    final clampedPitch = pitch.clamp(0.5, 2.0);
     try {
-      // just_audio's setSpeed affects both tempo and pitch
-      // For independent pitch control, would need additional audio processing
-      await _player.setSpeed(clampedPitch);
-      AppLogger.debug('Pitch/Speed set to: $clampedPitch');
+      await _player.setPitch(pitch);
     } catch (e) {
       AppLogger.error('Error setting pitch: $e');
     }

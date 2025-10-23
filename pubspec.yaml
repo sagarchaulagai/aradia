@@ -33,7 +33,11 @@ dependencies:
   path_provider: ^2.1.5
   audio_service: ^0.18.18
   transparent_image: ^2.0.1
-  just_audio: ^0.10.5
+  just_audio:
+    git:
+      url: https://github.com/sagarchaulagai/just_audio.git
+      path: just_audio
+      ref: a6f8db8ded43bdff0e39766fbbdbab8f22cadc2c
   just_audio_background: ^0.0.1-beta.17
   rxdart: ^0.28.0
   audio_video_progress_bar: ^2.0.3

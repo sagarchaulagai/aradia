@@ -316,7 +316,7 @@ class _CharactersDialogState extends State<CharactersDialog> {
       decoration: BoxDecoration(
         color: isDark
             ? AppColors.cardColor
-            : AppColors.primaryColor.withOpacity(0.1),
+            : AppColors.primaryColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
@@ -325,7 +325,7 @@ class _CharactersDialogState extends State<CharactersDialog> {
           bottom: BorderSide(
             color: isDark
                 ? AppColors.dividerColor
-                : AppColors.primaryColor.withOpacity(0.3),
+                : AppColors.primaryColor.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -446,8 +446,8 @@ class _CharactersDialogState extends State<CharactersDialog> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isDark
-                        ? AppColors.primaryColor.withOpacity(0.2)
-                        : AppColors.primaryColor.withOpacity(0.1))
+                        ? AppColors.primaryColor.withValues(alpha: 0.2)
+                        : AppColors.primaryColor.withValues(alpha: 0.1))
                     : Colors.transparent,
                 border: Border(
                   bottom: BorderSide(

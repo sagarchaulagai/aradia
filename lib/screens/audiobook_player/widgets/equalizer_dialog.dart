@@ -275,6 +275,7 @@ class _EqualizerDialogState extends State<EqualizerDialog> {
                 ),
                 Switch(
                   value: _isEnabled,
+                  activeThumbColor: AppColors.primaryColor,
                   onChanged: (value) {
                     setState(() {
                       _isEnabled = value;
