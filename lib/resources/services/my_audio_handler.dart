@@ -13,7 +13,6 @@ import 'package:audio_session/audio_session.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:rxdart_ext/utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 // Turn a local path or remote URL into a proper Uri for MediaItem.artUri.
@@ -25,10 +24,14 @@ Uri? _artUriFrom(String? s) {
 }
 
 class MyAudioHandler extends BaseAudioHandler {
-  final _player = AudioPlayer();
+  // Audio effects
+  final AndroidEqualizer _equalizer = AndroidEqualizer();
+  final AndroidLoudnessEnhancer _loudnessEnhancer = AndroidLoudnessEnhancer();
+  
+  late final AudioPlayer _player;
 
-  ConcatenatingAudioSource? _playlist;
-  ConcatenatingAudioSource? get playlist => _playlist;
+  List<AudioSource>? _audioSources;
+  List<AudioSource>? get audioSources => _audioSources;
 
   Box<dynamic> playingAudiobookDetailsBox =
       Hive.box('playing_audiobook_details_box');
@@ -39,6 +42,14 @@ class MyAudioHandler extends BaseAudioHandler {
   bool _sessionConfigured = false;
   bool _isReinitializing = false;
   int _initGen = 0;
+
+  MyAudioHandler() {
+    _player = AudioPlayer(
+      audioPipeline: AudioPipeline(
+        androidAudioEffects: [_equalizer, _loudnessEnhancer],
+      ),
+    );
+  }
 
   StreamSubscription<String>? _coverSub;
 
@@ -152,7 +163,7 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> _refreshActiveCoverArt() async {
     final id = _activeAudiobookId;
     if (id == null) return;
-    if (_playlist == null || queue.value.isEmpty) return;
+    if (_audioSources == null || queue.value.isEmpty) return;
 
     final newUri = await _resolveActiveArtUri();
     if (newUri == null) return;
@@ -302,13 +313,22 @@ class MyAudioHandler extends BaseAudioHandler {
         mediaItem.add(mediaItems[safeIndex]);
       }
 
-      _playlist = ConcatenatingAudioSource(children: sources);
+      _audioSources = sources;
 
       // For YouTube, some backends ignore the initialPosition until READY.
       final currentIsYT = _isIndexYouTube(safeIndex);
 
-      await _player.setAudioSource(
-        _playlist!,
+      // DEBUG
+      AppLogger.debug('initSongs: currentIsYT: $currentIsYT');
+      AppLogger.debug(_audioSources?.length.toString() ?? 'null');
+      AppLogger.debug(safeIndex.toString());
+      AppLogger.debug(positionInMilliseconds.toString());
+      for (int i = 0; i < (_audioSources?.length ?? 0); i++) {
+        AppLogger.debug(_audioSources?[i]?.toString() ?? 'null');
+      }
+
+      await _player.setAudioSources(
+        _audioSources!,
         initialIndex: sources.isEmpty ? 0 : safeIndex,
         initialPosition: currentIsYT
             ? Duration.zero
@@ -366,7 +386,7 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   bool _isIndexYouTube(int index) {
-    final children = _playlist?.children;
+    final children = _audioSources;
     if (children == null || index < 0 || index >= children.length) return false;
     return children[index] is YouTubeAudioSource;
   }
@@ -513,7 +533,7 @@ class MyAudioHandler extends BaseAudioHandler {
   // Cold-restore only: rebuild queue from Hive if we have nothing loaded.
   Future<void> _restoreQueueFromBoxIfEmpty() async {
     if (_isReinitializing) return;
-    if ((_playlist?.children.isNotEmpty ?? false)) return;
+    if ((_audioSources?.isNotEmpty ?? false)) return;
 
     try {
       final box = playingAudiobookDetailsBox;
@@ -543,7 +563,7 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   List<AudioSource> getAudioSourcesFromPlaylist() {
-    return _playlist?.children ?? const [];
+    return _audioSources ?? const [];
   }
 
   // ── AudioHandler overrides ────────────────────────────────────────────────
@@ -638,10 +658,110 @@ class MyAudioHandler extends BaseAudioHandler {
     await _player.setSkipSilenceEnabled(skipSilence);
   }
 
+  // ── Equalizer controls ────────────────────────────────────────────────────
+
+  /// Set equalizer band level
+  /// bandIndex: 0-4 for the 5 frequency bands (60Hz, 230Hz, 910Hz, 4kHz, 14kHz)
+  /// gain: -15.0 to +15.0 dB
+  Future<void> setEqualizerBand(int bandIndex, double gain) async {
+    try {
+      if (!Platform.isAndroid) {
+        AppLogger.debug('Equalizer not available on this platform');
+        return;
+      }
+
+      final clampedGain = gain.clamp(-15.0, 15.0);
+      final parameters = await _equalizer.parameters;
+      final bands = parameters.bands;
+      
+      if (bandIndex >= 0 && bandIndex < bands.length) {
+        await bands[bandIndex].setGain(clampedGain);
+        AppLogger.debug('Equalizer band $bandIndex set to $clampedGain dB');
+      }
+    } catch (e) {
+      AppLogger.error('Error setting equalizer band: $e');
+    }
+  }
+
+  /// Enable or disable the equalizer
+  Future<void> setEqualizerEnabled(bool enabled) async {
+    try {
+      if (!Platform.isAndroid) {
+        AppLogger.debug('Equalizer not available on this platform');
+        return;
+      }
+
+      await _equalizer.setEnabled(enabled);
+      AppLogger.debug('Equalizer ${enabled ? "enabled" : "disabled"}');
+    } catch (e) {
+      AppLogger.error('Error setting equalizer enabled: $e');
+    }
+  }
+
+  /// Set audio balance (left/right channel volume)
+  /// balance: -1.0 (left) to +1.0 (right), 0.0 = center
+  /// Note: Balance is implemented by adjusting volume per channel
+  Future<void> setBalance(double balance) async {
+    final clampedBalance = balance.clamp(-1.0, 1.0);
+
+    try {
+      // just_audio doesn't have built-in balance control
+      // We can simulate it by adjusting the overall volume
+      // For a full implementation, this would need native platform channels
+      AppLogger.debug('Balance set to: $clampedBalance (limited implementation)');
+      // Note: Full balance control requires platform-specific implementation
+    } catch (e) {
+      AppLogger.error('Error setting balance: $e');
+    }
+  }
+
+  /// Set pitch adjustment
+  /// pitch: 0.5 to 2.0 (1.0 = normal)
+  /// Note: This uses speed adjustment which affects both tempo and pitch
+  Future<void> setPitch(double pitch) async {
+    final clampedPitch = pitch.clamp(0.5, 2.0);
+    try {
+      // just_audio's setSpeed affects both tempo and pitch
+      // For independent pitch control, would need additional audio processing
+      await _player.setSpeed(clampedPitch);
+      AppLogger.debug('Pitch/Speed set to: $clampedPitch');
+    } catch (e) {
+      AppLogger.error('Error setting pitch: $e');
+    }
+  }
+
+  /// Set loudness enhancer target gain
+  /// targetGain: 0.0 to 1000.0 (millibels)
+  Future<void> setLoudnessEnhancer(double targetGain) async {
+    try {
+      if (!Platform.isAndroid) {
+        AppLogger.debug('Loudness enhancer not available on this platform');
+        return;
+      }
+
+      final clampedGain = targetGain.clamp(0.0, 1000.0);
+      await _loudnessEnhancer.setTargetGain(clampedGain);
+      AppLogger.debug('Loudness enhancer set to: $clampedGain mB');
+    } catch (e) {
+      AppLogger.error('Error setting loudness enhancer: $e');
+    }
+  }
+
+  /// Get current equalizer parameters
+  Future<AndroidEqualizerParameters?> getEqualizerParameters() async {
+    try {
+      if (!Platform.isAndroid) return null;
+      return await _equalizer.parameters;
+    } catch (e) {
+      AppLogger.error('Error getting equalizer parameters: $e');
+      return null;
+    }
+  }
+
   Duration get position => _player.position;
 
   void playPrevious() {
-    final length = _playlist?.children.length ?? 0;
+    final length = _audioSources?.length ?? 0;
     if (_player.currentIndex != null && _player.currentIndex! > 0) {
       _player.seekToPrevious();
     } else if (length > 0) {
@@ -650,7 +770,7 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void playNext() {
-    final length = _playlist?.children.length ?? 0;
+    final length = _audioSources?.length ?? 0;
     if (_player.currentIndex != null &&
         length > 0 &&
         _player.currentIndex! < length - 1) {

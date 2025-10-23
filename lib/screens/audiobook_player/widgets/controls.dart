@@ -124,7 +124,7 @@ class _ControlsState extends State<Controls> {
       );
       return;
     }
-    
+
     showDialog(
       context: context,
       builder: (context) => CharactersDialog(audiobookId: audiobookId),
@@ -239,7 +239,7 @@ class _ControlsState extends State<Controls> {
                 return IconButton(
                   icon: Icon(
                     isPlaying ? Icons.pause : Icons.play_arrow,
-                    size: 40,
+                    size: 45,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
                         : Colors.black,

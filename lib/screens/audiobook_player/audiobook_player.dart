@@ -17,10 +17,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:hive/hive.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:provider/provider.dart';
 import 'package:we_slide/we_slide.dart';
 
 import 'widgets/controls.dart';
+import 'widgets/equalizer_dialog.dart';
+import 'widgets/equalizer_icon.dart';
 import 'widgets/progress_bar_widget.dart';
 
 class AudiobookPlayer extends StatefulWidget {
@@ -45,6 +48,10 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
   // ValueNotifier for skip silence to prevent unnecessary rebuilds
   final ValueNotifier<bool> _skipSilenceNotifier = ValueNotifier<bool>(false);
+
+  // GlobalKey for equalizer icon to refresh it
+  final GlobalKey<EqualizerIconState> _equalizerIconKey =
+      GlobalKey<EqualizerIconState>();
 
   @override
   void initState() {
@@ -343,8 +350,6 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
     );
   }
 
-  // --------------------------------------------------------------------------
-
   void _showTrackSelectionDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -352,6 +357,17 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
         audioHandler: audioHandlerProvider.audioHandler,
       ),
     );
+  }
+
+  void _showEqualizerDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (context) => EqualizerDialog(
+        audioHandler: audioHandlerProvider.audioHandler,
+      ),
+    );
+    // Refresh the equalizer icon after dialog closes
+    _equalizerIconKey.currentState?.refresh();
   }
 
   @override
@@ -429,6 +445,15 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  IconButton(
+                    onPressed: () {
+                      _showEqualizerDialog(context);
+                    },
+                    icon: EqualizerIcon(
+                      key: _equalizerIconKey,
+                      size: 25,
+                    ),
+                  ),
                   IconButton(
                     onPressed: () {
                       _showTrackSelectionDialog(context);

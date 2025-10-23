@@ -24,6 +24,9 @@
 
     <!-- For update/install feature -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- For equalizer -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <application
         android:label="Aradia"
         android:usesCleartextTraffic="true"
