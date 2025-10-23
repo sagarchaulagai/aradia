@@ -1,5 +1,6 @@
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/designs/themes.dart';
+import 'package:aradia/resources/services/chromecast_service.dart';
 import 'package:aradia/resources/services/youtube/youtube_audiobook_notifier.dart';
 import 'package:aradia/resources/services/youtube/webview_keep_alive_provider.dart';
 import 'package:aradia/screens/recommendation/recommendation_screen.dart';
@@ -34,6 +35,9 @@ void main() async {
   await initHive();
 
   await AppLogger.initialize();
+
+  final chromeCastService = ChromeCastService();
+  await chromeCastService.initialize();
 
   final audioHandlerProvider = AudioHandlerProvider();
   final weSlideController = WeSlideController();

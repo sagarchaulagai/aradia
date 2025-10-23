@@ -133,8 +133,34 @@ class _ControlsState extends State<Controls> {
 
   @override
   Widget build(BuildContext context) {
+    final isCasting = widget.audioHandler.chromeCastService.isConnected;
+    
     return Column(
       children: [
+        if (isCasting)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.deepOrange.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.cast_connected, color: Colors.deepOrange, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'Casting',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.deepOrange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (widget.isTimerActive && widget.activeTimerDuration != null)
           Text(
             "Timer: ${widget.activeTimerDuration!.inMinutes}:${(widget.activeTimerDuration!.inSeconds % 60).toString().padLeft(2, '0')} remaining",

@@ -25,6 +25,7 @@ import 'widgets/controls.dart';
 import 'widgets/equalizer_dialog.dart';
 import 'widgets/equalizer_icon.dart';
 import 'widgets/progress_bar_widget.dart';
+import 'widgets/chromecast_button.dart';
 
 class AudiobookPlayer extends StatefulWidget {
   const AudiobookPlayer({super.key});
@@ -445,6 +446,10 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  ChromeCastButton(
+                    chromeCastService:
+                        audioHandlerProvider.audioHandler.chromeCastService,
+                  ),
                   IconButton(
                     onPressed: () {
                       _showEqualizerDialog(context);

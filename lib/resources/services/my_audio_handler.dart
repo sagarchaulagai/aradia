@@ -7,6 +7,7 @@ import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
 import 'package:aradia/resources/services/youtube/youtube_audio_service.dart';
 import 'package:aradia/resources/services/local/cover_image_service.dart';
+import 'package:aradia/resources/services/chromecast_service.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -26,6 +27,10 @@ class MyAudioHandler extends BaseAudioHandler {
   // Audio effects
   final AndroidEqualizer _equalizer = AndroidEqualizer();
   final AndroidLoudnessEnhancer _loudnessEnhancer = AndroidLoudnessEnhancer();
+
+  // ChromeCast service
+  final ChromeCastService _chromeCastService = ChromeCastService();
+  ChromeCastService get chromeCastService => _chromeCastService;
 
   late final AudioPlayer _player;
 
@@ -82,6 +87,8 @@ class MyAudioHandler extends BaseAudioHandler {
   /// Rebuild the queue from Hive on cold start *without* starting playback.
   Future<void> restoreIfNeeded() async {
     await _restoreQueueFromBoxIfEmpty(); // already silent (no play)
+    // Initialize ChromeCast
+    // await _chromeCastService.initialize();
     // Make sure the UI gets an immediate state + current media item
     _broadcastState(_player.playbackEvent);
   }
@@ -377,6 +384,24 @@ class MyAudioHandler extends BaseAudioHandler {
       _canPersistProgress = true; // lift the barrier
       _lastPersistAt = DateTime.now().subtract(_persistInterval);
 
+      // If ChromeCast is connected, load the audiobook to ChromeCast
+      if (_chromeCastService.isConnected) {
+        try {
+          // Pause local player to avoid double playback
+          await _player.pause();
+          
+          await _chromeCastService.loadAudiobook(
+            audiobook,
+            files,
+            safeIndex,
+            Duration(milliseconds: positionInMilliseconds),
+          );
+          AppLogger.debug('Audiobook loaded to ChromeCast');
+        } catch (e) {
+          AppLogger.error('Failed to load audiobook to ChromeCast: $e');
+        }
+      }
+
       // Broadcast once after init settles (ensures controls show immediately)
       _broadcastState(_player.playbackEvent);
     } finally {
@@ -569,13 +594,26 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     await _restoreQueueFromBoxIfEmpty(); // only at cold start
-    await _player.play();
+    
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.play();
+    } else {
+      await _player.play();
+    }
+    
     _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> pause() async {
-    await _player.pause();
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.pause();
+    } else {
+      await _player.pause();
+    }
+    
     // Opportunistic persist when pausing the active item
     final id = _activeAudiobookId;
     final idx = _player.currentIndex;
@@ -591,7 +629,14 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> stop() async {
     _positionUpdateTimer?.cancel();
-    await _player.stop();
+    
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.stop();
+    } else {
+      await _player.stop();
+    }
+    
     _coverSub?.cancel();
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
@@ -599,7 +644,13 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
-    await _player.seek(position);
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.seek(position);
+    } else {
+      await _player.seek(position);
+    }
+    
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
   }
@@ -613,14 +664,26 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> skipToNext() async {
-    await _player.seekToNext();
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.skipToNext();
+    } else {
+      await _player.seekToNext();
+    }
+    
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
   }
 
   @override
   Future<void> skipToPrevious() async {
-    await _player.seekToPrevious();
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.skipToPrevious();
+    } else {
+      await _player.seekToPrevious();
+    }
+    
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
   }
@@ -631,15 +694,25 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> fastForward() async {
-    final newPos = _player.position + _ffAmount;
-    await _player.seek(newPos);
+    if (_chromeCastService.isConnected) {
+      final newPos = _chromeCastService.currentPosition + _ffAmount;
+      await _chromeCastService.seek(newPos);
+    } else {
+      final newPos = _player.position + _ffAmount;
+      await _player.seek(newPos);
+    }
     _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> rewind() async {
-    final newPos = _player.position - _rwAmount;
-    await _player.seek(newPos < Duration.zero ? Duration.zero : newPos);
+    if (_chromeCastService.isConnected) {
+      final newPos = _chromeCastService.currentPosition - _rwAmount;
+      await _chromeCastService.seek(newPos < Duration.zero ? Duration.zero : newPos);
+    } else {
+      final newPos = _player.position - _rwAmount;
+      await _player.seek(newPos < Duration.zero ? Duration.zero : newPos);
+    }
     _broadcastState(_player.playbackEvent);
   }
 
