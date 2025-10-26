@@ -78,11 +78,11 @@ class _EqualizerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = enabled ? AppColors.primaryColor : Colors.white54;
+      ..color = enabled ? Colors.deepOrange : Colors.white54;
 
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..color = AppColors.primaryColor.withValues(alpha: 0.3)
+      ..color = Colors.deepOrange.withValues(alpha: 0.3)
       ..strokeWidth = 0.5;
 
     // 5 columns (one per band), 5 rows

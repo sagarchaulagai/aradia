@@ -14,22 +14,23 @@ class ChromeCastButton extends StatelessWidget {
   Future<void> _showDeviceDialog(BuildContext context) async {
     // Request location permission (required for WiFi scanning on Android 10+)
     final status = await Permission.location.request();
-    
+
     if (!status.isGranted && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Location permission is required to discover ChromeCast devices'),
+          content: Text(
+              'Location permission is required to discover ChromeCast devices'),
           duration: Duration(seconds: 3),
         ),
       );
       return;
     }
-    
+
     // Restart discovery to ensure devices are found after permission grant
     chromeCastService.stopDiscovery();
     await Future.delayed(const Duration(milliseconds: 500));
     chromeCastService.startDiscovery();
-    
+
     if (context.mounted) {
       showDialog(
         context: context,
@@ -51,8 +52,16 @@ class ChromeCastButton extends StatelessWidget {
             isConnected ? Icons.cast_connected : Icons.cast,
             color: isConnected ? Colors.deepOrange : Colors.white,
           ),
-          onPressed: () => _showDeviceDialog(context),
-          tooltip: isConnected ? 'Connected to ChromeCast' : 'Cast to device',
+          onPressed: () async {
+            if (isConnected) {
+              // Disconnect if already connected
+              await chromeCastService.disconnect();
+            } else {
+              // Show device selection dialog if not connected
+              _showDeviceDialog(context);
+            }
+          },
+          tooltip: isConnected ? 'Disconnect ChromeCast' : 'Cast to device',
         );
       },
     );
@@ -92,18 +101,8 @@ class ChromeCastDeviceDialog extends StatelessWidget {
             }
             return ListView.builder(
               shrinkWrap: true,
-              itemCount: devices.length + 1,
+              itemCount: devices.length,
               itemBuilder: (context, index) {
-                if (index == devices.length) {
-                  return ListTile(
-                    leading: const Icon(Icons.cancel),
-                    title: const Text('Disconnect'),
-                    onTap: () async {
-                      await chromeCastService.disconnect();
-                      if (context.mounted) Navigator.pop(context);
-                    },
-                  );
-                }
                 final device = devices[index];
                 return ListTile(
                   leading: const Icon(Icons.cast),
