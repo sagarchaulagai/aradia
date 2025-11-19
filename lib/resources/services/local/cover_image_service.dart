@@ -241,7 +241,7 @@ Future<String?> resolveCoverForHistory(HistoryOfAudiobookItem item) async {
   final low = a.lowQCoverImage;
   final lowLocal = asLocalPath(low);
   if (lowLocal != null && await File(lowLocal).exists()) return lowLocal;
-  if (low != null && low.isNotEmpty) return low;
+  if (low.isNotEmpty) return low;
 
   // 4) Last resort: first track’s highQCoverImage (file or URL)
   if (item.audiobookFiles.isNotEmpty) {

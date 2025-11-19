@@ -995,7 +995,7 @@ class CoverImageRemote {
 
   static String? _extractDuckDuckGoVqd(String body) {
     final quotedMatch =
-        RegExp("vqd=([\'\"])([A-Za-z0-9-]+)\\1").firstMatch(body);
+        RegExp("vqd=(['\"])([A-Za-z0-9-]+)\\1").firstMatch(body);
     if (quotedMatch != null) {
       return quotedMatch.group(2);
     }

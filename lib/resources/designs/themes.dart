@@ -5,14 +5,13 @@ import 'app_colors.dart';
 class Themes {
   // Light Theme
   static final ThemeData lightTheme = ThemeData.light().copyWith(
-    useMaterial3: true,
     scaffoldBackgroundColor: AppColors.scaffoldBackgroundColor,
     // Kill surface tint so grays don't get a blue cast
     colorScheme: ThemeData.light().colorScheme.copyWith(
-      primary: AppColors.primaryColor,
-      secondary: AppColors.primaryColor,
-      surfaceTint: Colors.transparent,
-    ),
+          primary: AppColors.primaryColor,
+          secondary: AppColors.primaryColor,
+          surfaceTint: Colors.transparent,
+        ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.scaffoldBackgroundColor,
       elevation: 0,
@@ -31,13 +30,12 @@ class Themes {
 
   // Dark Theme
   static final ThemeData darkTheme = ThemeData.dark().copyWith(
-    useMaterial3: true,
     scaffoldBackgroundColor: AppColors.darkScaffoldBackgroundColor,
     colorScheme: ThemeData.dark().colorScheme.copyWith(
-      primary: AppColors.primaryColor,
-      secondary: AppColors.primaryColor,
-      surfaceTint: Colors.transparent,
-    ),
+          primary: AppColors.primaryColor,
+          secondary: AppColors.primaryColor,
+          surfaceTint: Colors.transparent,
+        ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkScaffoldBackgroundColor,
       elevation: 0,

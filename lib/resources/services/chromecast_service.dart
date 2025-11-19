@@ -100,15 +100,13 @@ class ChromeCastService {
           metadata: GoogleCastGenericMediaMetadata(
             title: file.title ?? audiobook.title,
             subtitle: audiobook.author ?? 'Unknown',
-            images: audiobook.lowQCoverImage != null
-                ? [
-                    GoogleCastImage(
-                      url: Uri.parse(audiobook.lowQCoverImage!),
-                      width: 480,
-                      height: 480,
-                    ),
-                  ]
-                : [],
+            images: [
+              GoogleCastImage(
+                url: Uri.parse(audiobook.lowQCoverImage!),
+                width: 480,
+                height: 480,
+              ),
+            ],
           ),
         ),
       ));

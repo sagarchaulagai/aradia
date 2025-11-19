@@ -17,7 +17,7 @@ class GenreAudiobooksBloc
   // Use the Archive.org identifier exposed as `id`; fallback to title+author if needed.
   List<Audiobook> _mergeUniqueById(
       List<Audiobook> current, List<Audiobook> incoming) {
-    String _key(Audiobook a) {
+    String key(Audiobook a) {
       final id = (a.id).trim();
       if (id.isNotEmpty) return id;
       final t = (a.title).trim().toLowerCase();
@@ -25,10 +25,10 @@ class GenreAudiobooksBloc
       return '$t|||$c';
     }
 
-    final seen = current.map(_key).toSet();
+    final seen = current.map(key).toSet();
     final dedupIncoming = <Audiobook>[];
     for (final a in incoming) {
-      final k = _key(a);
+      final k = key(a);
       if (k.isEmpty) continue;
       if (seen.add(k)) dedupIncoming.add(a);
     }
@@ -57,9 +57,9 @@ class GenreAudiobooksBloc
   }
 
   Future<void> _onLoadInitialAudiobooks(
-      LoadInitialAudiobooksEvent event,
-      Emitter<GenreAudiobooksState> emit,
-      ) async {
+    LoadInitialAudiobooksEvent event,
+    Emitter<GenreAudiobooksState> emit,
+  ) async {
     _lastGenre = event.genre; // <-- remember genre
 
     // NEW: don't double-load same listType while it's already loading
@@ -80,17 +80,16 @@ class GenreAudiobooksBloc
       final result = await _fetchAudiobooks(event.genre, event.listType, 1);
 
       result.fold(
-            (error) => emit(state.copyWith(
+        (error) => emit(state.copyWith(
           errors: Map.of(state.errors)..[event.listType] = error,
           isLoading: Map.of(state.isLoading)..[event.listType] = false,
         )),
-            (audiobooks) {
+        (audiobooks) {
           // Initial page = 1
           final nextPageMap = Map.of(state.page)..[event.listType] = 1;
 
           emit(state.copyWith(
-            audiobooks: Map.of(state.audiobooks)
-              ..[event.listType] = audiobooks,
+            audiobooks: Map.of(state.audiobooks)..[event.listType] = audiobooks,
             isLoading: Map.of(state.isLoading)..[event.listType] = false,
             hasReachedMax: Map.of(state.hasReachedMax)
               ..[event.listType] = audiobooks.length < 20,
@@ -107,9 +106,9 @@ class GenreAudiobooksBloc
   }
 
   Future<void> _onLoadMoreAudiobooks(
-      LoadMoreAudiobooksEvent event,
-      Emitter<GenreAudiobooksState> emit,
-      ) async {
+    LoadMoreAudiobooksEvent event,
+    Emitter<GenreAudiobooksState> emit,
+  ) async {
     // Check if we've reached max for this list type
     if (state.hasReachedMaxForListType(event.listType)) return;
 
@@ -132,24 +131,24 @@ class GenreAudiobooksBloc
       );
 
       result.fold(
-            (error) => emit(state.copyWith(
+        (error) => emit(state.copyWith(
           errors: Map.of(state.errors)..[event.listType] = error,
           isLoading: Map.of(state.isLoading)..[event.listType] = false,
         )),
-            (newAudiobooks) {
+        (newAudiobooks) {
           final currentAudiobooks =
-          state.getAudiobooksForListType(event.listType);
+              state.getAudiobooksForListType(event.listType);
 
           // DE-DUPE HERE
           final updatedAudiobooks =
-          _mergeUniqueById(currentAudiobooks, newAudiobooks);
+              _mergeUniqueById(currentAudiobooks, newAudiobooks);
 
           emit(state.copyWith(
             audiobooks: Map.of(state.audiobooks)
               ..[event.listType] = updatedAudiobooks,
             isLoading: Map.of(state.isLoading)..[event.listType] = false,
             hasReachedMax: Map.of(state.hasReachedMax)
-            // Keep your original logic so we don't prematurely stop due to de-dupe
+              // Keep your original logic so we don't prematurely stop due to de-dupe
               ..[event.listType] = newAudiobooks.length < 20,
             page: Map.of(state.page)..[event.listType] = nextPage,
           ));

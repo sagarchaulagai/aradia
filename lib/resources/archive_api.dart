@@ -103,7 +103,6 @@ String _languageQueryClause() {
   return clause;
 }
 
-
 /// Build a full advancedsearch URL with a base collection, optional extra query,
 /// sorting, paging, and injected language clause.
 String _buildAdvancedSearchUrl({
@@ -247,7 +246,7 @@ const Map<String, List<String>> genresSubjectsJson = {
     "poems",
     "nursery rhyme"
   ],
-  "religion":[
+  "religion": [
     "religion",
     "god",
     "theology",
@@ -330,7 +329,7 @@ class _LanguageSubjectIndex {
               .where((s) => s.isNotEmpty)
               .toSet()
               .toList();
-          map[currentLangCode!] = items;
+          map[currentLangCode] = items;
           buf.clear();
         }
         final headerName = m.group(1)!.toLowerCase();
@@ -350,7 +349,7 @@ class _LanguageSubjectIndex {
           .where((s) => s.isNotEmpty)
           .toSet()
           .toList();
-      map[currentLangCode!] = items;
+      map[currentLangCode] = items;
     }
     _cache = map;
     AppLogger.info('Loaded language subjects for ${_cache!.length} languages',
@@ -397,7 +396,8 @@ final Map<String, List<RegExp>> _categoryFilters = {
     // ===== German =====
     RegExp(r'\bkrieg(e|en)?\b', caseSensitive: false),
     RegExp(r'\bweltkrieg(e|en)?\b', caseSensitive: false),
-    RegExp(r'\bdrei(ss|ß)igj[aä]hrig(er|en|e)?\s*krieg\b', caseSensitive: false),
+    RegExp(r'\bdrei(ss|ß)igj[aä]hrig(er|en|e)?\s*krieg\b',
+        caseSensitive: false),
     RegExp(r'\berster\s*weltkrieg\b', caseSensitive: false),
     RegExp(r'\bzweiter\s*weltkrieg\b', caseSensitive: false),
     RegExp(r'\bboxeraufstand\b', caseSensitive: false),
@@ -523,29 +523,29 @@ final Map<String, List<RegExp>> _categoryFilters = {
   ],
   'adventure': [
     RegExp(r'\badventur', caseSensitive: false),
-    RegExp(r'\baventur', caseSensitive: false),  // fr/es/it/pt
+    RegExp(r'\baventur', caseSensitive: false), // fr/es/it/pt
     RegExp(r'\babenteuer\b', caseSensitive: false), // de
     RegExp(r'\bseikkailu\b', caseSensitive: false), // fi
-    RegExp(r'\bäventyr\b', caseSensitive: false),   // sv
+    RegExp(r'\bäventyr\b', caseSensitive: false), // sv
     RegExp(r'\bviaje|viajar|voyage|viagem\b', caseSensitive: false),
-    RegExp(r'\bexplor', caseSensitive: false),      // exploration
+    RegExp(r'\bexplor', caseSensitive: false), // exploration
   ],
   'biography': [
     RegExp(r'\bbiograph', caseSensitive: false),
     RegExp(r'\bbiograf', caseSensitive: false),
     RegExp(r'\bmemoi', caseSensitive: false),
     RegExp(r'\blebensbeschreib', caseSensitive: false), // de
-    RegExp(r'\bvida\b', caseSensitive: false),          // es/pt
-    RegExp(r'\bvie\b', caseSensitive: false),           // fr
+    RegExp(r'\bvida\b', caseSensitive: false), // es/pt
+    RegExp(r'\bvie\b', caseSensitive: false), // fr
   ],
   'children': [
     RegExp(r'\bchildren\b', caseSensitive: false),
     RegExp(r'\bjuvenil|juvenile\b', caseSensitive: false),
     RegExp(r'\benfant|enfants\b', caseSensitive: false),
-    RegExp(r'\bkind(er)?\b', caseSensitive: false),  // de
-    RegExp(r'\bbarn\b', caseSensitive: false),       // sv/no
+    RegExp(r'\bkind(er)?\b', caseSensitive: false), // de
+    RegExp(r'\bbarn\b', caseSensitive: false), // sv/no
     RegExp(r'\bniñ[oa]s?\b', caseSensitive: false), // es
-    RegExp(r'\bragazzi\b', caseSensitive: false),   // it
+    RegExp(r'\bragazzi\b', caseSensitive: false), // it
     RegExp(r'\bboys|girls|kids\b', caseSensitive: false),
     RegExp(r'\bfairy tale|nursery rhyme\b', caseSensitive: false),
   ],
@@ -553,12 +553,12 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bcomedy|\bhumou?r|\bsatire|\bfarce', caseSensitive: false),
     RegExp(r'\bcom(è|e)die\b', caseSensitive: false), // fr
     RegExp(r'\bkom(ö|o)die\b', caseSensitive: false), // de
-    RegExp(r'\bsátira\b', caseSensitive: false),      // es/pt
-    RegExp(r'\bsatira\b', caseSensitive: false),      // it/eo
+    RegExp(r'\bsátira\b', caseSensitive: false), // es/pt
+    RegExp(r'\bsatira\b', caseSensitive: false), // it/eo
   ],
   'fantasy': [
     RegExp(r'\bfantasy\b', caseSensitive: false),
-    RegExp(r'\bfantast', caseSensitive: false),     // stems
+    RegExp(r'\bfantast', caseSensitive: false), // stems
     RegExp(r'\bmyth', caseSensitive: false),
     RegExp(r'\bmytholog', caseSensitive: false),
     RegExp(r'\blegend', caseSensitive: false),
@@ -570,39 +570,49 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bterror\b', caseSensitive: false),
     RegExp(r'\bghost\b', caseSensitive: false),
     RegExp(r'\bsupernatural\b', caseSensitive: false),
-    RegExp(r'\bespanto\b', caseSensitive: false),    // es/pt
-    RegExp(r'\bgespenst\b', caseSensitive: false),   // de
+    RegExp(r'\bespanto\b', caseSensitive: false), // es/pt
+    RegExp(r'\bgespenst\b', caseSensitive: false), // de
   ],
   'love': [
     RegExp(r'\bromance\b', caseSensitive: false),
     RegExp(r'\blove( story)?\b', caseSensitive: false),
     RegExp(r'\bmarriage\b', caseSensitive: false),
     RegExp(r'\brelationship', caseSensitive: false),
-    RegExp(r'\bamour\b', caseSensitive: false),   // fr
-    RegExp(r'\bamore\b', caseSensitive: false),   // it
-    RegExp(r'\bamor\b', caseSensitive: false),    // es/pt
+    RegExp(r'\bamour\b', caseSensitive: false), // fr
+    RegExp(r'\bamore\b', caseSensitive: false), // it
+    RegExp(r'\bamor\b', caseSensitive: false), // es/pt
     RegExp(r'\brakkaus\b', caseSensitive: false), // fi
   ],
   'mystery': [
     // ===== English =====
-    RegExp(r'\bmystery|whodunit|who-?dunn?it|detective|sleuth|thriller|noir|cozy\s+mystery|police\s+procedural\b', caseSensitive: false),
-    RegExp(r'\bcrime|criminal|heist|robber(y|ies)?|thief|burglary|theft|kidnapping\b', caseSensitive: false),
-    RegExp(r'\bmurder|homicide|manslaughter|assassin(ation|s?)\b', caseSensitive: false),
-    RegExp(r'\bsuspense|intrigue|investigat(ion|ive)|case\s+files?\b', caseSensitive: false),
+    RegExp(
+        r'\bmystery|whodunit|who-?dunn?it|detective|sleuth|thriller|noir|cozy\s+mystery|police\s+procedural\b',
+        caseSensitive: false),
+    RegExp(
+        r'\bcrime|criminal|heist|robber(y|ies)?|thief|burglary|theft|kidnapping\b',
+        caseSensitive: false),
+    RegExp(r'\bmurder|homicide|manslaughter|assassin(ation|s?)\b',
+        caseSensitive: false),
+    RegExp(r'\bsuspense|intrigue|investigat(ion|ive)|case\s+files?\b',
+        caseSensitive: false),
 
     // ===== German =====
-    RegExp(r'\bkrimi(nal|s|)\b', caseSensitive: false),            // Krimi / Kriminal-
-    RegExp(r'\bverbrechen\b', caseSensitive: false),               // crime
-    RegExp(r'\bmord|totschlag\b', caseSensitive: false),           // murder / manslaughter
+    RegExp(r'\bkrimi(nal|s|)\b', caseSensitive: false), // Krimi / Kriminal-
+    RegExp(r'\bverbrechen\b', caseSensitive: false), // crime
+    RegExp(r'\bmord|totschlag\b',
+        caseSensitive: false), // murder / manslaughter
     RegExp(r'\bdetektiv(en|e|)\b', caseSensitive: false),
-    RegExp(r'\bpolizei(roman|arbeit)\b', caseSensitive: false),    // police novel / work
-    RegExp(r'\bspannung\b', caseSensitive: false),                 // suspense
+    RegExp(r'\bpolizei(roman|arbeit)\b',
+        caseSensitive: false), // police novel / work
+    RegExp(r'\bspannung\b', caseSensitive: false), // suspense
     RegExp(r'\bdieb(stahl)?|raub|entführung\b', caseSensitive: false),
 
     // ===== French =====
     RegExp(r'\bmyst[èe]re(s)?\b', caseSensitive: false),
-    RegExp(r'\b(polici(er|ers?|ère|ères)|roman\s+policier|polar)\b', caseSensitive: false),
-    RegExp(r'\b(enqu[êe]te|enqu[êe]teur(s)?|d[ée]tective?)\b', caseSensitive: false),
+    RegExp(r'\b(polici(er|ers?|ère|ères)|roman\s+policier|polar)\b',
+        caseSensitive: false),
+    RegExp(r'\b(enqu[êe]te|enqu[êe]teur(s)?|d[ée]tective?)\b',
+        caseSensitive: false),
     RegExp(r'\bcrime(s)?|criminel(s|le|les)?\b', caseSensitive: false),
     RegExp(r'\bmeurtre(s)?|assassinat(s)?\b', caseSensitive: false),
     RegExp(r'\bsuspense|intrigue\b', caseSensitive: false),
@@ -613,8 +623,10 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bmist(é|e)rio(s)?|misterio(s)?\b', caseSensitive: false),
     RegExp(r'\bpoliciac[oa]s?|policial(?!\w*mente)\b', caseSensitive: false),
     RegExp(r'\bcrimen(es)?|crim(e|es)?\b', caseSensitive: false),
-    RegExp(r'\bdelito(s)?|delitto(s)?\b', caseSensitive: false),   // es/pt cognates and it form included below too
-    RegExp(r'\bassassinato(s)?|asesinato(s)?|homicid(io|ios|io(s)?)\b', caseSensitive: false),
+    RegExp(r'\bdelito(s)?|delitto(s)?\b',
+        caseSensitive: false), // es/pt cognates and it form included below too
+    RegExp(r'\bassassinato(s)?|asesinato(s)?|homicid(io|ios|io(s)?)\b',
+        caseSensitive: false),
     RegExp(r'\bsuspens[eo]\b|\bintriga(s)?\b', caseSensitive: false),
     RegExp(r'\brobo(s)?|hurto(s)?|secuestro(s)?\b', caseSensitive: false),
     RegExp(r'\bdetective(s)?\b', caseSensitive: false),
@@ -622,7 +634,8 @@ final Map<String, List<RegExp>> _categoryFilters = {
 
     // ===== Italian =====
     RegExp(r'\bmistero(i)?\b', caseSensitive: false),
-    RegExp(r'\bgiallo(i)?\b', caseSensitive: false),               // Italian term for crime/mystery genre
+    RegExp(r'\bgiallo(i)?\b',
+        caseSensitive: false), // Italian term for crime/mystery genre
     RegExp(r'\bpoliziesc(o|hi|i)\b', caseSensitive: false),
     RegExp(r'\bcrimine|reato|delitto\b', caseSensitive: false),
     RegExp(r'\bomicidio(i)?|assassinio(i)?\b', caseSensitive: false),
@@ -642,8 +655,9 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bnoir\b', caseSensitive: false),
 
     // ===== Scandinavian (sv/da/no) =====
-    RegExp(r'\bmyster(ium|ier)\b', caseSensitive: false),          // sv/no
-    RegExp(r'\bdeckare\b|\bkrimi\b', caseSensitive: false),        // sv crime novel / da/no krimi
+    RegExp(r'\bmyster(ium|ier)\b', caseSensitive: false), // sv/no
+    RegExp(r'\bdeckare\b|\bkrimi\b',
+        caseSensitive: false), // sv crime novel / da/no krimi
     RegExp(r'\bbrott|forbrydelse|forbrytelse\b', caseSensitive: false),
     RegExp(r'\bmord\b', caseSensitive: false),
     RegExp(r'\bsp[äa]nning|sp[æa]nding\b', caseSensitive: false),
@@ -667,27 +681,28 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bmorderstw(o|a)\b', caseSensitive: false),
     RegExp(r'\bśledztw(o|a)\b|\bdochodzeni(e|a)\b', caseSensitive: false),
     RegExp(r'\bdetektyw\b', caseSensitive: false),
-    RegExp(r'\bnapieci(e|a)\b', caseSensitive: false),             // suspense/tension
+    RegExp(r'\bnapieci(e|a)\b', caseSensitive: false), // suspense/tension
     RegExp(r'\bkradzie(ż|z)y?\b|\bnapad\b|\bporwanie\b', caseSensitive: false),
 
     // ===== Russian / Slavic =====
     RegExp(r'детектив', caseSensitive: false),
-    RegExp(r'преступлен', caseSensitive: false),                   // crime
-    RegExp(r'убийств', caseSensitive: false),                      // murder
-    RegExp(r'загадк|тайн', caseSensitive: false),                  // mystery/secret
+    RegExp(r'преступлен', caseSensitive: false), // crime
+    RegExp(r'убийств', caseSensitive: false), // murder
+    RegExp(r'загадк|тайн', caseSensitive: false), // mystery/secret
     RegExp(r'триллер', caseSensitive: false),
-    RegExp(r'угон|похищен', caseSensitive: false),                 // kidnapping
-    RegExp(r'краж|грабеж|разбой', caseSensitive: false),           // theft/robbery
-    RegExp(r'следств|расследован', caseSensitive: false),          // investigation
+    RegExp(r'угон|похищен', caseSensitive: false), // kidnapping
+    RegExp(r'краж|грабеж|разбой', caseSensitive: false), // theft/robbery
+    RegExp(r'следств|расследован', caseSensitive: false), // investigation
     RegExp(r'саспенс', caseSensitive: false),
 
     // ===== Greek =====
     RegExp(r'\bμυστ(ή|η)ριο\b', caseSensitive: false),
-    RegExp(r'\bαστυνομικ(ό|ά)\b', caseSensitive: false),           // crime/police genre
+    RegExp(r'\bαστυνομικ(ό|ά)\b', caseSensitive: false), // crime/police genre
     RegExp(r'\bέγκλημα\b|\bφόνος\b', caseSensitive: false),
     RegExp(r'\bντετέκτιβ\b', caseSensitive: false),
     RegExp(r'\bθρίλερ\b|\bσασπένς\b', caseSensitive: false),
-    RegExp(r'\bκλοπ(ή|ές)\b|\bληστε(ία|ίες)\b|\bαπαγωγ(ή|ές)\b', caseSensitive: false),
+    RegExp(r'\bκλοπ(ή|ές)\b|\bληστε(ία|ίες)\b|\bαπαγωγ(ή|ές)\b',
+        caseSensitive: false),
 
     // ===== Catalan =====
     RegExp(r'\bmisteri(s)?\b', caseSensitive: false),
@@ -711,8 +726,8 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'侦探|偵探'),
     RegExp(r'犯罪'),
     RegExp(r'谋杀|謀殺|兇殺|凶殺'),
-    RegExp(r'惊悚|驚悚'),                                        // thriller
-    RegExp(r'悬念|懸念'),                                        // suspense
+    RegExp(r'惊悚|驚悚'), // thriller
+    RegExp(r'悬念|懸念'), // suspense
     RegExp(r'绑架|綁架'),
     RegExp(r'盗窃|盜竊|抢劫|搶劫'),
 
@@ -733,19 +748,20 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'פש[עה]', caseSensitive: false),
     RegExp(r'רצח', caseSensitive: false),
     RegExp(r'חטיפה', caseSensitive: false),
-    RegExp(r'מתח', caseSensitive: false),                          // suspense
-    RegExp(r'חקיר', caseSensitive: false),                         // investigation stem
+    RegExp(r'מתח', caseSensitive: false), // suspense
+    RegExp(r'חקיר', caseSensitive: false), // investigation stem
 
     // ===== Latin (rare, but catch some tags) =====
     RegExp(r'\bmysterium\b', caseSensitive: false),
     RegExp(r'\bcrimen\b', caseSensitive: false),
-    RegExp(r'\bcaedes\b', caseSensitive: false),                   // killing/murder
-    RegExp(r'\binquisitio\b', caseSensitive: false),               // investigation
+    RegExp(r'\bcaedes\b', caseSensitive: false), // killing/murder
+    RegExp(r'\binquisitio\b', caseSensitive: false), // investigation
     RegExp(r'\bfurto|furtum\b', caseSensitive: false),
 
     // General catch-alls across languages
     RegExp(r'\bnoir\b', caseSensitive: false),
-    RegExp(r'\b(policier|policial|policiaco|poliziesco|politie(roman)?)\b', caseSensitive: false),
+    RegExp(r'\b(policier|policial|policiaco|poliziesco|politie(roman)?)\b',
+        caseSensitive: false),
   ],
   'philosophy': [
     // ===== English =====
@@ -781,7 +797,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bethik\b', caseSensitive: false),
     RegExp(r'\bmoral\b', caseSensitive: false),
     RegExp(r'\blogik\b', caseSensitive: false),
-    RegExp(r'\berkenntnistheor', caseSensitive: false),   // epistemology (stem)
+    RegExp(r'\berkenntnistheor', caseSensitive: false), // epistemology (stem)
     RegExp(r'\bmetaphysik\b', caseSensitive: false),
     RegExp(r'\bästhetik\b', caseSensitive: false),
     RegExp(r'\bontologie\b', caseSensitive: false),
@@ -792,9 +808,9 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bidealism(us)?\b', caseSensitive: false),
     RegExp(r'\brealism(us)?\b', caseSensitive: false),
     RegExp(r'\bmaterialism(us)?\b', caseSensitive: false),
-    RegExp(r'\bstoizism(us)?\b', caseSensitive: false),    // Stoizismus
+    RegExp(r'\bstoizism(us)?\b', caseSensitive: false), // Stoizismus
     RegExp(r'\bskeptizism(us)?\b', caseSensitive: false),
-    RegExp(r'\bzynism(us)?\b', caseSensitive: false),      // Zynismus
+    RegExp(r'\bzynism(us)?\b', caseSensitive: false), // Zynismus
     RegExp(r'\bhedonism(us)?\b', caseSensitive: false),
     RegExp(r'\butilitarism(us)?\b', caseSensitive: false),
     RegExp(r'\bdeterminism(us)?\b', caseSensitive: false),
@@ -802,7 +818,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bhumanism(us)?\b', caseSensitive: false),
     RegExp(r'\bscholastik\b', caseSensitive: false),
     RegExp(r'\bpatristik\b', caseSensitive: false),
-    RegExp(r'\baufkl(ä|a)rung\b', caseSensitive: false),   // Enlightenment
+    RegExp(r'\baufkl(ä|a)rung\b', caseSensitive: false), // Enlightenment
 
     // ===== French =====
     RegExp(r'\bphilosoph(ie|es|e|ique|iques|e[sr])\b', caseSensitive: false),
@@ -830,7 +846,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bhumanisme\b', caseSensitive: false),
     RegExp(r'\bscolastique\b', caseSensitive: false),
     RegExp(r'\bpatristique\b', caseSensitive: false),
-    RegExp(r'\blumi[èe]res\b', caseSensitive: false),      // Enlightenment
+    RegExp(r'\blumi[èe]res\b', caseSensitive: false), // Enlightenment
 
     // ===== Spanish / Portuguese =====
     RegExp(r'\bfilosof[ií]a(s)?\b', caseSensitive: false),
@@ -850,7 +866,8 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\brealismo(s)?\b', caseSensitive: false),
     RegExp(r'\bmaterialismo(s)?\b', caseSensitive: false),
     RegExp(r'\bestoicismo(s)?\b', caseSensitive: false),
-    RegExp(r'\b(e|c)scepticismo(s)?\b', caseSensitive: false), // escepticismo / cepticismo (pt)
+    RegExp(r'\b(e|c)scepticismo(s)?\b',
+        caseSensitive: false), // escepticismo / cepticismo (pt)
     RegExp(r'\bcinismo(s)?\b', caseSensitive: false),
     RegExp(r'\bhedonismo(s)?\b', caseSensitive: false),
     RegExp(r'\butilitarismo(s)?\b', caseSensitive: false),
@@ -916,13 +933,13 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'гуманизм', caseSensitive: false),
     RegExp(r'схоластик', caseSensitive: false),
     RegExp(r'патристик', caseSensitive: false),
-    RegExp(r'просвещен', caseSensitive: false),  // Enlightenment (stem)
+    RegExp(r'просвещен', caseSensitive: false), // Enlightenment (stem)
 
     // ===== Greek (modern & ancient) =====
     RegExp(r'φιλοσοφ(ία|ίας|ος|ική|ικ[έe]ς?)', caseSensitive: false),
     RegExp(r'ηθικ', caseSensitive: false),
     RegExp(r'λογικ', caseSensitive: false),
-    RegExp(r'γνωσιολογ', caseSensitive: false),    // epistemology
+    RegExp(r'γνωσιολογ', caseSensitive: false), // epistemology
     RegExp(r'αισθητικ', caseSensitive: false),
     RegExp(r'μεταφυσικ', caseSensitive: false),
     RegExp(r'οντολογ', caseSensitive: false),
@@ -937,7 +954,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'σκεπτικισμ', caseSensitive: false),
     RegExp(r'κυνισμ', caseSensitive: false),
     RegExp(r'ηδονισμ', caseSensitive: false),
-    RegExp(r'ωφελιμισμ', caseSensitive: false),    // utilitarianism
+    RegExp(r'ωφελιμισμ', caseSensitive: false), // utilitarianism
     RegExp(r'ντετερμινισμ', caseSensitive: false), // determinism (phon.)
     RegExp(r'πραγματισμ', caseSensitive: false),
     RegExp(r'ουμανισμ', caseSensitive: false),
@@ -1009,7 +1026,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bmoraali\b', caseSensitive: false),
     RegExp(r'\blogiikk?a?\b', caseSensitive: false),
     RegExp(r'\bmetafysiikk?a?\b', caseSensitive: false),
-    RegExp(r'\btietoteor', caseSensitive: false),      // epistemology stem
+    RegExp(r'\btietoteor', caseSensitive: false), // epistemology stem
     RegExp(r'\bestetiikk?a?\b', caseSensitive: false),
     RegExp(r'\bontologi(a)?\b', caseSensitive: false),
     RegExp(r'\beksistentialism(i)?\b', caseSensitive: false),
@@ -1066,7 +1083,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bmoraal\b', caseSensitive: false),
     RegExp(r'\blogica\b', caseSensitive: false),
     RegExp(r'\bmetafysica\b', caseSensitive: false),
-    RegExp(r'\bkennisleer\b', caseSensitive: false),    // epistemology
+    RegExp(r'\bkennisleer\b', caseSensitive: false), // epistemology
     RegExp(r'\besthetica\b', caseSensitive: false),
     RegExp(r'\bontologie\b', caseSensitive: false),
     RegExp(r'\bexistentialisme\b', caseSensitive: false),
@@ -1129,7 +1146,9 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bontologi[ao]\b', caseSensitive: false),
     RegExp(r'\bekzistenc(ial)?ismo\b', caseSensitive: false),
     RegExp(r'\bfenomenologi[ao]\b', caseSensitive: false),
-    RegExp(r'\braci(ism|ismo)\b', caseSensitive: false), // some corpora use raciismo for rationalism; kept cautiously
+    RegExp(r'\braci(ism|ismo)\b',
+        caseSensitive:
+            false), // some corpora use raciismo for rationalism; kept cautiously
     RegExp(r'\bempirismo\b', caseSensitive: false),
     RegExp(r'\bidealismo\b', caseSensitive: false),
     RegExp(r'\brealismo\b', caseSensitive: false),
@@ -1230,8 +1249,8 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bpoesi', caseSensitive: false),
     RegExp(r'\bpoez(j|í|i)a\b', caseSensitive: false),
     RegExp(r'\bgedicht\b', caseSensitive: false), // de
-    RegExp(r'\bvers\b', caseSensitive: false),    // fr/es/pt
-    RegExp(r'\bstih\b', caseSensitive: false),    // slavic
+    RegExp(r'\bvers\b', caseSensitive: false), // fr/es/pt
+    RegExp(r'\bstih\b', caseSensitive: false), // slavic
   ],
   'romance': [
     RegExp(r'\bromance\b', caseSensitive: false),
@@ -1246,7 +1265,7 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'\bsci-?fi\b', caseSensitive: false),
     RegExp(r'\bfic(ci[oó]n|ção)\s+cient', caseSensitive: false), // es/pt
     RegExp(r'\bfantascien', caseSensitive: false), // it
-    RegExp(r'\bfiktion\b', caseSensitive: false),  // de
+    RegExp(r'\bfiktion\b', caseSensitive: false), // de
     RegExp(r'\bfutur(ism|o)\b', caseSensitive: false),
     RegExp(r'\btechnolog', caseSensitive: false),
   ],
@@ -1638,34 +1657,41 @@ final Map<String, List<RegExp>> _categoryFilters = {
     RegExp(r'詩編|詩篇'),
 
     // ===== Hebrew =====
-    RegExp(r'יהדות', caseSensitive: false),              // Judaism
-    RegExp(r'תורה', caseSensitive: false),               // Torah
-    RegExp(r'תנ"?ך', caseSensitive: false),              // Tanakh
-    RegExp(r'תלמוד', caseSensitive: false),              // Talmud
-    RegExp(r'משנה', caseSensitive: false),               // Mishnah
-    RegExp(r'מדרש', caseSensitive: false),              // Midrash
-    RegExp(r'רב', caseSensitive: false),                 // Rabbi
-    RegExp(r'בית\s*כנסת', caseSensitive: false),        // Synagogue
-    RegExp(r'תפילה', caseSensitive: false),             // Prayer
-    RegExp(r'תהילים', caseSensitive: false),            // Psalms
+    RegExp(r'יהדות', caseSensitive: false), // Judaism
+    RegExp(r'תורה', caseSensitive: false), // Torah
+    RegExp(r'תנ"?ך', caseSensitive: false), // Tanakh
+    RegExp(r'תלמוד', caseSensitive: false), // Talmud
+    RegExp(r'משנה', caseSensitive: false), // Mishnah
+    RegExp(r'מדרש', caseSensitive: false), // Midrash
+    RegExp(r'רב', caseSensitive: false), // Rabbi
+    RegExp(r'בית\s*כנסת', caseSensitive: false), // Synagogue
+    RegExp(r'תפילה', caseSensitive: false), // Prayer
+    RegExp(r'תהילים', caseSensitive: false), // Psalms
     // Additional religious/biblical/literary subjects from dump
-    RegExp(r'בראשית|genesis', caseSensitive: false),     // Book of Genesis
-    RegExp(r'שמות|šemot', caseSensitive: false),         // Book of Exodus (Šemot)
-    RegExp(r'ספר(ים| הקבצנים)?|ספורים|ספור(ים)?', caseSensitive: false), // sefarim / seforim (books/scriptures)
-    RegExp(r'אהבת\s+ציון', caseSensitive: false),        // Love of Zion (classic religious novel)
-    RegExp(r'ציונו?ת|Zionism', caseSensitive: false),    // Zionism
-    RegExp(r'מדינת\s+היהודים|Judenstaat', caseSensitive: false), // The Jewish State
-    RegExp(r'ספר\s+הקבצנים', caseSensitive: false),     // Book of Beggars
+    RegExp(r'בראשית|genesis', caseSensitive: false), // Book of Genesis
+    RegExp(r'שמות|šemot', caseSensitive: false), // Book of Exodus (Šemot)
+    RegExp(r'ספר(ים| הקבצנים)?|ספורים|ספור(ים)?',
+        caseSensitive: false), // sefarim / seforim (books/scriptures)
+    RegExp(r'אהבת\s+ציון',
+        caseSensitive: false), // Love of Zion (classic religious novel)
+    RegExp(r'ציונו?ת|Zionism', caseSensitive: false), // Zionism
+    RegExp(r'מדינת\s+היהודים|Judenstaat',
+        caseSensitive: false), // The Jewish State
+    RegExp(r'ספר\s+הקבצנים', caseSensitive: false), // Book of Beggars
     // Religious authors / Jewish literary figures tied to religion & Zionism
     RegExp(r'אברהם\s+מאפו|Abraham\s+Mapu', caseSensitive: false),
     RegExp(r'אחד\s+העם|Ahad\s+Haam|Asher\s+Ginzberg', caseSensitive: false),
     RegExp(r'אליעזר\s+בן\s+יהודה|Ben\s+Yehuda', caseSensitive: false),
     RegExp(r'מנדלה\s+מוכר\s+ספרים|Mendele', caseSensitive: false),
-    RegExp(r'שלום\s+עליכם|Shalom\s+Aleichem|Solomon\s+Rabinovich', caseSensitive: false),
-    RegExp(r'יוסף\s+חיים?\s+ברנר|Yosef\s+(Haim|Hayim)\s+Brenner', caseSensitive: false),
-    RegExp(r'ביאליק|biaik', caseSensitive: false),       // H.N. Bialik, Jewish poet
-    RegExp(r'Micah|מיכה', caseSensitive: false),         // Micah / prophet
-    RegExp(r"(?:\b(?:Micah|Micha)\s+(?:Yosef|Joseph|Josef)?\s*(?:Berdichevsky|Berdychevsky|Berdichevski|Berdichevskii|Berdyczewski)\b|מיכה(?:\s+יוסף)?\s+ברדיצ['׳’]?בסקי)", caseSensitive: false),
+    RegExp(r'שלום\s+עליכם|Shalom\s+Aleichem|Solomon\s+Rabinovich',
+        caseSensitive: false),
+    RegExp(r'יוסף\s+חיים?\s+ברנר|Yosef\s+(Haim|Hayim)\s+Brenner',
+        caseSensitive: false),
+    RegExp(r'ביאליק|biaik', caseSensitive: false), // H.N. Bialik, Jewish poet
+    RegExp(r'Micah|מיכה', caseSensitive: false), // Micah / prophet
+    RegExp(
+        r"(?:\b(?:Micah|Micha)\s+(?:Yosef|Joseph|Josef)?\s*(?:Berdichevsky|Berdychevsky|Berdichevski|Berdichevskii|Berdyczewski)\b|מיכה(?:\s+יוסף)?\s+ברדיצ['׳’]?בסקי)",
+        caseSensitive: false),
     // Cultural/Religious Jewish life subjects
     RegExp(r'ספרות\s+עברית|Hebrew\s+literature', caseSensitive: false),
     RegExp(r'שירה\s+עברית|Hebrew\s+poetry', caseSensitive: false),
@@ -1686,7 +1712,10 @@ Future<String> _buildSubjectQueryForGenre(String genreLower) async {
   final box = Hive.box('language_prefs_box');
   final selected = List<String>.from(
     box.get('selectedLanguages', defaultValue: <String>[]),
-  ).map((c) => c.toLowerCase()).where((c) => _langAliases.containsKey(c)).toList();
+  )
+      .map((c) => c.toLowerCase())
+      .where((c) => _langAliases.containsKey(c))
+      .toList();
 
   // Try memo first: key is "<langs>#<genre>"
   final memoKey = '${selected.join(",")}#$genreLower';
@@ -1750,9 +1779,11 @@ class ArchiveApi {
     final headers = <String, String>{};
     final cached = _cache[url];
 
-    if (cached != null && DateTime.now().difference(cached.storedAt) < _maxStale) {
+    if (cached != null &&
+        DateTime.now().difference(cached.storedAt) < _maxStale) {
       if (cached.etag != null) headers['If-None-Match'] = cached.etag!;
-      if (cached.lastModified != null) headers['If-Modified-Since'] = cached.lastModified!;
+      if (cached.lastModified != null)
+        headers['If-Modified-Since'] = cached.lastModified!;
     }
 
     final resp = await _client.get(Uri.parse(url), headers: headers);
@@ -1791,9 +1822,9 @@ class ArchiveApi {
   static void dispose() => _client.close();
 
   Future<Either<String, List<Audiobook>>> getLatestAudiobook(
-      int page,
-      int rows,
-      ) async {
+    int page,
+    int rows,
+  ) async {
     final url = _buildAdvancedSearchUrl(
       collection: 'librivoxaudio',
       sortBy: 'addeddate',
@@ -1804,9 +1835,9 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> getMostViewedWeeklyAudiobook(
-      int page,
-      int rows,
-      ) async {
+    int page,
+    int rows,
+  ) async {
     final url = _buildAdvancedSearchUrl(
       collection: 'librivoxaudio',
       sortBy: 'week',
@@ -1817,9 +1848,9 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> getMostDownloadedEverAudiobook(
-      int page,
-      int rows,
-      ) async {
+    int page,
+    int rows,
+  ) async {
     final url = _buildAdvancedSearchUrl(
       collection: 'librivoxaudio',
       sortBy: 'downloads',
@@ -1830,13 +1861,14 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> getAudiobooksByGenre(
-      String genre,
-      int page,
-      int rows,
-      String sortBy,
-      ) async {
+    String genre,
+    int page,
+    int rows,
+    String sortBy,
+  ) async {
     final genreQuery = genre
-        .split(RegExp(r'\s+OR\s+', caseSensitive: false)) // split by any 'OR' variant
+        .split(RegExp(r'\s+OR\s+',
+            caseSensitive: false)) // split by any 'OR' variant
         .map((s) => s.trim().toLowerCase())
         .join(' OR '); // join back with uppercase OR
 
@@ -1851,8 +1883,8 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<AudiobookFile>>> getAudiobookFiles(
-      String identifier,
-      ) async {
+    String identifier,
+  ) async {
     final url = "https://archive.org/metadata/$identifier/files?output=json";
     try {
       final body = await _getJson(url);
@@ -1860,13 +1892,18 @@ class ArchiveApi {
 
       final List result = resJson["result"] ?? const [];
       String? highQCoverImage = result.firstWhere(
-            (item) => item is Map && item["source"] == "original" && item["format"] == "JPEG",
+        (item) =>
+            item is Map &&
+            item["source"] == "original" &&
+            item["format"] == "JPEG",
         orElse: () => null,
       )?["name"];
 
       final files = <AudiobookFile>[];
       for (final item in result) {
-        if (item is Map && item["source"] == "original" && item["track"] != null) {
+        if (item is Map &&
+            item["source"] == "original" &&
+            item["track"] != null) {
           item["identifier"] = identifier;
           item["highQCoverImage"] = highQCoverImage;
           files.add(AudiobookFile.fromJson(item));
@@ -1879,10 +1916,10 @@ class ArchiveApi {
   }
 
   Future<Either<String, List<Audiobook>>> searchAudiobook(
-      String searchQuery,
-      int page,
-      int rows,
-      ) async {
+    String searchQuery,
+    int page,
+    int rows,
+  ) async {
     // Encode the free-form query to avoid breaking the `q` param.
     final encoded = Uri.encodeComponent(searchQuery);
     final lang = _languageQueryClause(); // may be empty
@@ -1902,7 +1939,8 @@ class ArchiveApi {
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-        final docs = (decoded['response']['docs'] as List).cast<Map<String, dynamic>>();
+        final docs =
+            (decoded['response']['docs'] as List).cast<Map<String, dynamic>>();
 
         // De-dupe raw docs by Archive.org identifier before building models
         final byId = <String, Map<String, dynamic>>{};

@@ -330,7 +330,7 @@ class MyAudioHandler extends BaseAudioHandler {
       AppLogger.debug(safeIndex.toString());
       AppLogger.debug(positionInMilliseconds.toString());
       for (int i = 0; i < (_audioSources?.length ?? 0); i++) {
-        AppLogger.debug(_audioSources?[i]?.toString() ?? 'null');
+        AppLogger.debug(_audioSources?[i].toString() ?? 'null');
       }
 
       await _player.setAudioSources(
@@ -389,7 +389,7 @@ class MyAudioHandler extends BaseAudioHandler {
         try {
           // Pause local player to avoid double playback
           await _player.pause();
-          
+
           await _chromeCastService.loadAudiobook(
             audiobook,
             files,
@@ -594,14 +594,14 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     await _restoreQueueFromBoxIfEmpty(); // only at cold start
-    
+
     // Route to ChromeCast if connected
     if (_chromeCastService.isConnected) {
       await _chromeCastService.play();
     } else {
       await _player.play();
     }
-    
+
     _broadcastState(_player.playbackEvent);
   }
 
@@ -613,7 +613,7 @@ class MyAudioHandler extends BaseAudioHandler {
     } else {
       await _player.pause();
     }
-    
+
     // Opportunistic persist when pausing the active item
     final id = _activeAudiobookId;
     final idx = _player.currentIndex;
@@ -629,14 +629,14 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> stop() async {
     _positionUpdateTimer?.cancel();
-    
+
     // Route to ChromeCast if connected
     if (_chromeCastService.isConnected) {
       await _chromeCastService.stop();
     } else {
       await _player.stop();
     }
-    
+
     _coverSub?.cancel();
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
@@ -650,7 +650,7 @@ class MyAudioHandler extends BaseAudioHandler {
     } else {
       await _player.seek(position);
     }
-    
+
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
   }
@@ -670,7 +670,7 @@ class MyAudioHandler extends BaseAudioHandler {
     } else {
       await _player.seekToNext();
     }
-    
+
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
   }
@@ -683,7 +683,7 @@ class MyAudioHandler extends BaseAudioHandler {
     } else {
       await _player.seekToPrevious();
     }
-    
+
     _broadcastState(_player.playbackEvent);
     await _persistInstant();
   }
@@ -708,7 +708,8 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> rewind() async {
     if (_chromeCastService.isConnected) {
       final newPos = _chromeCastService.currentPosition - _rwAmount;
-      await _chromeCastService.seek(newPos < Duration.zero ? Duration.zero : newPos);
+      await _chromeCastService
+          .seek(newPos < Duration.zero ? Duration.zero : newPos);
     } else {
       final newPos = _player.position - _rwAmount;
       await _player.seek(newPos < Duration.zero ? Duration.zero : newPos);

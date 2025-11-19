@@ -1,4 +1,3 @@
-import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/equalizer_settings.dart';
 import 'package:aradia/resources/services/equalizer_service.dart';
 import 'package:flutter/material.dart';
