@@ -1,26 +1,44 @@
+// lib/resources/services/my_audio_handler.dart
 import 'dart:async';
 import 'dart:io';
 
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
-import 'package:aradia/resources/services/youtube_audio_service.dart';
+import 'package:aradia/resources/services/youtube/youtube_audio_service.dart';
+import 'package:aradia/resources/services/local/cover_image_service.dart';
+import 'package:aradia/resources/services/chromecast_service.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:rxdart_ext/utils.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-class MyAudioHandler extends BaseAudioHandler {
-  final _player = AudioPlayer();
+// Turn a local path or remote URL into a proper Uri for MediaItem.artUri.
+Uri? _artUriFrom(String? s) {
+  if (s == null || s.isEmpty) return null;
+  final local = asLocalPath(s);
+  return local != null ? Uri.file(local) : Uri.parse(s);
+}
 
-  ConcatenatingAudioSource? _playlist;
-  ConcatenatingAudioSource? get playlist => _playlist;
+class MyAudioHandler extends BaseAudioHandler {
+  // Audio effects
+  final AndroidEqualizer _equalizer = AndroidEqualizer();
+  final AndroidLoudnessEnhancer _loudnessEnhancer = AndroidLoudnessEnhancer();
+
+  // ChromeCast service
+  final ChromeCastService _chromeCastService = ChromeCastService();
+  ChromeCastService get chromeCastService => _chromeCastService;
+
+  late final AudioPlayer _player;
+
+  List<AudioSource>? _audioSources;
+  List<AudioSource>? get audioSources => _audioSources;
 
   Box<dynamic> playingAudiobookDetailsBox =
-  Hive.box('playing_audiobook_details_box');
+      Hive.box('playing_audiobook_details_box');
 
   final HistoryOfAudiobook historyOfAudiobook = HistoryOfAudiobook();
   Timer? _positionUpdateTimer;
@@ -28,6 +46,16 @@ class MyAudioHandler extends BaseAudioHandler {
   bool _sessionConfigured = false;
   bool _isReinitializing = false;
   int _initGen = 0;
+
+  MyAudioHandler() {
+    _player = AudioPlayer(
+      audioPipeline: AudioPipeline(
+        androidAudioEffects: [_equalizer, _loudnessEnhancer],
+      ),
+    );
+  }
+
+  StreamSubscription<String>? _coverSub;
 
   // Write barrier + context about the current audiobook
   bool _canPersistProgress = false;
@@ -38,6 +66,32 @@ class MyAudioHandler extends BaseAudioHandler {
   // Debounce MRU/position writes so UIs don’t “flap”
   DateTime _lastPersistAt = DateTime.fromMillisecondsSinceEpoch(0);
   static const _persistInterval = Duration(seconds: 12);
+
+  // Subscriptions to keep PlaybackState in sync
+  StreamSubscription<PlaybackEvent>? _eventSub;
+  StreamSubscription<PlayerState>? _playerStateSub;
+  StreamSubscription<bool>? _playingSub;
+
+  Future<void> _persistInstant() async {
+    if (!_canPersistProgress || _isReinitializing) return;
+    final id = _activeAudiobookId;
+    final idx = _player.currentIndex;
+    if (id == null || idx == null) return;
+    final liveMs = _player.position.inMilliseconds;
+    historyOfAudiobook.updateAudiobookPosition(id, idx, liveMs);
+    playingAudiobookDetailsBox.put('index', idx);
+    playingAudiobookDetailsBox.put('position', liveMs);
+    _lastPersistAt = DateTime.now();
+  }
+
+  /// Rebuild the queue from Hive on cold start *without* starting playback.
+  Future<void> restoreIfNeeded() async {
+    await _restoreQueueFromBoxIfEmpty(); // already silent (no play)
+    // Initialize ChromeCast
+    // await _chromeCastService.initialize();
+    // Make sure the UI gets an immediate state + current media item
+    _broadcastState(_player.playbackEvent);
+  }
 
   Future<void> _ensureAudioSession() async {
     if (_sessionConfigured) return;
@@ -60,14 +114,103 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _sessionConfigured = true;
+
+    // Keep notification/media session state in lock-step with the real player
+    _bindStatePipelines();
+  }
+
+  void _bindStatePipelines() {
+    _eventSub?.cancel();
+    _playerStateSub?.cancel();
+    _playingSub?.cancel();
+    _coverSub?.cancel(); // ← add
+
+    _eventSub = _player.playbackEventStream.listen(_broadcastState);
+    _playerStateSub = _player.playerStateStream.listen((_) {
+      _broadcastState(_player.playbackEvent);
+    });
+    _playingSub = _player.playingStream.listen((_) {
+      _broadcastState(_player.playbackEvent);
+    });
+
+    // swap art immediately if the active audiobook’s cover mapping changes
+    _coverSub = coverArtBus.stream.listen((key) {
+      if (key.isEmpty) return;
+      if (_activeAudiobookId == null) return;
+      if (key == _activeAudiobookId) {
+        _refreshActiveCoverArt();
+      }
+    });
+  }
+
+  Future<Uri?> _resolveActiveArtUri() async {
+    final id = _activeAudiobookId;
+    if (id == null) return null;
+
+    // Prefer mapped cover (custom)
+    final mapped = await getMappedCoverImage(id);
+    final byMap = _artUriFrom(mapped);
+    if (byMap != null) return byMap;
+
+    // Fallback: whatever is in the "now playing" audiobook (Hive)
+    try {
+      final map = Map<String, dynamic>.from(
+        playingAudiobookDetailsBox.get('audiobook') ?? {},
+      );
+      final v = map['lowQCoverImage'] as String?;
+      final byBox = _artUriFrom(v);
+      if (byBox != null) return byBox;
+    } catch (_) {}
+
+    // Last resort: keep existing item art
+    return mediaItem.value?.artUri;
+  }
+
+  Future<void> _refreshActiveCoverArt() async {
+    final id = _activeAudiobookId;
+    if (id == null) return;
+    if (_audioSources == null || queue.value.isEmpty) return;
+
+    final newUri = await _resolveActiveArtUri();
+    if (newUri == null) return;
+
+    final old = queue.value;
+    final rebuilt = <MediaItem>[];
+    for (final item in old) {
+      rebuilt.add(MediaItem(
+        id: item.id,
+        album: item.album,
+        title: item.title,
+        artist: item.artist,
+        artUri: newUri,
+        extras: item.extras,
+        duration: item.duration,
+        genre: item.genre,
+        playable: item.playable,
+        displayTitle: item.displayTitle,
+        displaySubtitle: item.displaySubtitle,
+        displayDescription: item.displayDescription,
+        rating: item.rating,
+      ));
+    }
+
+    addQueueItems([]);
+    queue.add(rebuilt);
+
+    final idx = _player.currentIndex ?? 0;
+    if (idx >= 0 && idx < rebuilt.length) {
+      mediaItem.add(rebuilt[idx]);
+    }
+
+    // Keep Hive "audiobook.lowQCoverImage" as-is; selector already updates it.
   }
 
   Future<void> initSongs(
-      List<AudiobookFile> files,
-      Audiobook audiobook,
-      int initialIndex,
-      int positionInMilliseconds,
-      ) async {
+    List<AudiobookFile> files,
+    Audiobook audiobook,
+    int initialIndex,
+    int positionInMilliseconds,
+  ) async {
     _isReinitializing = true;
     final myGen = ++_initGen;
 
@@ -108,7 +251,7 @@ class MyAudioHandler extends BaseAudioHandler {
         ),
       );
 
-      // Build MediaItems
+      // Build MediaItems & Sources
       final mediaItems = <MediaItem>[];
       final sources = <AudioSource>[];
 
@@ -116,20 +259,24 @@ class MyAudioHandler extends BaseAudioHandler {
         final isYouTube = song.url?.contains('youtube.com') == true ||
             song.url?.contains('youtu.be') == true;
 
+        // Pick one art string: prefer per-track, else audiobook fallback
+        String? artStr = audiobook.origin == "download"
+            ? audiobook.lowQCoverImage
+            : (song.highQCoverImage ?? audiobook.lowQCoverImage);
+        final art = _artUriFrom(artStr);
+
         final item = MediaItem(
           id: song.track.toString(),
           album: audiobook.title,
           title: song.title ?? '',
           artist: audiobook.author ?? 'Librivox',
-          artUri: Uri.parse(
-            audiobook.lowQCoverImage.contains("youtube")
-                ? audiobook.lowQCoverImage
-                : (song.highQCoverImage ?? ''),
-          ),
+          artUri: art, // ← this can be file://... or https://...
           extras: {
             'url': song.url,
             'audiobook_id': audiobook.id,
             'is_youtube': isYouTube,
+            'startMs': song.startMs,
+            'durationMs': song.durationMs,
           },
         );
         mediaItems.add(item);
@@ -137,49 +284,75 @@ class MyAudioHandler extends BaseAudioHandler {
         if (isYouTube && song.url != null) {
           final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
           sources.add(
-            YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'),
-          );
+              YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
         } else if (song.url != null) {
-          final uri = song.url!.startsWith('/') ? Uri.file(song.url!) : Uri.parse(song.url!);
-          sources.add(AudioSource.uri(uri, tag: item));
+          final uri = song.url!.startsWith('/')
+              ? Uri.file(song.url!)
+              : Uri.parse(song.url!);
+
+          // If this "file" is actually a chapter slice, clip it
+          if ((song.startMs ?? 0) > 0 || (song.durationMs ?? 0) > 0) {
+            final start = Duration(milliseconds: song.startMs ?? 0);
+            final end = (song.durationMs != null)
+                ? start + Duration(milliseconds: song.durationMs!)
+                : null; // last chapter to EOF
+            sources.add(
+              ClippingAudioSource(
+                start: start,
+                end: end,
+                child: AudioSource.uri(uri, tag: item),
+              ),
+            );
+          } else {
+            sources.add(AudioSource.uri(uri, tag: item));
+          }
         }
       }
 
       if (myGen != _initGen) return;
 
       final safeIndex =
-      sources.isEmpty ? 0 : initialIndex.clamp(0, sources.length - 1);
+          sources.isEmpty ? 0 : initialIndex.clamp(0, sources.length - 1);
 
       addQueueItems(mediaItems);
       if (mediaItems.isNotEmpty) {
         mediaItem.add(mediaItems[safeIndex]);
       }
 
-      _playlist = ConcatenatingAudioSource(children: sources);
+      _audioSources = sources;
 
       // For YouTube, some backends ignore the initialPosition until READY.
       final currentIsYT = _isIndexYouTube(safeIndex);
 
-      await _player.setAudioSource(
-        _playlist!,
+      // DEBUG
+      AppLogger.debug('initSongs: currentIsYT: $currentIsYT');
+      AppLogger.debug(_audioSources?.length.toString() ?? 'null');
+      AppLogger.debug(safeIndex.toString());
+      AppLogger.debug(positionInMilliseconds.toString());
+      for (int i = 0; i < (_audioSources?.length ?? 0); i++) {
+        AppLogger.debug(_audioSources?[i]?.toString() ?? 'null');
+      }
+
+      await _player.setAudioSources(
+        _audioSources!,
         initialIndex: sources.isEmpty ? 0 : safeIndex,
-        // Pass 0 here for YT; we will seek after READY
-        initialPosition:
-        currentIsYT ? Duration.zero : Duration(milliseconds: positionInMilliseconds),
+        initialPosition: currentIsYT
+            ? Duration.zero
+            : Duration(milliseconds: positionInMilliseconds),
       );
 
       if (myGen != _initGen) return;
 
       if (currentIsYT && positionInMilliseconds > 0) {
-        // Wait for READY so seek is honored
         await _waitForProcessingReady(timeout: const Duration(seconds: 5));
-        await _player.seek(Duration(milliseconds: positionInMilliseconds), index: safeIndex);
+        await _player.seek(Duration(milliseconds: positionInMilliseconds),
+            index: safeIndex);
       } else {
-        // Idempotent final seek to pin exact start
-        await _player.seek(Duration(milliseconds: positionInMilliseconds), index: safeIndex);
+        await _player.seek(Duration(milliseconds: positionInMilliseconds),
+            index: safeIndex);
       }
 
-      _player.playbackEventStream.listen(_broadcastState);
+      // Auto-advance on completed
       _player.processingStateStream.listen((state) {
         if (state == ProcessingState.completed) {
           _player.seekToNext();
@@ -210,18 +383,40 @@ class MyAudioHandler extends BaseAudioHandler {
 
       _canPersistProgress = true; // lift the barrier
       _lastPersistAt = DateTime.now().subtract(_persistInterval);
+
+      // If ChromeCast is connected, load the audiobook to ChromeCast
+      if (_chromeCastService.isConnected) {
+        try {
+          // Pause local player to avoid double playback
+          await _player.pause();
+          
+          await _chromeCastService.loadAudiobook(
+            audiobook,
+            files,
+            safeIndex,
+            Duration(milliseconds: positionInMilliseconds),
+          );
+          AppLogger.debug('Audiobook loaded to ChromeCast');
+        } catch (e) {
+          AppLogger.error('Failed to load audiobook to ChromeCast: $e');
+        }
+      }
+
+      // Broadcast once after init settles (ensures controls show immediately)
+      _broadcastState(_player.playbackEvent);
     } finally {
       _isReinitializing = false;
     }
   }
 
   bool _isIndexYouTube(int index) {
-    final children = _playlist?.children;
+    final children = _audioSources;
     if (children == null || index < 0 || index >= children.length) return false;
     return children[index] is YouTubeAudioSource;
   }
 
-  Future<void> _waitForProcessingReady({Duration timeout = const Duration(seconds: 5)}) async {
+  Future<void> _waitForProcessingReady(
+      {Duration timeout = const Duration(seconds: 5)}) async {
     final deadline = DateTime.now().add(timeout);
     while (DateTime.now().isBefore(deadline)) {
       if (_player.processingState == ProcessingState.ready) return;
@@ -230,11 +425,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> _waitForStartToSettle(
-      int index,
-      int positionMs, {
-        required bool isYouTube,
-        Duration timeout = const Duration(seconds: 2),
-      }) async {
+    int index,
+    int positionMs, {
+    required bool isYouTube,
+    Duration timeout = const Duration(seconds: 2),
+  }) async {
     final deadline = DateTime.now().add(timeout);
 
     // Tolerances: YT tends to have more jitter/latency
@@ -264,9 +459,6 @@ class MyAudioHandler extends BaseAudioHandler {
       final playList = queue.value;
       if (index >= playList.length) return;
 
-      final seqState = _player.sequenceState;
-      if (seqState == null) return;
-
       final item = playList[index];
       mediaItem.add(item);
       playingAudiobookDetailsBox.put('index', index);
@@ -287,7 +479,6 @@ class MyAudioHandler extends BaseAudioHandler {
     if (now.difference(_lastPersistAt) < _persistInterval) return;
 
     final liveMs = _player.position.inMilliseconds;
-    // Only persist if we have a meaningful timestamp
     if (liveMs >= 0) {
       historyOfAudiobook.updateAudiobookPosition(audiobookId, index, liveMs);
       playingAudiobookDetailsBox.put('position', liveMs);
@@ -297,30 +488,37 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void _broadcastState(PlaybackEvent event) {
+    final playing = _player.playing;
+    final processing = _player.processingState;
+    final audioProcessing = const {
+      ProcessingState.idle: AudioProcessingState.idle,
+      ProcessingState.loading: AudioProcessingState.loading,
+      ProcessingState.buffering: AudioProcessingState.buffering,
+      ProcessingState.ready: AudioProcessingState.ready,
+      ProcessingState.completed: AudioProcessingState.completed,
+    }[processing]!;
+
+    // Controls shown in quick settings / notification
+    final controls = <MediaControl>[
+      MediaControl.skipToPrevious,
+      if (playing) MediaControl.pause else MediaControl.play,
+      MediaControl.stop,
+      MediaControl.skipToNext,
+    ];
+
     playbackState.add(
       playbackState.value.copyWith(
-        controls: [
-          MediaControl.skipToPrevious,
-          if (_player.playing) MediaControl.pause else MediaControl.play,
-          MediaControl.stop,
-          MediaControl.skipToNext,
-        ],
+        controls: controls,
         systemActions: const {
           MediaAction.seek,
           MediaAction.seekForward,
           MediaAction.seekBackward,
+          MediaAction.setSpeed,
         },
-        processingState: const {
-          ProcessingState.idle: AudioProcessingState.idle,
-          ProcessingState.loading: AudioProcessingState.loading,
-          ProcessingState.buffering: AudioProcessingState.buffering,
-          ProcessingState.ready: AudioProcessingState.ready,
-          ProcessingState.completed: AudioProcessingState.completed,
-        }[_player.processingState]!,
-        playing: _player.playing,
-        updatePosition: event.updatePosition,
-        bufferedPosition:
-        Duration(milliseconds: event.bufferedPosition.inMilliseconds),
+        processingState: audioProcessing,
+        playing: playing,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
         speed: _player.speed,
         queueIndex: event.currentIndex,
       ),
@@ -330,10 +528,9 @@ class MyAudioHandler extends BaseAudioHandler {
   void _startPositionUpdateTimer(String audiobookId) {
     _positionUpdateTimer?.cancel();
     _positionUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      // Don’t persist during re-init or before barrier lift
       if (_isReinitializing || !_canPersistProgress) return;
       if (audiobookId != _activeAudiobookId) return;
-      if (!_player.playing) return; // only update MRU while playing
+      if (!_player.playing) return;
 
       final currentIndex = _player.currentIndex;
       if (currentIndex != null) {
@@ -347,7 +544,7 @@ class MyAudioHandler extends BaseAudioHandler {
       _player.positionStream,
       _player.bufferedPositionStream,
       _player.durationStream,
-          (position, bufferedPosition, duration) {
+      (position, bufferedPosition, duration) {
         return PositionData(
           position,
           bufferedPosition,
@@ -360,7 +557,7 @@ class MyAudioHandler extends BaseAudioHandler {
   // Cold-restore only: rebuild queue from Hive if we have nothing loaded.
   Future<void> _restoreQueueFromBoxIfEmpty() async {
     if (_isReinitializing) return;
-    if ((_playlist?.children.isNotEmpty ?? false)) return;
+    if ((_audioSources?.isNotEmpty ?? false)) return;
 
     try {
       final box = playingAudiobookDetailsBox;
@@ -369,10 +566,10 @@ class MyAudioHandler extends BaseAudioHandler {
       if (storedAudiobookMap == null || storedFiles == null) return;
 
       final audiobook =
-      Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
+          Audiobook.fromMap(Map<String, dynamic>.from(storedAudiobookMap));
       final files = (storedFiles as List)
-          .map((e) =>
-          AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
+          .map(
+              (e) => AudiobookFile.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList();
 
       final index = (box.get('index') as int?) ?? 0;
@@ -390,64 +587,234 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   List<AudioSource> getAudioSourcesFromPlaylist() {
-    return _playlist?.children ?? const [];
+    return _audioSources ?? const [];
   }
 
+  // ── AudioHandler overrides ────────────────────────────────────────────────
   @override
   Future<void> play() async {
     await _restoreQueueFromBoxIfEmpty(); // only at cold start
-    _player.play();
+    
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.play();
+    } else {
+      await _player.play();
+    }
+    
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> pause() async {
-    _player.pause();
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.pause();
+    } else {
+      await _player.pause();
+    }
+    
     // Opportunistic persist when pausing the active item
     final id = _activeAudiobookId;
     final idx = _player.currentIndex;
-    if (_canPersistProgress && !_isReinitializing && id != null && idx != null) {
+    if (_canPersistProgress &&
+        !_isReinitializing &&
+        id != null &&
+        idx != null) {
       _persistNow(id, idx);
     }
+    _broadcastState(_player.playbackEvent);
+  }
+
+  @override
+  Future<void> stop() async {
+    _positionUpdateTimer?.cancel();
+    
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.stop();
+    } else {
+      await _player.stop();
+    }
+    
+    _coverSub?.cancel();
+    _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   @override
   Future<void> seek(Duration position) async {
-    _player.seek(position);
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.seek(position);
+    } else {
+      await _player.seek(position);
+    }
+    
+    _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   @override
   Future<void> skipToQueueItem(int index) async {
-    _player.seek(Duration.zero, index: index);
-    play();
+    await _player.seek(Duration.zero, index: index);
+    await _persistInstant();
+    await play();
   }
 
   @override
   Future<void> skipToNext() async {
-    _player.seekToNext();
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.skipToNext();
+    } else {
+      await _player.seekToNext();
+    }
+    
+    _broadcastState(_player.playbackEvent);
+    await _persistInstant();
   }
 
   @override
   Future<void> skipToPrevious() async {
-    _player.seekToPrevious();
+    // Route to ChromeCast if connected
+    if (_chromeCastService.isConnected) {
+      await _chromeCastService.skipToPrevious();
+    } else {
+      await _player.seekToPrevious();
+    }
+    
+    _broadcastState(_player.playbackEvent);
+    await _persistInstant();
+  }
+
+  // Map Android's seekForward/seekBackward to fast-forward/rewind
+  static const _ffAmount = Duration(seconds: 15);
+  static const _rwAmount = Duration(seconds: 10);
+
+  @override
+  Future<void> fastForward() async {
+    if (_chromeCastService.isConnected) {
+      final newPos = _chromeCastService.currentPosition + _ffAmount;
+      await _chromeCastService.seek(newPos);
+    } else {
+      final newPos = _player.position + _ffAmount;
+      await _player.seek(newPos);
+    }
+    _broadcastState(_player.playbackEvent);
+  }
+
+  @override
+  Future<void> rewind() async {
+    if (_chromeCastService.isConnected) {
+      final newPos = _chromeCastService.currentPosition - _rwAmount;
+      await _chromeCastService.seek(newPos < Duration.zero ? Duration.zero : newPos);
+    } else {
+      final newPos = _player.position - _rwAmount;
+      await _player.seek(newPos < Duration.zero ? Duration.zero : newPos);
+    }
+    _broadcastState(_player.playbackEvent);
   }
 
   @override
   Future<void> setSpeed(double speed) async {
-    _player.setSpeed(speed);
+    await _player.setSpeed(speed);
+    _broadcastState(_player.playbackEvent);
   }
 
   Future<void> setVolume(double volume) async {
-    _player.setVolume(volume);
+    await _player.setVolume(volume);
   }
 
   Future<void> setSkipSilence(bool skipSilence) async {
-    _player.setSkipSilenceEnabled(skipSilence);
+    await _player.setSkipSilenceEnabled(skipSilence);
+  }
+
+  // ── Equalizer controls ────────────────────────────────────────────────────
+
+  /// Set equalizer band level
+  /// bandIndex: 0-4 for the 5 frequency bands (60Hz, 230Hz, 910Hz, 4kHz, 14kHz)
+  /// gain: -15.0 to +15.0 dB
+  Future<void> setEqualizerBand(int bandIndex, double gain) async {
+    try {
+      final clampedGain = gain.clamp(-15.0, 15.0);
+      final parameters = await _equalizer.parameters;
+      final bands = parameters.bands;
+
+      if (bandIndex >= 0 && bandIndex < bands.length) {
+        await bands[bandIndex].setGain(clampedGain);
+      }
+    } catch (e) {
+      AppLogger.error('Error setting equalizer band: $e');
+    }
+  }
+
+  /// Enable or disable the equalizer
+  Future<void> setEqualizerEnabled(bool enabled) async {
+    try {
+      if (!Platform.isAndroid) {
+        AppLogger.debug('Equalizer not available on this platform');
+        return;
+      }
+
+      await _equalizer.setEnabled(enabled);
+      AppLogger.debug('Equalizer ${enabled ? "enabled" : "disabled"}');
+    } catch (e) {
+      AppLogger.error('Error setting equalizer enabled: $e');
+    }
+  }
+
+  /// Set audio balance (left/right channel volume)
+  /// balance: -1.0 (left) to +1.0 (right), 0.0 = center
+  /// Note: Balance is implemented by adjusting volume per channel
+  Future<void> setBalance(double balance) async {
+    try {
+      await _player.setBalance(balance);
+    } catch (e) {
+      AppLogger.error('Error setting balance: $e');
+    }
+  }
+
+  Future<void> setPitch(double pitch) async {
+    try {
+      await _player.setPitch(pitch);
+    } catch (e) {
+      AppLogger.error('Error setting pitch: $e');
+    }
+  }
+
+  /// Set loudness enhancer target gain
+  /// targetGain: 0.0 to 1000.0 (millibels)
+  Future<void> setLoudnessEnhancer(double targetGain) async {
+    try {
+      if (!Platform.isAndroid) {
+        AppLogger.debug('Loudness enhancer not available on this platform');
+        return;
+      }
+
+      final clampedGain = targetGain.clamp(0.0, 1000.0);
+      await _loudnessEnhancer.setTargetGain(clampedGain);
+      AppLogger.debug('Loudness enhancer set to: $clampedGain mB');
+    } catch (e) {
+      AppLogger.error('Error setting loudness enhancer: $e');
+    }
+  }
+
+  /// Get current equalizer parameters
+  Future<AndroidEqualizerParameters?> getEqualizerParameters() async {
+    try {
+      if (!Platform.isAndroid) return null;
+      return await _equalizer.parameters;
+    } catch (e) {
+      AppLogger.error('Error getting equalizer parameters: $e');
+      return null;
+    }
   }
 
   Duration get position => _player.position;
 
   void playPrevious() {
-    final length = _playlist?.children.length ?? 0;
+    final length = _audioSources?.length ?? 0;
     if (_player.currentIndex != null && _player.currentIndex! > 0) {
       _player.seekToPrevious();
     } else if (length > 0) {
@@ -456,7 +823,7 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void playNext() {
-    final length = _playlist?.children.length ?? 0;
+    final length = _audioSources?.length ?? 0;
     if (_player.currentIndex != null &&
         length > 0 &&
         _player.currentIndex! < length - 1) {

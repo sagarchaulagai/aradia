@@ -25,14 +25,22 @@ dependencies:
   google_fonts: ^6.2.1
   go_router: ^16.2.1
   hive: ^2.2.3
+  flutter_media_metadata:
+    git:
+      url: https://github.com/sagarchaulagai/flutter_media_metadata.git
+      ref: 7666c7b40f3d9281f1d766f885ecd17b19177901
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
-  audio_service: ^0.18.15
+  audio_service: ^0.18.18
   transparent_image: ^2.0.1
-  just_audio: ^0.10.5
+  just_audio:
+    git:
+      url: https://github.com/sagarchaulagai/just_audio.git
+      path: just_audio
+      ref: a6f8db8ded43bdff0e39766fbbdbab8f22cadc2c
+  just_audio_background: ^0.0.1-beta.17
+  rxdart: ^0.28.0
   audio_video_progress_bar: ^2.0.3
-  rxdart_ext: ^0.3.0
-  just_audio_background: ^0.0.1-beta.13
   provider: ^6.1.2
   we_slide: ^2.4.0
   permission_handler: ^12.0.1
@@ -55,7 +63,13 @@ dependencies:
   image_picker: ^1.1.2
   logger: ^2.6.1
   meta: ^1.16.0
+  flutter_inappwebview: ^6.1.5
+  saf:
+    git:
+      url: https://github.com/sagarchaulagai/saf.git
+      ref: d0ecbf965408ac3627a28251d125485df2db356e
   audio_session: ^0.2.2
+  flutter_chrome_cast: ^1.2.5
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2
@@ -84,3 +98,4 @@ flutter:
   
   assets:
     - assets/icon.png
+    - assets/language_subjects.txt

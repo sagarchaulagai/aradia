@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/local_audiobook.dart';
-import 'package:aradia/resources/services/local_audiobook_service.dart';
-import 'package:aradia/utils/permission_helper.dart';
+import 'package:aradia/resources/services/local/local_audiobook_service.dart';
+import 'package:aradia/utils/app_events.dart';
+import 'package:aradia/utils/app_logger.dart';
 import 'package:aradia/widgets/local_audiobook_item.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:saf/saf.dart';
 
 class LocalImportsSection extends StatefulWidget {
   const LocalImportsSection({super.key});
@@ -18,10 +20,18 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
   String? rootFolderPath;
   List<LocalAudiobook> audiobooks = [];
   bool isLoading = false;
+  StreamSubscription<void>? _directoryChangeSubscription;
+
   @override
   void initState() {
     super.initState();
     _loadRootFolder();
+
+    // Listen for directory changes from settings
+    _directoryChangeSubscription =
+        AppEvents.localDirectoryChanged.stream.listen((_) {
+      _loadRootFolderWithRefresh();
+    });
   }
 
   Future<void> _loadRootFolder() async {
@@ -38,9 +48,29 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
     setState(() => isLoading = false);
   }
 
+  Future<void> _loadRootFolderWithRefresh() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    rootFolderPath = await LocalAudiobookService.getRootFolderPath();
+
+    if (rootFolderPath != null) {
+      // Do a smart refresh to scan the new directory
+      await _refreshAudiobooks();
+    }
+
+    setState(() => isLoading = false);
+  }
+
   Future<void> _loadAudiobooks() async {
     try {
-      final loadedAudiobooks = await LocalAudiobookService.refreshAudiobooks();
+      // Load instantly from Hive cache
+      final loadedAudiobooks = await LocalAudiobookService.getAllAudiobooks();
+      for (LocalAudiobook audiobook in loadedAudiobooks) {
+        AppLogger.info(
+            'Audiobook: ${audiobook.title} by ${audiobook.author} ${audiobook.coverImagePath}');
+      }
       setState(() {
         audiobooks = loadedAudiobooks;
       });
@@ -54,31 +84,53 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
         );
       }
     }
+    setState(() => isLoading = false);
   }
 
   Future<void> _selectRootFolder() async {
-    // Request storage permissions first
-    final hasPermission =
-        await PermissionHelper.handleDownloadPermissionWithDialog(context);
-    if (!hasPermission) return;
-
     try {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      Saf.releasePersistedPermissions();
+      bool? isGranted = await Saf.getDynamicDirectoryPermission();
+      if (isGranted == true) {
+        List<String>? persistedDirectories =
+            await Saf.getPersistedPermissionDirectories();
+        if (persistedDirectories != null && persistedDirectories.isNotEmpty) {
+          String selectedDirectory = persistedDirectories.last;
 
-      if (selectedDirectory != null) {
-        await LocalAudiobookService.setRootFolderPath(selectedDirectory);
-        setState(() {
-          rootFolderPath = selectedDirectory;
-        });
+          await LocalAudiobookService.setRootFolderPath(selectedDirectory);
+          setState(() {
+            rootFolderPath = selectedDirectory;
+          });
 
-        // Load audiobooks from the selected folder
-        await _loadAudiobooks();
+          // Clear all caches for the new folder and load audiobooks
+          await LocalAudiobookService.clearAllCaches();
+          setState(() => isLoading = true);
+          await _refreshAudiobooks();
 
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Root folder set successfully!'),
+                backgroundColor: AppColors.primaryColor,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No directory was selected'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Root folder set successfully!'),
-              backgroundColor: AppColors.primaryColor,
+              content: Text('Directory access permission denied'),
+              backgroundColor: Colors.red,
             ),
           );
         }
@@ -97,53 +149,73 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
 
   Future<void> _refreshAudiobooks() async {
     setState(() => isLoading = true);
-    await _loadAudiobooks();
+    try {
+      // Use smart refresh that only processes changed files
+      AppLogger.info('Starting smart refresh...');
+      final loadedAudiobooks =
+          await LocalAudiobookService.smartRefreshAudiobooks();
+      AppLogger.info(
+          'Smart refresh completed, got ${loadedAudiobooks.length} audiobooks');
+      for (LocalAudiobook audiobook in loadedAudiobooks) {
+        AppLogger.info(
+            'Audiobook: ${audiobook.title} by ${audiobook.author} ${audiobook.coverImagePath}');
+      }
+      setState(() {
+        audiobooks = loadedAudiobooks;
+      });
+    } catch (e) {
+      AppLogger.error('Error in refresh: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error refreshing audiobooks: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
     setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Match FavouriteSection's header padding
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Local Audiobooks',
                 style: GoogleFonts.ubuntu(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               if (rootFolderPath != null)
                 IconButton(
                   onPressed: _refreshAudiobooks,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: AppColors.primaryColor,
-                  ),
+                  icon:
+                      const Icon(Icons.refresh, color: AppColors.primaryColor),
                   tooltip: 'Refresh audiobooks',
                 ),
             ],
           ),
-          const SizedBox(height: 16),
-          if (isLoading)
-            const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            )
-          else if (rootFolderPath == null)
-            _buildSelectFolderCard()
-          else if (audiobooks.isEmpty)
-            _buildEmptyState()
-          else
-            _buildAudiobooksList(),
-        ],
-      ),
+        ),
+
+        if (isLoading)
+          const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryColor))
+        else if (rootFolderPath == null)
+          _buildSelectFolderCard()
+        else if (audiobooks.isEmpty)
+          _buildEmptyState()
+        else
+          _buildAudiobooksList(),
+      ],
     );
   }
 
@@ -260,19 +332,21 @@ class _LocalImportsSectionState extends State<LocalImportsSection> {
       height: 250,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         itemCount: audiobooks.length,
         itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(
-              right: index < audiobooks.length - 1 ? 12 : 0,
-            ),
-            child: LocalAudiobookItem(
-              audiobook: audiobooks[index],
-              onUpdated: _loadAudiobooks,
-            ),
+          return LocalAudiobookItem(
+            audiobook: audiobooks[index],
+            onUpdated: _loadAudiobooks,
           );
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _directoryChangeSubscription?.cancel();
+    super.dispose();
   }
 }

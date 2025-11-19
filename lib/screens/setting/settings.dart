@@ -1,8 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:aradia/utils/app_events.dart';
+import 'package:aradia/resources/services/local/local_audiobook_service.dart';
+import 'package:aradia/resources/designs/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:aradia/resources/designs/theme_notifier.dart';
+import 'package:saf/saf.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -19,14 +22,27 @@ class _SettingsState extends State<Settings> {
     'es': 'Español (Spanish)',
     'fr': 'Français (French)',
     'nl': 'Nederlands (Dutch)',
-    'mul': 'Multiple',
+    'mul': 'Multiple / Multilingual',
     'pt': 'Português (Portuguese)',
     'it': 'Italiano (Italian)',
     'ru': 'Русский (Russian)',
+    'el': 'Ελληνικά (Greek)',
+    'grc': 'Ancient Greek',
+    'ja': '日本語 (Japanese)',
+    'pl': 'Polski (Polish)',
+    'zh': '中文 (Chinese)',
+    'he': 'עברית (Hebrew)',
+    'la': 'Latina (Latin)',
+    'fi': 'Suomi (Finnish)',
+    'sv': 'Svenska (Swedish)',
+    'ca': 'Català (Catalan)',
+    'da': 'Dansk (Danish)',
+    'eo': 'Esperanto',
   };
 
   late final Box _box;
   List<String> _selected = [];
+  String? _rootFolderPath;
 
   @override
   void initState() {
@@ -35,6 +51,14 @@ class _SettingsState extends State<Settings> {
     _selected = List<String>.from(
       _box.get('selectedLanguages', defaultValue: <String>[]),
     );
+    _loadRootFolderPath();
+  }
+
+  Future<void> _loadRootFolderPath() async {
+    final path = await LocalAudiobookService.getRootFolderPath();
+    setState(() {
+      _rootFolderPath = path;
+    });
   }
 
   Future<void> _editLanguages() async {
@@ -70,9 +94,7 @@ class _SettingsState extends State<Settings> {
                       controlAffinity: ListTileControlAffinity.leading,
                       dense: true,
                     ),
-                    SizedBox(
-                      height: 10,
-                    )
+                    const SizedBox(height: 10),
                   ],
                 );
               }).toList(),
@@ -110,11 +132,146 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  Future<void> _selectRootFolder() async {
+    try {
+      await Saf.releasePersistedPermissions();
+
+      // Use SAF to get dynamic directory permission (user chooses folder)
+      bool? isGranted = await Saf.getDynamicDirectoryPermission();
+
+      if (isGranted == true) {
+        // Get the list of persisted permission directories
+        List<String>? persistedDirectories =
+            await Saf.getPersistedPermissionDirectories();
+
+        if (persistedDirectories != null && persistedDirectories.isNotEmpty) {
+          // Use the most recently granted directory
+          String selectedDirectory = persistedDirectories.last;
+
+          await LocalAudiobookService.setRootFolderPath(selectedDirectory);
+
+          // Clear all caches for the new folder
+          await LocalAudiobookService.clearAllCaches();
+
+          setState(() {
+            _rootFolderPath = selectedDirectory;
+          });
+
+          // Notify other screens about the directory change
+          AppEvents.localDirectoryChanged.add(null);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Audiobooks directory updated successfully!'),
+                backgroundColor: AppColors.primaryColor,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No directory was selected'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Directory access permission denied or selection cancelled'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting folder: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String _themeSubtitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+        return 'System default';
+    }
+  }
+
+  Future<void> _pickTheme(BuildContext context) async {
+    final themeNotifier = Provider.of<ThemeNotifier>(context, listen: false);
+    ThemeMode current = themeNotifier.themeMode;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<ThemeMode>(
+              title: const Text('System default'),
+              value: ThemeMode.system,
+              groupValue: current,
+              onChanged: (v) {
+                if (v == null) return;
+                themeNotifier.setTheme(v);
+                Navigator.of(ctx).pop();
+              },
+            ),
+            RadioListTile<ThemeMode>(
+              title: const Text('Light'),
+              value: ThemeMode.light,
+              groupValue: current,
+              onChanged: (v) {
+                if (v == null) return;
+                themeNotifier.setTheme(v);
+                Navigator.of(ctx).pop();
+              },
+            ),
+            RadioListTile<ThemeMode>(
+              title: const Text('Dark'),
+              value: ThemeMode.dark,
+              groupValue: current,
+              onChanged: (v) {
+                if (v == null) return;
+                themeNotifier.setTheme(v);
+                Navigator.of(ctx).pop();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
+    );
+
+    if (mounted) setState(() {}); // refresh subtitle after change
+  }
+
   @override
   Widget build(BuildContext context) {
     final chips = _selected.isEmpty
         ? [const Chip(label: Text('All languages (no filter)'))]
         : _selected.map((c) => Chip(label: Text(_langs[c] ?? c))).toList();
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final currentTheme = themeNotifier.themeMode;
 
     return Scaffold(
       appBar: AppBar(
@@ -123,6 +280,16 @@ class _SettingsState extends State<Settings> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // Theme selection (moved from App Bar)
+          ListTile(
+            leading: const Icon(Icons.brightness_6),
+            title: const Text('Theme'),
+            subtitle: Text(_themeSubtitle(currentTheme)),
+            trailing: const Icon(Icons.edit),
+            onTap: () => _pickTheme(context),
+          ),
+          const Divider(),
+
           // Language filter
           ListTile(
             leading: const Icon(Icons.language),
@@ -134,6 +301,23 @@ class _SettingsState extends State<Settings> {
             ),
             trailing: const Icon(Icons.edit),
             onTap: _editLanguages,
+          ),
+          const Divider(),
+
+          // Local Audiobooks Directory
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Local Audiobooks Directory'),
+            subtitle: Text(
+              _rootFolderPath ?? 'No directory selected',
+              style: TextStyle(
+                color: _rootFolderPath != null
+                    ? Theme.of(context).textTheme.bodySmall?.color
+                    : Colors.grey,
+              ),
+            ),
+            trailing: const Icon(Icons.edit),
+            onTap: _selectRootFolder,
           ),
           const Divider(),
 
@@ -170,7 +354,7 @@ class _SettingsState extends State<Settings> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),

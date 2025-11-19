@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:aradia/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:aradia/resources/designs/app_colors.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/screens/home/bloc/home_bloc.dart';
-import 'package:aradia/utils/app_events.dart';
 import 'package:aradia/widgets/audiobook_item.dart';
 
 enum AudiobooksFetchType {
@@ -55,6 +52,7 @@ class MyAudiobooks extends StatefulWidget {
   final String? sortBy;
   final int initialPage;
   final int rowsPerPage;
+  final bool autoFetch;
 
   final ScrollController scrollController;
 
@@ -68,6 +66,7 @@ class MyAudiobooks extends StatefulWidget {
     required this.scrollController,
     this.initialPage = 1,
     this.rowsPerPage = 15,
+    this.autoFetch = true,
   });
 
   @override
@@ -83,7 +82,9 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
   void initState() {
     super.initState();
     _currentPage = widget.initialPage;
-    _fetchData();
+    if (widget.autoFetch) {
+      _fetchData();
+    }
     widget.scrollController.addListener(() {
       if (widget.scrollController.position.pixels ==
           widget.scrollController.position.maxScrollExtent) {
@@ -114,19 +115,19 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
 
   bool _isLoadingState(HomeState s) {
     final loadingType =
-    fetchTypeMapping[widget.fetchType]?['loadingState'] as Type?;
+        fetchTypeMapping[widget.fetchType]?['loadingState'] as Type?;
     return loadingType != null && s.runtimeType == loadingType;
   }
 
   bool _isSuccessState(HomeState s) {
     final successType =
-    fetchTypeMapping[widget.fetchType]?['successState'] as Type?;
+        fetchTypeMapping[widget.fetchType]?['successState'] as Type?;
     return successType != null && s.runtimeType == successType;
   }
 
   bool _isFailedState(HomeState s) {
     final failedType =
-    fetchTypeMapping[widget.fetchType]?['failedState'] as Type?;
+        fetchTypeMapping[widget.fetchType]?['failedState'] as Type?;
     return failedType != null && s.runtimeType == failedType;
   }
 
@@ -138,75 +139,86 @@ class _MyAudiobooksState extends State<MyAudiobooks> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.title,
-            style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Match FavouriteSection's header padding exactly
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+          child: Row(
+            children: [
+              Text(
+                widget.title,
+                style: GoogleFonts.ubuntu(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-          SizedBox(
-            height: 250,
-            child: BlocConsumer<HomeBloc, HomeState>(
-              bloc: widget.homeBloc,
-              listener: (context, state) {
-                // IMPORTANT: when a page-1 fetch begins, HomeBloc emits a *loading* state.
-                // Clear our local cache so UI fully resets for the new language.
-                if (_isLoadingState(state)) {
-                  setState(() {
-                    _currentPage = widget.initialPage;
-                    audiobooks.clear();
-                  });
-                }
+        ),
 
-                if (_isSuccessState(state)) {
-                  setState(() {
-                    audiobooks.addAll((state as dynamic).audiobooks);
-                  });
-                }
-              },
-              buildWhen: (previous, current) =>
-              _isSuccessState(current) ||
-                  _isLoadingState(current) ||
-                  _isFailedState(current),
-              builder: (context, state) {
-                if (_isLoadingState(state)) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryColor,
-                    ),
+        // Match FavouriteSection's list height and horizontal padding exactly
+        SizedBox(
+          height: 250,
+          child: BlocConsumer<HomeBloc, HomeState>(
+            bloc: widget.homeBloc,
+            listener: (context, state) {
+              if (_isLoadingState(state)) {
+                setState(() {
+                  _currentPage = widget.initialPage;
+                  audiobooks.clear();
+                });
+              }
+              if (_isSuccessState(state)) {
+                setState(() {
+                  audiobooks.addAll((state as dynamic).audiobooks);
+                });
+              }
+            },
+            buildWhen: (previous, current) =>
+                _isSuccessState(current) ||
+                _isLoadingState(current) ||
+                _isFailedState(current),
+            builder: (context, state) {
+              if (_isLoadingState(state) && audiobooks.isEmpty) {
+                return const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryColor),
+                );
+              }
+              if (_isFailedState(state) && audiobooks.isEmpty) {
+                return const Center(child: Text("Failed to fetch audiobooks"));
+              }
+
+              return ListView.builder(
+                controller: widget.scrollController,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8), // <-- same as FavouriteSection
+                itemCount: audiobooks.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == audiobooks.length) {
+                    // keep the paging spinner at the end (FavouriteSection doesn't page, but this preserves your UX)
+                    return const Center(
+                      child: SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: CircularProgressIndicator(
+                            color: AppColors.primaryColor),
+                      ),
+                    );
+                  }
+                  return AudiobookItem(
+                    audiobook: audiobooks[index],
+                    width: _eachContainerWidth,
                   );
-                } else if (_isFailedState(state)) {
-                  return const Center(
-                    child: Text("Failed to fetch audiobooks"),
-                  );
-                } else {
-                  return ListView.builder(
-                    controller: widget.scrollController,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: audiobooks.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == audiobooks.length) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryColor,
-                          ),
-                        );
-                      }
-                      return AudiobookItem(
-                        audiobook: audiobooks[index],
-                        width: _eachContainerWidth,
-                      );
-                    },
-                  );
-                }
-              },
-            ),
+                },
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

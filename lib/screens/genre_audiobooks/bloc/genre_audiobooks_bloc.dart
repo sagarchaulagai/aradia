@@ -13,6 +13,28 @@ part 'genre_audiobooks_state.dart';
 // Bloc
 class GenreAudiobooksBloc
     extends Bloc<GenreAudiobooksEvent, GenreAudiobooksState> {
+  // Keep only first occurrence of each logical book, preserve order.
+  // Use the Archive.org identifier exposed as `id`; fallback to title+author if needed.
+  List<Audiobook> _mergeUniqueById(
+      List<Audiobook> current, List<Audiobook> incoming) {
+    String _key(Audiobook a) {
+      final id = (a.id).trim();
+      if (id.isNotEmpty) return id;
+      final t = (a.title).trim().toLowerCase();
+      final c = (a.author ?? '').trim().toLowerCase();
+      return '$t|||$c';
+    }
+
+    final seen = current.map(_key).toSet();
+    final dedupIncoming = <Audiobook>[];
+    for (final a in incoming) {
+      final k = _key(a);
+      if (k.isEmpty) continue;
+      if (seen.add(k)) dedupIncoming.add(a);
+    }
+    return <Audiobook>[...current, ...dedupIncoming];
+  }
+
   final ArchiveApi archiveApi;
 
   String? _lastGenre;
@@ -40,6 +62,9 @@ class GenreAudiobooksBloc
       ) async {
     _lastGenre = event.genre; // <-- remember genre
 
+    // NEW: don't double-load same listType while it's already loading
+    if (state.isLoadingListType(event.listType)) return;
+
     // If audiobooks for this list type already exist, don't reload
     if (state.audiobooks.containsKey(event.listType) &&
         state.audiobooks[event.listType]!.isNotEmpty) {
@@ -59,12 +84,19 @@ class GenreAudiobooksBloc
           errors: Map.of(state.errors)..[event.listType] = error,
           isLoading: Map.of(state.isLoading)..[event.listType] = false,
         )),
-            (audiobooks) => emit(state.copyWith(
-          audiobooks: Map.of(state.audiobooks)..[event.listType] = audiobooks,
-          isLoading: Map.of(state.isLoading)..[event.listType] = false,
-          hasReachedMax: Map.of(state.hasReachedMax)
-            ..[event.listType] = audiobooks.length < 20,
-        )),
+            (audiobooks) {
+          // Initial page = 1
+          final nextPageMap = Map.of(state.page)..[event.listType] = 1;
+
+          emit(state.copyWith(
+            audiobooks: Map.of(state.audiobooks)
+              ..[event.listType] = audiobooks,
+            isLoading: Map.of(state.isLoading)..[event.listType] = false,
+            hasReachedMax: Map.of(state.hasReachedMax)
+              ..[event.listType] = audiobooks.length < 20,
+            page: nextPageMap,
+          ));
+        },
       );
     } catch (e) {
       emit(state.copyWith(
@@ -81,16 +113,22 @@ class GenreAudiobooksBloc
     // Check if we've reached max for this list type
     if (state.hasReachedMaxForListType(event.listType)) return;
 
+    // NEW: don't fetch if already fetching
+    if (state.isLoadingListType(event.listType)) return;
+
     // Update loading state
     emit(state.copyWith(
       isLoading: Map.of(state.isLoading)..[event.listType] = true,
     ));
 
     try {
+      final currentPage = state.getPageForListType(event.listType);
+      final nextPage = currentPage + 1;
+
       final result = await _fetchAudiobooks(
         event.genre,
         event.listType,
-        (state.getAudiobooksForListType(event.listType).length ~/ 20) + 1,
+        nextPage,
       );
 
       result.fold(
@@ -101,15 +139,19 @@ class GenreAudiobooksBloc
             (newAudiobooks) {
           final currentAudiobooks =
           state.getAudiobooksForListType(event.listType);
-          final updatedAudiobooks = List.of(currentAudiobooks)
-            ..addAll(newAudiobooks);
 
-          return emit(state.copyWith(
+          // DE-DUPE HERE
+          final updatedAudiobooks =
+          _mergeUniqueById(currentAudiobooks, newAudiobooks);
+
+          emit(state.copyWith(
             audiobooks: Map.of(state.audiobooks)
               ..[event.listType] = updatedAudiobooks,
             isLoading: Map.of(state.isLoading)..[event.listType] = false,
             hasReachedMax: Map.of(state.hasReachedMax)
+            // Keep your original logic so we don't prematurely stop due to de-dupe
               ..[event.listType] = newAudiobooks.length < 20,
+            page: Map.of(state.page)..[event.listType] = nextPage,
           ));
         },
       );

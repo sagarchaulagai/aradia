@@ -1,8 +1,11 @@
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/designs/themes.dart';
-import 'package:aradia/screens/import/import_audiobook.dart';
+import 'package:aradia/resources/services/chromecast_service.dart';
+import 'package:aradia/resources/services/youtube/youtube_audiobook_notifier.dart';
+import 'package:aradia/resources/services/youtube/webview_keep_alive_provider.dart';
 import 'package:aradia/screens/recommendation/recommendation_screen.dart';
 import 'package:aradia/screens/setting/settings.dart';
+import 'package:aradia/screens/youtube_webview/youtube_webview.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +17,6 @@ import 'package:aradia/screens/audiobook_details/audiobook_details.dart';
 import 'package:aradia/screens/audiobook_details/bloc/audiobook_details_bloc.dart';
 import 'package:aradia/screens/audiobook_player/audiobook_player.dart';
 import 'package:aradia/screens/download_audiobook/downloads_page.dart';
-import 'package:aradia/screens/favourite/favourite.dart';
 import 'package:aradia/screens/genre_audiobooks/genre_audiobooks.dart';
 import 'package:aradia/screens/home/home.dart';
 import 'package:aradia/screens/search/bloc/search_bloc.dart';
@@ -32,9 +34,16 @@ void main() async {
 
   await initHive();
 
+  await AppLogger.initialize();
+
+  final chromeCastService = ChromeCastService();
+  await chromeCastService.initialize();
+
   final audioHandlerProvider = AudioHandlerProvider();
   final weSlideController = WeSlideController();
   final themeNotifier = ThemeNotifier();
+  final youtubeAudiobookNotifier = YoutubeAudiobookNotifier();
+  final webViewKeepAliveProvider = WebViewKeepAliveProvider();
 
   runApp(
     MultiProvider(
@@ -42,6 +51,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => audioHandlerProvider),
         ChangeNotifierProvider(create: (_) => weSlideController),
         ChangeNotifierProvider(create: (_) => themeNotifier),
+        ChangeNotifierProvider(create: (_) => youtubeAudiobookNotifier),
+        ChangeNotifierProvider(create: (_) => webViewKeepAliveProvider),
       ],
       child: const MyApp(),
     ),
@@ -92,7 +103,8 @@ class _MyAppState extends State<MyApp> {
   GoRouter _buildRouter() {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
+      initialLocation:
+          isRecommendScreen == 1 ? '/recommendation_screen' : '/home',
       routes: [
         GoRoute(
           path: '/recommendation_screen',
@@ -146,14 +158,10 @@ class _MyAppState extends State<MyApp> {
                   name: 'player',
                   builder: (context, state) => const AudiobookPlayer(),
                 ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
                 GoRoute(
-                  path: '/favourite',
-                  name: 'favourite',
-                  builder: (context, state) => const Favourite(),
+                  path: '/youtube',
+                  name: 'youtube',
+                  builder: (context, state) => const YoutubeWebview(),
                 ),
               ],
             ),
@@ -175,15 +183,6 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/import',
-                  name: 'import',
-                  builder: (context, state) => const ImportAudiobookScreen(),
-                ),
-              ],
-            ),
           ],
         ),
       ],
@@ -194,7 +193,7 @@ class _MyAppState extends State<MyApp> {
     AppLogger.debug(
         'initialized back button interceptor', 'BackButtonInterceptor');
     WeSlideController weSlideController =
-    Provider.of<WeSlideController>(context, listen: false);
+        Provider.of<WeSlideController>(context, listen: false);
     if (weSlideController.isOpened) {
       AppLogger.debug('closing', 'BackButtonInterceptor');
       weSlideController.hide();
@@ -211,22 +210,26 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => AudiobookDetailsBloc(),
-        ),
-        BlocProvider(
-          create: (context) => SearchBloc(),
-        ),
-      ],
-      child: MaterialApp.router(
-        theme: Themes().lightTheme,
-        darkTheme: ThemeData.dark(), // Themes().darkTheme is another dark theme
-        themeMode: Provider.of<ThemeNotifier>(context).themeMode,
-        routerConfig: _router,
-        debugShowCheckedModeBanner: false,
-      ),
+    return Consumer<ThemeNotifier>(
+      builder: (context, themeNotifier, _) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => AudiobookDetailsBloc(),
+            ),
+            BlocProvider(
+              create: (context) => SearchBloc(),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: Themes.lightTheme,
+            darkTheme: Themes.darkTheme,
+            themeMode: themeNotifier.themeMode,
+            routerConfig: _router,
+            debugShowCheckedModeBanner: false,
+          ),
+        );
+      },
     );
   }
 }

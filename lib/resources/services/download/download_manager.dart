@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:aradia/resources/services/stream_client.dart';
+import 'package:aradia/resources/services/youtube/stream_client.dart';
 import 'package:aradia/utils/app_logger.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,21 +33,24 @@ class DownloadManager {
     AudioStreamClient? audioStreamClient;
 
     try {
-      if (!await checkAndRequestPermissions()) {
-        throw Exception('Storage permissions not granted.');
-      }
+      // Check notification permissions - download will work without them, but no notifications
+      final hasNotificationPermission = await checkAndRequestPermissions();
 
       _downloader.configure(
           androidConfig: [(Config.useExternalStorage, Config.always)]);
-      _downloader.configureNotification(
-        running:
-            TaskNotification('Downloading $audiobookTitle', 'File: {filename}'),
-        progressBar: true,
-        complete: TaskNotification(
-            'Download complete: $audiobookTitle', 'File: {filename}'),
-        error: TaskNotification(
-            'Download error: $audiobookTitle', 'File: {filename}'),
-      );
+      
+      // Only configure notifications if we have permission
+      if (hasNotificationPermission) {
+        _downloader.configureNotification(
+          running:
+              TaskNotification('Downloading $audiobookTitle', 'File: {filename}'),
+          progressBar: true,
+          complete: TaskNotification(
+              'Download complete: $audiobookTitle', 'File: {filename}'),
+          error: TaskNotification(
+              'Download error: $audiobookTitle', 'File: {filename}'),
+        );
+      }
 
       if (_activeDownloads[audiobookId] == true) return;
       _activeDownloads[audiobookId] = true;
@@ -384,9 +387,10 @@ class DownloadManager {
 
   List<String> getTaskIdsForAudiobook(String audiobookId) {
     List<String> ids = [];
-    for (var key in downloadStatusBox.keys) {
-      if (key.toString().startsWith('task_$audiobookId-')) {
-        ids.add(key.toString());
+    for (final key in downloadStatusBox.keys) {
+      final keyString = key.toString();
+      if (keyString.startsWith('task_$audiobookId-')) {
+        ids.add(keyString.substring('task_'.length));
       }
     }
     return ids;

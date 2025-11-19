@@ -8,7 +8,7 @@ class AppColors {
   static const Color scaffoldBackgroundColor =
       Color.fromRGBO(245, 245, 245, 1); // #F5F5F5
   static const Color darkScaffoldBackgroundColor =
-      Color.fromRGBO(34, 34, 34, 1); // #222222
+      Color.fromRGBO(13,13,13, 1); // #222222
 
   // Text colors
   static const Color textColor = Color.fromRGBO(34, 34, 34, 1); // #222222
