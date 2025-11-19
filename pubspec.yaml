@@ -63,7 +63,7 @@ dependencies:
   image_picker: ^1.1.2
   logger: ^2.6.1
   meta: ^1.16.0
-  flutter_inappwebview: ^6.1.5
+  # flutter_inappwebview: ^6.1.5
   saf:
     git:
       url: https://github.com/sagarchaulagai/saf.git

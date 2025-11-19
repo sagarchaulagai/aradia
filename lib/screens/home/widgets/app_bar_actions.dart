@@ -19,11 +19,11 @@ class AppBarActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AnimatedIconButton(
-          icon: const Icon(Ionicons.logo_youtube),
-          onPressed: () => context.push('/youtube'),
-          tooltip: 'YouTube Import',
-        ),
+        // AnimatedIconButton(
+        //   icon: const Icon(Ionicons.logo_youtube),
+        //   onPressed: () => context.push('/youtube'),
+        //   tooltip: 'YouTube Import',
+        // ),
         // Theme toggling moved to Settings page.
         AnimatedIconButton(
           icon: const Icon(Icons.settings),
