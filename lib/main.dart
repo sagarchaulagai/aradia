@@ -5,7 +5,6 @@ import 'package:aradia/resources/services/youtube/youtube_audiobook_notifier.dar
 import 'package:aradia/resources/services/youtube/webview_keep_alive_provider.dart';
 import 'package:aradia/screens/recommendation/recommendation_screen.dart';
 import 'package:aradia/screens/setting/settings.dart';
-import 'package:aradia/screens/youtube_webview/youtube_webview.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -157,11 +156,6 @@ class _MyAppState extends State<MyApp> {
                   path: '/player',
                   name: 'player',
                   builder: (context, state) => const AudiobookPlayer(),
-                ),
-                GoRoute(
-                  path: '/youtube',
-                  name: 'youtube',
-                  builder: (context, state) => const YoutubeWebview(),
                 ),
               ],
             ),
