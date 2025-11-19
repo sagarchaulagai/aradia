@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:aradia/resources/designs/app_colors.dart';
-import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/services/audio_handler_provider.dart';

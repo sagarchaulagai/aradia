@@ -1,10 +1,8 @@
-import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/services/my_audio_handler.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:provider/provider.dart';
 
 class TrackSelectionDialog extends StatefulWidget {
   final MyAudioHandler audioHandler;
@@ -21,7 +19,6 @@ class TrackSelectionDialog extends StatefulWidget {
 class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
   bool _showPosition = true;
   late List<Duration> _cumulativePositions;
-  late ThemeNotifier themeNotifier;
   late Box<dynamic> playingAudiobookDetailsBox;
   List<AudiobookFile> _audiobookFiles = [];
   int _currentTrackIndex = 0;
@@ -30,7 +27,6 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
   void initState() {
     super.initState();
     playingAudiobookDetailsBox = Hive.box('playing_audiobook_details_box');
-    themeNotifier = Provider.of<ThemeNotifier>(context, listen: false);
     _loadCurrentData();
   }
 
@@ -118,6 +114,8 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return StreamBuilder<List<MediaItem>>(
       stream: widget.audioHandler.queue,
       builder: (context, queueSnapshot) {
@@ -143,9 +141,7 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: themeNotifier.themeMode == ThemeMode.dark
-                        ? Colors.black.withValues(alpha: 0.1)
-                        : Colors.grey[100],
+                    color: isDark ? const Color(0xFF282828) : Colors.grey[100],
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
@@ -155,27 +151,31 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                     children: [
                       const Icon(Icons.queue_music, color: Colors.deepOrange),
                       const SizedBox(width: 8),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Chapters',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
                       ),
                       // Toggle button
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? Colors.grey[850] : Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey[300]!),
+                          border: Border.all(
+                            color:
+                                isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _buildToggleButton('Position', true),
-                            _buildToggleButton('Length', false),
+                            _buildToggleButton('Position', true, isDark),
+                            _buildToggleButton('Length', false, isDark),
                           ],
                         ),
                       ),
@@ -193,7 +193,11 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
 
                       return Container(
                         decoration: BoxDecoration(
-                          color: isCurrentTrack ? Colors.deepOrange[50] : null,
+                          color: isCurrentTrack
+                              ? (isDark
+                                  ? Colors.deepOrange.withValues(alpha: 0.2)
+                                  : Colors.deepOrange[50])
+                              : null,
                           border: isCurrentTrack
                               ? Border(
                                   left: BorderSide(
@@ -204,14 +208,18 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                           leading: CircleAvatar(
                             backgroundColor: isCurrentTrack
                                 ? Colors.deepOrange
-                                : Colors.grey[300],
+                                : (isDark
+                                    ? Colors.grey[700]
+                                    : Colors.grey[300]),
                             child: Icon(
                               isCurrentTrack
                                   ? Icons.play_arrow
                                   : Icons.music_note,
                               color: isCurrentTrack
                                   ? Colors.white
-                                  : Colors.grey[600],
+                                  : (isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600]),
                             ),
                           ),
                           title: Text(
@@ -222,16 +230,18 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                               color: isCurrentTrack
-                                  ? Colors.deepOrange[800]
-                                  : null,
+                                  ? Colors.deepOrange
+                                  : (isDark ? Colors.white : Colors.black87),
                             ),
                           ),
                           subtitle: Text(
                             _getTrackDurationText(index),
                             style: TextStyle(
                               color: isCurrentTrack
-                                  ? Colors.deepOrange[600]
-                                  : Colors.grey[600],
+                                  ? Colors.deepOrange[300]
+                                  : (isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600]),
                             ),
                           ),
                           trailing: isCurrentTrack
@@ -254,9 +264,7 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: themeNotifier.themeMode == ThemeMode.dark
-                        ? Colors.black.withValues(alpha: 0.1)
-                        : Colors.grey[50],
+                    color: isDark ? const Color(0xFF282828) : Colors.grey[50],
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(16),
                       bottomRight: Radius.circular(16),
@@ -268,7 +276,7 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
                       Text(
                         '${_audiobookFiles.length} tracks',
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: isDark ? Colors.white70 : Colors.grey[600],
                           fontSize: 12,
                         ),
                       ),
@@ -287,7 +295,7 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
     );
   }
 
-  Widget _buildToggleButton(String label, bool isPosition) {
+  Widget _buildToggleButton(String label, bool isPosition, bool isDark) {
     final isSelected = _showPosition == isPosition;
 
     return GestureDetector(
@@ -305,7 +313,9 @@ class _TrackSelectionDialogState extends State<TrackSelectionDialog> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[600],
+            color: isSelected
+                ? Colors.white
+                : (isDark ? Colors.grey[400] : Colors.grey[600]),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 12,
           ),
