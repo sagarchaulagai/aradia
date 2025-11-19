@@ -1,8 +1,6 @@
 import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:aradia/resources/designs/themes.dart';
 import 'package:aradia/resources/services/chromecast_service.dart';
-import 'package:aradia/resources/services/youtube/youtube_audiobook_notifier.dart';
-import 'package:aradia/resources/services/youtube/webview_keep_alive_provider.dart';
 import 'package:aradia/screens/recommendation/recommendation_screen.dart';
 import 'package:aradia/screens/setting/settings.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
@@ -41,8 +39,6 @@ void main() async {
   final audioHandlerProvider = AudioHandlerProvider();
   final weSlideController = WeSlideController();
   final themeNotifier = ThemeNotifier();
-  final youtubeAudiobookNotifier = YoutubeAudiobookNotifier();
-  final webViewKeepAliveProvider = WebViewKeepAliveProvider();
 
   runApp(
     MultiProvider(
@@ -50,8 +46,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => audioHandlerProvider),
         ChangeNotifierProvider(create: (_) => weSlideController),
         ChangeNotifierProvider(create: (_) => themeNotifier),
-        ChangeNotifierProvider(create: (_) => youtubeAudiobookNotifier),
-        ChangeNotifierProvider(create: (_) => webViewKeepAliveProvider),
       ],
       child: const MyApp(),
     ),

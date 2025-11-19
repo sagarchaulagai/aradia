@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:aradia/resources/models/audiobook.dart';
 import 'package:aradia/resources/models/audiobook_file.dart';
 import 'package:aradia/resources/models/history_of_audiobook.dart';
-import 'package:aradia/resources/services/youtube/youtube_audio_service.dart';
 import 'package:aradia/resources/services/local/cover_image_service.dart';
 import 'package:aradia/resources/services/chromecast_service.dart';
 import 'package:aradia/utils/app_logger.dart';
@@ -14,7 +13,6 @@ import 'package:audio_session/audio_session.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 // Turn a local path or remote URL into a proper Uri for MediaItem.artUri.
 Uri? _artUriFrom(String? s) {
@@ -256,9 +254,6 @@ class MyAudioHandler extends BaseAudioHandler {
       final sources = <AudioSource>[];
 
       for (final song in files) {
-        final isYouTube = song.url?.contains('youtube.com') == true ||
-            song.url?.contains('youtu.be') == true;
-
         // Pick one art string: prefer per-track, else audiobook fallback
         String? artStr = audiobook.origin == "download"
             ? audiobook.lowQCoverImage
@@ -274,18 +269,13 @@ class MyAudioHandler extends BaseAudioHandler {
           extras: {
             'url': song.url,
             'audiobook_id': audiobook.id,
-            'is_youtube': isYouTube,
             'startMs': song.startMs,
             'durationMs': song.durationMs,
           },
         );
         mediaItems.add(item);
 
-        if (isYouTube && song.url != null) {
-          final videoId = VideoId.parseVideoId(song.url!) ?? song.url!;
-          sources.add(
-              YouTubeAudioSource(videoId: videoId, tag: item, quality: 'high'));
-        } else if (song.url != null) {
+        if (song.url != null) {
           final uri = song.url!.startsWith('/')
               ? Uri.file(song.url!)
               : Uri.parse(song.url!);
@@ -321,14 +311,12 @@ class MyAudioHandler extends BaseAudioHandler {
 
       _audioSources = sources;
 
-      // For YouTube, some backends ignore the initialPosition until READY.
-      final currentIsYT = _isIndexYouTube(safeIndex);
-
       // DEBUG
-      AppLogger.debug('initSongs: currentIsYT: $currentIsYT');
-      AppLogger.debug(_audioSources?.length.toString() ?? 'null');
-      AppLogger.debug(safeIndex.toString());
-      AppLogger.debug(positionInMilliseconds.toString());
+      AppLogger.debug(
+          'initSongs: sources count: ${_audioSources?.length ?? 0}');
+      AppLogger.debug('initSongs: safeIndex: $safeIndex');
+      AppLogger.debug(
+          'initSongs: positionInMilliseconds: $positionInMilliseconds');
       for (int i = 0; i < (_audioSources?.length ?? 0); i++) {
         AppLogger.debug(_audioSources?[i].toString() ?? 'null');
       }
@@ -336,21 +324,13 @@ class MyAudioHandler extends BaseAudioHandler {
       await _player.setAudioSources(
         _audioSources!,
         initialIndex: sources.isEmpty ? 0 : safeIndex,
-        initialPosition: currentIsYT
-            ? Duration.zero
-            : Duration(milliseconds: positionInMilliseconds),
+        initialPosition: Duration(milliseconds: positionInMilliseconds),
       );
 
       if (myGen != _initGen) return;
 
-      if (currentIsYT && positionInMilliseconds > 0) {
-        await _waitForProcessingReady(timeout: const Duration(seconds: 5));
-        await _player.seek(Duration(milliseconds: positionInMilliseconds),
-            index: safeIndex);
-      } else {
-        await _player.seek(Duration(milliseconds: positionInMilliseconds),
-            index: safeIndex);
-      }
+      await _player.seek(Duration(milliseconds: positionInMilliseconds),
+          index: safeIndex);
 
       // Auto-advance on completed
       _player.processingStateStream.listen((state) {
@@ -359,11 +339,10 @@ class MyAudioHandler extends BaseAudioHandler {
         }
       });
 
-      // Wait until the player reports our intended start (looser eps for YT)
+      // Wait until the player reports our intended start
       await _waitForStartToSettle(
         safeIndex,
         positionInMilliseconds,
-        isYouTube: currentIsYT,
         timeout: const Duration(seconds: 3),
       );
 
@@ -409,31 +388,15 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  bool _isIndexYouTube(int index) {
-    final children = _audioSources;
-    if (children == null || index < 0 || index >= children.length) return false;
-    return children[index] is YouTubeAudioSource;
-  }
-
-  Future<void> _waitForProcessingReady(
-      {Duration timeout = const Duration(seconds: 5)}) async {
-    final deadline = DateTime.now().add(timeout);
-    while (DateTime.now().isBefore(deadline)) {
-      if (_player.processingState == ProcessingState.ready) return;
-      await Future.delayed(const Duration(milliseconds: 50));
-    }
-  }
-
   Future<void> _waitForStartToSettle(
     int index,
     int positionMs, {
-    required bool isYouTube,
     Duration timeout = const Duration(seconds: 2),
   }) async {
     final deadline = DateTime.now().add(timeout);
 
-    // Tolerances: YT tends to have more jitter/latency
-    final posEpsMs = isYouTube ? 2500 : 1200;
+    // Position tolerance in milliseconds
+    final posEpsMs = 1200;
 
     while (DateTime.now().isBefore(deadline)) {
       final idxOk = _player.currentIndex == index;
