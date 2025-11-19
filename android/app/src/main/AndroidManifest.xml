@@ -35,7 +35,6 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <application
         android:label="Aradia"
-        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">
@@ -44,7 +43,6 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
-            android:usesCleartextTraffic="true"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
