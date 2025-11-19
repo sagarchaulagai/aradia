@@ -836,100 +836,98 @@ class _LocalAudiobookCoverSelectorState
 /// Network-only helpers used by the cover picker UI.
 /// Mapping/lookup logic lives in cover_image_service.dart.
 class CoverImageRemote {
-  static const _duckDuckGoUserAgent =
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+  static const _userAgent = 'Aradia/1.0 (Audiobook Player App)';
 
-  static const Map<String, String> _duckDuckGoHeaders = {
-    'User-Agent': _duckDuckGoUserAgent,
+  static const Map<String, String> _headers = {
+    'User-Agent': _userAgent,
   };
 
-  static const Map<String, String> _duckDuckGoImageHeaders = {
-    'User-Agent': _duckDuckGoUserAgent,
-    'Referer': 'https://duckduckgo.com/',
-  };
-
+  /// Fetch cover images from OpenLibrary API
   static Future<List<String>> fetchCoverImages(
       String title, String author) async {
     try {
       final trimmedTitle = title.trim();
       final trimmedAuthor = author.trim();
-      final queryParts = <String>[
-        if (trimmedTitle.isNotEmpty) trimmedTitle,
-        if (trimmedAuthor.isNotEmpty) trimmedAuthor,
-        'audiobook cover',
-      ];
-      if (queryParts.isEmpty) {
+
+      if (trimmedTitle.isEmpty && trimmedAuthor.isEmpty) {
         return [];
       }
-      final query = queryParts.join(' ');
-      final encodedQuery = Uri.encodeComponent(query);
 
-      final searchUri = Uri.parse(
-        'https://duckduckgo.com/?q=$encodedQuery&iax=images&ia=images',
+      // Build OpenLibrary search query
+      final queryParams = <String, String>{};
+      if (trimmedTitle.isNotEmpty) {
+        queryParams['title'] = trimmedTitle;
+      }
+      if (trimmedAuthor.isNotEmpty) {
+        queryParams['author'] = trimmedAuthor;
+      }
+      queryParams['limit'] = '10'; // Limit results for performance
+
+      final searchUri = Uri.https(
+        'openlibrary.org',
+        '/search.json',
+        queryParams,
       );
-      final searchResponse =
-          await http.get(searchUri, headers: _duckDuckGoHeaders);
+
+      AppLogger.debug(
+          'Fetching covers from OpenLibrary: $searchUri', 'CoverImageRemote');
+
+      final searchResponse = await http.get(searchUri, headers: _headers);
       if (searchResponse.statusCode != 200) {
+        AppLogger.error(
+            'OpenLibrary search failed with status: ${searchResponse.statusCode}');
         return [];
       }
 
-      final vqd = _extractDuckDuckGoVqd(searchResponse.body);
-      if (vqd == null || vqd.isEmpty) {
-        AppLogger.debug('DuckDuckGo vqd token missing for query: $query',
-            'CoverImageRemote');
+      final decoded = json.decode(searchResponse.body);
+      final docs = decoded['docs'];
+      if (docs is! List || docs.isEmpty) {
+        AppLogger.debug('No results found in OpenLibrary search');
         return [];
       }
 
-      final imagesUri = Uri.parse(
-        'https://duckduckgo.com/i.js?l=us-en&o=json&q=$encodedQuery&vqd=$vqd&p=1',
-      );
-      final imagesResponse =
-          await http.get(imagesUri, headers: _duckDuckGoImageHeaders);
-      if (imagesResponse.statusCode != 200) {
-        return [];
-      }
+      final coverUrls = <String>[];
+      final seen = <int>{};
 
-      final decoded = json.decode(imagesResponse.body);
-      final results = decoded['results'];
-      if (results is! List) {
-        return [];
-      }
+      // Extract cover IDs from search results
+      for (final doc in docs) {
+        if (doc is! Map) continue;
 
-      final seen = <String>{};
-      final scored = <_ScoredCover>[];
-
-      for (var i = 0; i < results.length; i++) {
-        final item = results[i];
-        if (item is! Map) continue;
-
-        final rawImage = item['image'] ?? item['thumbnail'];
-        if (rawImage is! String || rawImage.isEmpty) continue;
-
-        final normalized = rawImage.replaceFirst(RegExp('^http:'), 'https:');
-        if (!seen.add(normalized)) continue;
-
-        double? width = (item['width'] as num?)?.toDouble();
-        double? height = (item['height'] as num?)?.toDouble();
-
-        if ((width == null || height == null) &&
-            item['thumbnail_width'] != null &&
-            item['thumbnail_height'] != null) {
-          width = (item['thumbnail_width'] as num?)?.toDouble();
-          height = (item['thumbnail_height'] as num?)?.toDouble();
+        // Try to get cover_i (cover ID) from the document
+        final coverId = doc['cover_i'];
+        if (coverId is int && !seen.contains(coverId)) {
+          seen.add(coverId);
+          // Add multiple sizes for each cover
+          // L = Large, M = Medium, S = Small
+          coverUrls.add('https://covers.openlibrary.org/b/id/$coverId-L.jpg');
+          coverUrls.add('https://covers.openlibrary.org/b/id/$coverId-M.jpg');
         }
 
-        final score = _squarenessScore(width, height);
-        scored
-            .add(_ScoredCover(url: normalized, score: score, originalIndex: i));
+        // Also try cover_edition_key if cover_i is not available
+        if (coverId == null) {
+          final editionKey = doc['cover_edition_key'];
+          if (editionKey is String && editionKey.isNotEmpty) {
+            coverUrls
+                .add('https://covers.openlibrary.org/b/olid/$editionKey-L.jpg');
+            coverUrls
+                .add('https://covers.openlibrary.org/b/olid/$editionKey-M.jpg');
+          }
+        }
+
+        // Limit total covers to avoid overwhelming the UI
+        if (coverUrls.length >= 20) break;
       }
 
-      if (scored.isEmpty) {
-        return [];
+      if (coverUrls.isEmpty) {
+        AppLogger.debug('No cover IDs found in OpenLibrary results');
+      } else {
+        AppLogger.debug(
+            'Found ${coverUrls.length} cover URLs from OpenLibrary');
       }
 
-      return _sortCoversBySquareness(scored);
+      return coverUrls;
     } catch (e) {
-      AppLogger.error('Error fetching cover images from DuckDuckGo: $e');
+      AppLogger.error('Error fetching cover images from OpenLibrary: $e');
     }
     return [];
   }
@@ -973,48 +971,4 @@ class CoverImageRemote {
       ),
     );
   }
-
-  static List<String> _sortCoversBySquareness(List<_ScoredCover> scored) {
-    scored.sort((a, b) {
-      final scoreCompare = a.score.compareTo(b.score);
-      if (scoreCompare != 0) return scoreCompare;
-      return a.originalIndex.compareTo(b.originalIndex);
-    });
-    return scored.map((e) => e.url).toList();
-  }
-
-  static double _squarenessScore(double? width, double? height) {
-    if (width == null || height == null || width <= 0 || height <= 0) {
-      return double.infinity;
-    }
-    final larger = max(width, height);
-    final smaller = min(width, height);
-    if (smaller == 0) return double.infinity;
-    return (larger / smaller - 1).abs();
-  }
-
-  static String? _extractDuckDuckGoVqd(String body) {
-    final quotedMatch =
-        RegExp("vqd=(['\"])([A-Za-z0-9-]+)\\1").firstMatch(body);
-    if (quotedMatch != null) {
-      return quotedMatch.group(2);
-    }
-    final unquotedMatch = RegExp(r'vqd=([A-Za-z0-9-]+)&').firstMatch(body);
-    if (unquotedMatch != null) {
-      return unquotedMatch.group(1);
-    }
-    return null;
-  }
-}
-
-class _ScoredCover {
-  final String url;
-  final double score;
-  final int originalIndex;
-
-  const _ScoredCover({
-    required this.url,
-    required this.score,
-    required this.originalIndex,
-  });
 }
