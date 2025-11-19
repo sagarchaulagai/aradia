@@ -1,7 +1,5 @@
-import 'package:aradia/resources/designs/theme_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:provider/provider.dart';
 import '../../../resources/designs/app_colors.dart';
 import '../../../resources/models/character.dart';
 import '../../../resources/services/character_service.dart';
@@ -201,8 +199,6 @@ class _CharactersDialogState extends State<CharactersDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final selectedCharacter =
         _selectedIndex != null ? _filteredCharacters[_selectedIndex!] : null;
-    final ThemeNotifier themeNotifier =
-        Provider.of<ThemeNotifier>(context, listen: false);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -230,9 +226,7 @@ class _CharactersDialogState extends State<CharactersDialog> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: themeNotifier.themeMode == ThemeMode.dark
-                    ? Colors.black.withValues(alpha: 0.1)
-                    : Colors.grey[50],
+                color: isDark ? AppColors.cardColor : Colors.grey[50],
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
@@ -244,7 +238,7 @@ class _CharactersDialogState extends State<CharactersDialog> {
                   Text(
                     '${_characters.length} Characters',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: isDark ? Colors.white70 : Colors.grey[600],
                       fontSize: 12,
                     ),
                   ),

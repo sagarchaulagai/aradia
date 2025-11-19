@@ -219,8 +219,7 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
   }
 
   void showTimerOptions(BuildContext context) {
-    ThemeNotifier themeNotifier =
-        Provider.of<ThemeNotifier>(context, listen: false);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -228,17 +227,19 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
-        color: themeNotifier.themeMode == ThemeMode.dark
-            ? Colors.grey[800]!
-            : Colors.white,
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardColor : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               "Set a Sleep Timer",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 15),
@@ -265,10 +266,11 @@ class _AudiobookPlayerState extends State<AudiobookPlayer> {
 
   ElevatedButton _timerButton(
       BuildContext context, String label, Duration duration) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[200],
-        foregroundColor: Colors.black,
+        backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+        foregroundColor: isDark ? Colors.white : Colors.black,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
